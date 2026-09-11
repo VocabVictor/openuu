@@ -22,10 +22,6 @@ Dacă dorești să lucrezi la o problemă, te rugăm să o revendici mai întâi
 
 Pentru instrucțiuni specifice git, vezi [GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow).
 
-## Conduită
-
-[Codul de Conduită RustDesk](https://github.com/rustdesk/rustdesk/blob/master/docs/CODE_OF_CONDUCT.md)
-
 ## Comunicare
 
 Contributorii RustDesk frecventează [Discord](https://discord.gg/nDceKgxnkV).

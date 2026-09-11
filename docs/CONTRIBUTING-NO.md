@@ -37,10 +37,6 @@ Dette er for å hindre duplikat innsats på samme problem.
 
 For spesefike git instruksjoner, se [GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow).
 
-## Oppførsel
-
-https://github.com/rustdesk/rustdesk/blob/master/docs/CODE_OF_CONDUCT.md
-
 ## Kommunikasjon
 
 RustDesk bidragere burker [Discord](https://discord.gg/nDceKgxnkV).

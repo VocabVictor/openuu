@@ -22,10 +22,6 @@ Eğer bir konu üzerinde çalışmak isterseniz, önce üzerinde çalışmak ist
 
 Daha spesifik git talimatları için, [GitHub iş akışı 101](https://github.com/servo/servo/wiki/GitHub-workflow)'e bakınız.
 
-## Davranış
-
-https://github.com/rustdesk/rustdesk/blob/master/docs/CODE_OF_CONDUCT-TR.md
-
 ## İletişim
 
 RustDesk katkı sağlayıcıları, [Discord](https://discord.gg/nDceKgxnkV) kanalını sık sık ziyaret ederler.

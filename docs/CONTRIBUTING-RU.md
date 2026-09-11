@@ -36,10 +36,6 @@ RustDesk приветствует вклад каждого.
 
 Для получения конкретных инструкций `git` см. [GitHub workflow 101](https://github.com/servo/servo/wiki/Github-workflow).
 
-## Правила поведения участников и вкладчиков
-
-Нормы поведения внутри сообщества подробно описаны [здесь](CODE_OF_CONDUCT-RU.md).
-
 ## Общение
 
 RustDesk контрибьюторы могут посетить [Discord](https://discord.gg/nDceKgxnkV).

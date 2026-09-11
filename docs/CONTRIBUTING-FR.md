@@ -45,10 +45,6 @@ issue.
 Pour des instructions git spécifiques, consultez le
 [GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow).
 
-## Conduite
-
-https://github.com/rustdesk/rustdesk/blob/master/docs/CODE_OF_CONDUCT.md
-
 ## Communication
 
 Les contributeurs de RustDesk se retrouvent fréquemment sur

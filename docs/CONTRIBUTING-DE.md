@@ -41,10 +41,6 @@ werden, dass Beiträge zum gleichen Thema doppelt bearbeitet werden.
 
 Spezifische Git-Anweisungen finden Sie im [GitHub-Workflow](https://github.com/servo/servo/wiki/GitHub-workflow).
 
-## Verhalten
-
-https://github.com/rustdesk/rustdesk/blob/master/docs/CODE_OF_CONDUCT.md
-
 ## Kommunikation
 
 RustDesk-Mitarbeiter arbeiten häufig im [Discord](https://discord.gg/nDceKgxnkV).

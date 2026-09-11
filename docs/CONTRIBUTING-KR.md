@@ -37,10 +37,6 @@ RustDesk 또는 그 종속성에 대한 기여는 GitHub 풀 리퀘스트 형태
 
 구체적인 git 지침은, [GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow)을 참조하세요.
 
-## 행동 강령
-
-https://github.com/rustdesk/rustdesk/blob/master/docs/CODE_OF_CONDUCT.md
-
 ## 커뮤니케이션
 
 RustDesk 기여자들은 [Discord](https://discord.gg/nDceKgxnkV)에서 활동하고 있습니다.

@@ -32,10 +32,6 @@ RustDesk またはその依存関係へのコントリビュートは、GitHub �
 
 具体的なgitの手順については、[GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow)を参照してください。
 
-## 行動規範
-
-https://github.com/rustdesk/rustdesk/blob/master/docs/CODE_OF_CONDUCT.md
-
 ## コミュニケーション
 
 RustDesk のコントリビューターは、[Discord](https://discord.gg/nDceKgxnkV) を良く使っています。

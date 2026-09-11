@@ -41,10 +41,6 @@ inspanningen van medewerkers aan hetzelfde issue te voorkomen.
 
 Voor specifieke git instructies, zie [GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow).
 
-## Gedrag
-
-https://github.com/rustdesk/rustdesk/blob/master/docs/CODE_OF_CONDUCT.md
-
 ## Communicatie
 
 RustDesk medewerkers bezoeken frequent [Discord](https://discord.gg/nDceKgxnkV).

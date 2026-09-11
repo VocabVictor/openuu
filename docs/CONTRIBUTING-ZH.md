@@ -22,11 +22,6 @@ Rust欢迎每一位贡献者，如果您有意向为我们做出贡献，请遵�
 
 有关具体的 git 使用说明，请参考[GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow).
 
-## 行为准则
-
-请遵守项目的[贡献者公约行为准则](./CODE_OF_CONDUCT-ZH.md)。
-
-
 ## 沟通渠道
 
 RustDesk 的贡献者主要通过 [Discord](https://discord.gg/nDceKgxnkV) 进行交流。

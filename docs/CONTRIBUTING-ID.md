@@ -22,10 +22,6 @@ Apabila kamu ingin mengatasi sebuah masalah yang sudah ada di daftar issue, hara
 
 Untuk instruksi Git yang lebih lanjut, cek disini [GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow).
 
-## Tindakan
-
-<https://github.com/rustdesk/rustdesk/blob/master/docs/CODE_OF_CONDUCT.md>
-
 ## Komunikasi
 
 Kontributor RustDesk sering berkunjung ke [Discord](https://discord.gg/nDceKgxnkV).
