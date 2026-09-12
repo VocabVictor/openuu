@@ -67,7 +67,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           final model = gFFI.serverModel;
           return DesktopAssistancePage(
             deviceId: model.serverId.text, password: model.serverPasswd.text,
-            verification: model.approveMode == 'click' ? translate('Accept sessions via click') : translate(model.verificationMethod),
+            verification: model.approveMode == 'click' ? translate('Accept sessions via click') : translate(_verificationLabel(model.verificationMethod)),
             temporaryPassword: model.approveMode != 'click' && model.verificationMethod != kUsePermanentPassword,
             enabled: !svcStopped.value, onEnable: (value) => start_service(value),
             onConnect: (id) => connect(context, id),
@@ -88,6 +88,17 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         if (!isIncomingOnly) Expanded(child: buildRightPane(context)),
       ],
     ));
+  }
+
+  static String _verificationLabel(String method) {
+    switch (method) {
+      case kUseTemporaryPassword:
+        return 'Use one-time password';
+      case kUsePermanentPassword:
+        return 'Use permanent password';
+      default:
+        return 'Use both passwords';
+    }
   }
 
   Widget _buildBlock({required Widget child}) {

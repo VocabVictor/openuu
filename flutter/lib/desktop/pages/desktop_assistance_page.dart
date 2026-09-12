@@ -192,8 +192,8 @@ class _DesktopAssistancePageState extends State<DesktopAssistancePage> {
                                                   Icons.settings_outlined)),
                                         ]),
                                         caption(temporary
-                                            ? t('远控结束后刷新',
-                                                'Refreshes after the session')
+                                            ? t('一次性密码，每次远控结束后自动更新',
+                                                'One-time password, renewed after each session')
                                             : t('连接时按安全设置验证',
                                                 'Uses your security settings')),
                                       ])),

@@ -117,15 +117,24 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
             backgroundColor: Theme.of(context).colorScheme.background,
             body: DesktopTab(
               controller: tabController,
-              tail: Offstage(
-                offstage: bind.isIncomingOnly() || bind.isDisableSettings(),
-                child: ActionIcon(
-                  message: 'Settings',
-                  icon: IconFont.menu,
-                  onTap: DesktopTabPage.onAddSetting,
-                  isClose: false,
+              tail: Row(mainAxisSize: MainAxisSize.min, children: [
+                if (isWindows && !bind.isIncomingOnly())
+                  ActionIcon(
+                    message: 'Login',
+                    icon: Icons.person_outline,
+                    onTap: () => loginDialog(),
+                    isClose: false,
+                  ),
+                Offstage(
+                  offstage: bind.isIncomingOnly() || bind.isDisableSettings(),
+                  child: ActionIcon(
+                    message: 'Settings',
+                    icon: IconFont.menu,
+                    onTap: DesktopTabPage.onAddSetting,
+                    isClose: false,
+                  ),
                 ),
-              ),
+              ]),
             )));
     final content = Obx(() {
       final signedIn = gFFI.userModel.isLogin;
@@ -141,15 +150,6 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
         Offstage(
             offstage: showWelcome || showDevices,
             child: Column(children: [
-              if (isWindows && _showAssistance && homeSelected)
-                Material(
-                    child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                            onPressed: () =>
-                                setState(() => _showAssistance = false),
-                            icon: const Icon(Icons.arrow_back),
-                            label: const Text('OpenUU')))),
               Expanded(child: tabWidget),
             ])),
         if (showDevices) const DesktopDevicesPage(),
