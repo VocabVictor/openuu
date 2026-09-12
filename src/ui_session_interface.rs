@@ -179,7 +179,7 @@ impl SessionPermissionConfig {
         *self.server_clipboard_enabled.read().unwrap()
             && *self.server_keyboard_enabled.read().unwrap()
             && !self.lc.read().unwrap().disable_clipboard.v
-            && !self.lc.read().unwrap().view_only.v
+            && !self.lc.read().unwrap().get_toggle_option("view-only")
     }
 
     #[cfg(feature = "unix-file-copy-paste")]
@@ -188,7 +188,7 @@ impl SessionPermissionConfig {
         *self.server_keyboard_enabled.read().unwrap()
             && *self.server_file_transfer_enabled.read().unwrap()
             && lc.enable_file_copy_paste.v
-            && !lc.view_only.v
+            && !lc.get_toggle_option("view-only")
     }
 }
 
@@ -393,6 +393,9 @@ impl<T: InvokeUiSession> Session<T> {
     }
 
     pub fn toggle_privacy_mode(&self, impl_key: String, on: bool) {
+        if self.lc.read().map(|lc| lc.view_only_session).unwrap_or(true) {
+            return;
+        }
         let mut misc = Misc::new();
         misc.set_toggle_privacy_mode(TogglePrivacyMode {
             impl_key,
@@ -418,7 +421,7 @@ impl<T: InvokeUiSession> Session<T> {
         *self.server_clipboard_enabled.read().unwrap()
             && *self.server_keyboard_enabled.read().unwrap()
             && !self.lc.read().unwrap().disable_clipboard.v
-            && !self.lc.read().unwrap().view_only.v
+            && !self.lc.read().unwrap().get_toggle_option("view-only")
     }
 
     #[cfg(any(target_os = "windows", feature = "unix-file-copy-paste"))]
@@ -427,7 +430,7 @@ impl<T: InvokeUiSession> Session<T> {
         *self.server_keyboard_enabled.read().unwrap()
             && *self.server_file_transfer_enabled.read().unwrap()
             && lc.enable_file_copy_paste.v
-            && !lc.view_only.v
+            && !lc.get_toggle_option("view-only")
     }
 
     #[cfg(feature = "flutter")]
@@ -563,6 +566,9 @@ impl<T: InvokeUiSession> Session<T> {
     }
 
     pub fn restart_remote_device(&self) {
+        if self.lc.read().map(|lc| lc.view_only_session).unwrap_or(true) {
+            return;
+        }
         let mut lc = self.lc.write().unwrap();
         lc.mark_restarting_remote_device();
         let msg = lc.restart_remote_device();
@@ -676,6 +682,9 @@ impl<T: InvokeUiSession> Session<T> {
     }
 
     pub fn input_os_password(&self, pass: String, activate: bool) {
+        if self.lc.read().map(|lc| lc.view_only_session).unwrap_or(true) {
+            return;
+        }
         input_os_password(pass, activate, self.clone());
     }
 
@@ -1472,10 +1481,16 @@ impl<T: InvokeUiSession> Session<T> {
     }
 
     pub fn elevate_direct(&self) {
+        if self.lc.read().map(|lc| lc.view_only_session).unwrap_or(true) {
+            return;
+        }
         self.send(Data::ElevateDirect);
     }
 
     pub fn elevate_with_logon(&self, username: String, password: String) {
+        if self.lc.read().map(|lc| lc.view_only_session).unwrap_or(true) {
+            return;
+        }
         self.send(Data::ElevateWithLogon(username, password));
     }
 
@@ -1486,6 +1501,9 @@ impl<T: InvokeUiSession> Session<T> {
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     #[tokio::main(flavor = "current_thread")]
     pub async fn switch_sides(&self) {
+        if self.lc.read().map(|lc| lc.view_only_session).unwrap_or(true) {
+            return;
+        }
         match crate::ipc::connect(1000, "").await {
             Ok(mut conn) => {
                 if conn
@@ -1555,6 +1573,9 @@ impl<T: InvokeUiSession> Session<T> {
 
     #[inline]
     pub fn change_resolution(&self, display: i32, width: i32, height: i32) {
+        if self.lc.read().map(|lc| lc.view_only_session).unwrap_or(true) {
+            return;
+        }
         *self.last_change_display.lock().unwrap() =
             ChangeDisplayRecord::new(display, width, height);
         self.do_change_resolution(display, width, height);
@@ -1932,6 +1953,9 @@ impl<T: InvokeUiSession> Interface for Session<T> {
 
 impl<T: InvokeUiSession> Session<T> {
     pub fn lock_screen(&self) {
+        if self.lc.read().map(|lc| lc.view_only_session).unwrap_or(true) {
+            return;
+        }
         self.send_key_event(&crate::keyboard::client::event_lock_screen());
     }
     pub fn ctrl_alt_del(&self) {

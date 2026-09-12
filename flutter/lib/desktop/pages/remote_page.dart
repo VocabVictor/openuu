@@ -45,6 +45,7 @@ class RemotePage extends StatefulWidget {
     this.tabController,
     this.switchUuid,
     this.forceRelay,
+    this.viewOnly = false,
     this.isSharedPassword,
   }) : super(key: key) {
     initSharedStates(id);
@@ -59,6 +60,7 @@ class RemotePage extends StatefulWidget {
   final ToolbarState toolbarState;
   final String? switchUuid;
   final bool? forceRelay;
+  final bool viewOnly;
   final bool? isSharedPassword;
   final SimpleWrapper<State<RemotePage>?> _lastState = SimpleWrapper(null);
   final DesktopTabController? tabController;
@@ -170,6 +172,7 @@ class _RemotePageState extends State<RemotePage>
       isSharedPassword: widget.isSharedPassword,
       switchUuid: widget.switchUuid,
       forceRelay: widget.forceRelay,
+      viewOnly: widget.viewOnly,
       tabWindowId: widget.tabWindowId,
       display: widget.display,
       displays: widget.displays,
@@ -784,6 +787,11 @@ class _RemotePageState extends State<RemotePage>
     }
 
     return Scaffold(
+      bottomNavigationBar: widget.viewOnly || _ffi.viewOnlySession
+          ? Container(color: const Color(0xffe8f0fa), padding: const EdgeInsets.all(6),
+              child: Text('${translate('View Mode')} · ${translate('Read-only')}',
+                  textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Color(0xff24476b))))
+          : null,
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Obx(() {
         final imageReady = _ffi.ffiModel.pi.isSet.isTrue &&

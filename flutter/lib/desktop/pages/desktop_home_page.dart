@@ -792,6 +792,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       } else if (call.method == kWindowConnect) {
         await connectMainDesktop(
           call.arguments['id'],
+          viewOnly: call.arguments['viewOnly'] == true,
           isFileTransfer: call.arguments['isFileTransfer'],
           isViewCamera: call.arguments['isViewCamera'],
           isTerminal: call.arguments['isTerminal'],

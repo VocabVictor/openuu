@@ -13,12 +13,14 @@ void main() {
       await tester.pumpWidget(MaterialApp(home: DesktopDevicePage(
         name: 'DESKTOP-A-VERY-LONG-DEVICE-NAME-123456789', id: '123456789', online: true,
         onBack: () {}, onLogin: () {}, onSettings: () {}, onAssistance: () {}, onFavorites: () {},
-        onConnect: () => connections++, onFiles: () {}, onTerminal: () {}, onTunnel: () {})));
+        onWatch: () => connections++, onConnect: () => connections++, onFiles: () {}, onTerminal: () {}, onTunnel: () {})));
       expect(tester.takeException(), isNull);
       await tester.tap(find.text('Enter desktop  →'));
       expect(connections, 1);
       final viewOnly = tester.widget<TextButton>(find.ancestor(of: find.text('View only'), matching: find.byWidgetPredicate((w) => w is TextButton)).first);
-      expect(viewOnly.onPressed, isNull);
+      expect(viewOnly.onPressed, isNotNull);
+      viewOnly.onPressed!();
+      expect(connections, 2);
     });
   }
 }

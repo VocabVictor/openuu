@@ -1944,7 +1944,7 @@ pub fn try_sync_peer_option(
     if key == "view-only" {
         event = vec![
             ("k", json!(key.to_string())),
-            ("v", json!(session.lc.read().unwrap().view_only.v)),
+            ("v", json!(session.lc.read().unwrap().get_toggle_option("view-only"))),
         ];
     }
     if ["keyboard_mode", "input_source"].contains(&key) {

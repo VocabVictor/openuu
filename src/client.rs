@@ -2742,6 +2742,7 @@ struct ConnToken {
 /// Login config handler for [`Client`].
 #[derive(Default)]
 pub struct LoginConfigHandler {
+    pub view_only_session: bool,
     id: String,
     pub conn_type: ConnType,
     pub is_terminal_admin: bool,
@@ -3110,6 +3111,11 @@ impl LoginConfigHandler {
     // `toggle_option()` is only called in a session.
     // Custom client advanced settings will not effect this function.
     pub fn toggle_option(&mut self, name: String) -> Option<Message> {
+        if self.view_only_session && matches!(name.as_str(),
+            "view-only" | "disable-clipboard" | "enable-file-copy-paste" |
+            "lock-after-session-end" | "block-input" | "unblock-input") {
+            return None;
+        }
         let mut option = OptionMessage::default();
         let mut config = self.load_config();
         if name == "show-remote-cursor" {
@@ -3314,6 +3320,8 @@ impl LoginConfigHandler {
         let view_only = self.get_toggle_option("view-only");
         if view_only {
             msg.disable_keyboard = BoolOption::Yes.into();
+            msg.enable_file_transfer = BoolOption::No.into();
+            msg.lock_after_session_end = BoolOption::No.into();
         }
         if view_only || self.get_toggle_option("show-remote-cursor") {
             msg.show_remote_cursor = BoolOption::Yes.into();
@@ -3403,8 +3411,10 @@ impl LoginConfigHandler {
             self.config.show_quality_monitor.v
         } else if name == "allow_swap_key" {
             self.config.allow_swap_key.v
+        } else if name == "view-only-session" {
+            self.view_only_session
         } else if name == "view-only" {
-            self.config.view_only.v
+            self.view_only_session || self.config.view_only.v
         } else if name == "show-my-cursor" {
             self.config.show_my_cursor.v
         } else if name == "follow-remote-cursor" {
@@ -5703,5 +5713,28 @@ mod webrtc_race_tests {
         .unwrap_err()
         .to_string();
         assert!(err.contains("webrtc dead") && err.contains("relay dead"), "{}", err);
+    }
+}
+
+#[cfg(test)]
+mod view_only_session_tests {
+    use super::*;
+
+    #[test]
+    fn view_only_login_disables_remote_mutations() {
+        let mut lc = LoginConfigHandler::default();
+        lc.view_only_session = true;
+        lc.config.view_only.v = false;
+        lc.config.enable_file_copy_paste.v = true;
+        lc.config.lock_after_session_end.v = true;
+        let options = lc.get_option_message(false).expect("desktop options");
+        assert_eq!(options.disable_keyboard.enum_value(), Ok(BoolOption::Yes));
+        assert_eq!(options.disable_clipboard.enum_value(), Ok(BoolOption::Yes));
+        assert_eq!(options.enable_file_transfer.enum_value(), Ok(BoolOption::No));
+        assert_eq!(options.lock_after_session_end.enum_value(), Ok(BoolOption::No));
+        assert!(lc.toggle_option("view-only".into()).is_none());
+        assert!(lc.get_toggle_option("view-only"));
+        assert!(!lc.config.view_only.v);
+        assert!(lc.toggle_option("disable-clipboard".into()).is_none());
     }
 }

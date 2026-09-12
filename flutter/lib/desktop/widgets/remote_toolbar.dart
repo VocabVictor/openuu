@@ -2707,7 +2707,7 @@ class _KeyboardMenu extends StatelessWidget {
 
   viewMode() {
     final ffiModel = ffi.ffiModel;
-    final enabled = versionCmp(pi.version, '1.2.0') >= 0 && ffiModel.keyboard;
+    final enabled = !ffi.viewOnlySession && versionCmp(pi.version, '1.2.0') >= 0 && ffiModel.keyboard;
     return CkbMenuButton(
         value: ffiModel.viewOnly,
         onChanged: enabled

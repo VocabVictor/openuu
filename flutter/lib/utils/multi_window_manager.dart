@@ -224,6 +224,7 @@ class RustDeskMultiWindowManager {
     String methodName,
     String remoteId,
     List<int> windows, {
+    bool viewOnly = false,
     String? password,
     bool? forceRelay,
     String? switchUuid,
@@ -234,6 +235,7 @@ class RustDeskMultiWindowManager {
     var params = {
       "type": type.index,
       "id": remoteId,
+      "viewOnly": viewOnly,
       "password": password,
       "forceRelay": forceRelay
     };
@@ -250,6 +252,11 @@ class RustDeskMultiWindowManager {
       params['connToken'] = connToken;
     }
     final msg = jsonEncode(params);
+    // Never activate an existing control session for a view-only request.
+    if (viewOnly) {
+      final windowId = await newSessionWindow(type, remoteId, msg, windows, false);
+      return MultiWindowCallResult(windowId, null);
+    }
 
     // separate window for file transfer is not supported
     bool openInTabs = type != WindowType.RemoteDesktop ||
@@ -269,6 +276,7 @@ class RustDeskMultiWindowManager {
 
   Future<MultiWindowCallResult> newRemoteDesktop(
     String remoteId, {
+    bool viewOnly = false,
     String? password,
     bool? isSharedPassword,
     String? switchUuid,
@@ -279,6 +287,7 @@ class RustDeskMultiWindowManager {
       kWindowEventNewRemoteDesktop,
       remoteId,
       _remoteDesktopWindows,
+      viewOnly: viewOnly,
       password: password,
       forceRelay: forceRelay,
       switchUuid: switchUuid,

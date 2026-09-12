@@ -7,12 +7,12 @@ class DesktopDevicePage extends StatelessWidget {
   final String id;
   final bool online;
   final VoidCallback onBack, onLogin, onSettings, onAssistance, onFavorites;
-  final VoidCallback onConnect, onFiles, onTerminal, onTunnel;
+  final VoidCallback onConnect, onWatch, onFiles, onTerminal, onTunnel;
 
   const DesktopDevicePage({super.key, required this.name, required this.id,
     required this.online, required this.onBack, required this.onLogin,
     required this.onSettings, required this.onAssistance, required this.onFavorites,
-    required this.onConnect, required this.onFiles, required this.onTerminal,
+    required this.onConnect, required this.onWatch, required this.onFiles, required this.onTerminal,
     required this.onTunnel});
 
   @override
@@ -60,7 +60,7 @@ class DesktopDevicePage extends StatelessWidget {
                     ]))))),
                 Padding(padding: const EdgeInsets.all(8), child: Wrap(alignment: WrapAlignment.center, spacing: 12, runSpacing: 4, children: [
                   _action(t('文件传输', 'Files'), Icons.folder_open, onFiles),
-                  Tooltip(message: t('尚未支持独立观看模式', 'View-only launch is not available'), child: _action(t('观看模式', 'View only'), Icons.ondemand_video, null)),
+                  _action(t('观看模式', 'View only'), Icons.ondemand_video, onWatch),
                   _action(t('终端', 'Terminal'), Icons.terminal, onTerminal),
                   _action(t('端口映射', 'Port forwarding'), Icons.settings_ethernet, onTunnel),
                 ])),

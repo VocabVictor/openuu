@@ -468,7 +468,7 @@ impl<T: InvokeUiSession> Remote<T> {
                         *self.handler.server_file_transfer_enabled.read().unwrap();
                     let file_transfer_enabled =
                         self.handler.lc.read().unwrap().enable_file_copy_paste.v;
-                    let view_only = self.handler.lc.read().unwrap().view_only.v;
+                    let view_only = self.handler.lc.read().unwrap().get_toggle_option("view-only");
                     let stop = is_stopping_allowed
                         && (view_only
                             || !self.is_connected
@@ -1523,7 +1523,7 @@ impl<T: InvokeUiSession> Remote<T> {
                 Some(message::Union::Clipboard(cb)) => {
                     let clipboard_allowed = {
                         let lc = self.handler.lc.read().unwrap();
-                        !lc.disable_clipboard.v && !lc.view_only.v
+                        !lc.disable_clipboard.v && !lc.get_toggle_option("view-only")
                     };
                     if clipboard_allowed {
                         #[cfg(all(
@@ -1558,7 +1558,7 @@ impl<T: InvokeUiSession> Remote<T> {
                 Some(message::Union::MultiClipboards(_mcb)) => {
                     let clipboard_allowed = {
                         let lc = self.handler.lc.read().unwrap();
-                        !lc.disable_clipboard.v && !lc.view_only.v
+                        !lc.disable_clipboard.v && !lc.get_toggle_option("view-only")
                     };
                     if clipboard_allowed {
                         #[cfg(all(

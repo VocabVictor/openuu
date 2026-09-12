@@ -3721,6 +3721,7 @@ enum ConnType {
 
 /// Flutter state manager and data communication with the Rust core.
 class FFI {
+  bool viewOnlySession = false;
   var id = '';
   var version = '';
   var connType = ConnType.defaultConn;
@@ -3801,6 +3802,7 @@ class FFI {
   /// Start with the given [id]. Only transfer file if [isFileTransfer], only view camera if [isViewCamera], only port forward if [isPortForward].
   void start(
     String id, {
+    bool viewOnly = false,
     bool isFileTransfer = false,
     bool isViewCamera = false,
     bool isPortForward = false,
@@ -3814,7 +3816,8 @@ class FFI {
     int? tabWindowId,
     int? display,
     List<int>? displays,
-  }) {
+  }) async {
+    viewOnlySession = viewOnly;
     closed = false;
     if (isMobile) mobileReset();
     assert(
@@ -3860,6 +3863,24 @@ class FFI {
         isSharedPassword: isSharedPassword ?? false,
         connToken: connToken,
       );
+      if (viewOnly && addRes != '') {
+        msgBox(sessionId, 'error', 'View Mode', addRes, '', dialogManager);
+        return;
+      }
+      if (viewOnly) {
+        await bind.sessionPeerOption(sessionId: sessionId,
+            name: 'view-only-session', value: 'Y');
+        final supported = await bind.sessionGetToggleOption(
+            sessionId: sessionId, arg: 'view-only-session');
+        if (closed) return;
+        if (supported != true) {
+          bind.sessionClose(sessionId: sessionId);
+          msgBox(sessionId, 'error', 'View Mode',
+              'The native library must be updated to support view-only sessions.', '', dialogManager);
+          return;
+        }
+        ffiModel.setViewOnly(id, true);
+      }
     } else if (display != null) {
       if (displays == null) {
         debugPrint(
@@ -3877,6 +3898,11 @@ class FFI {
         return;
       }
       ffiModel.pi.currentDisplay = display;
+    }
+    if (!isNewPeer) {
+      viewOnlySession = await bind.sessionGetToggleOption(
+          sessionId: sessionId, arg: 'view-only-session') == true;
+      if (closed) return;
     }
     if (isDesktop && connType == ConnType.defaultConn) {
       textureModel.updateCurrentDisplay(display ?? 0);

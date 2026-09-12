@@ -557,7 +557,7 @@ fn can_exit_relative_mouse_mode_from_grab_loop() -> bool {
         return false;
     }
     let lc = session.lc.read().unwrap();
-    if lc.view_only.v {
+    if lc.get_toggle_option("view-only") {
         return false;
     }
 

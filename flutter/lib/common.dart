@@ -2531,7 +2531,8 @@ List<String>? urlLinkToCmdArgs(Uri uri) {
 }
 
 connectMainDesktop(String id,
-    {required bool isFileTransfer,
+    {bool viewOnly = false,
+    required bool isFileTransfer,
     required bool isViewCamera,
     required bool isTerminal,
     required bool isTcpTunneling,
@@ -2566,6 +2567,7 @@ connectMainDesktop(String id,
         forceRelay: forceRelay);
   } else {
     await rustDeskWinManager.newRemoteDesktop(id,
+        viewOnly: viewOnly,
         password: password,
         isSharedPassword: isSharedPassword,
         forceRelay: forceRelay);
@@ -2579,6 +2581,7 @@ connectMainDesktop(String id,
 /// If [isRDP], starts a session only for rdp.
 connect(BuildContext context, String id,
     {bool isFileTransfer = false,
+    bool viewOnly = false,
     bool isViewCamera = false,
     bool isTerminal = false,
     bool isTcpTunneling = false,
@@ -2612,6 +2615,7 @@ connect(BuildContext context, String id,
     if (desktopType == DesktopType.main) {
       await connectMainDesktop(
         id,
+        viewOnly: viewOnly,
         isFileTransfer: isFileTransfer,
         isViewCamera: isViewCamera,
         isTerminal: isTerminal,
@@ -2624,6 +2628,7 @@ connect(BuildContext context, String id,
     } else {
       await rustDeskWinManager.call(WindowType.Main, kWindowConnect, {
         'id': id,
+        'viewOnly': viewOnly,
         'isFileTransfer': isFileTransfer,
         'isViewCamera': isViewCamera,
         'isTerminal': isTerminal,
