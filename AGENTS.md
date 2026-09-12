@@ -112,6 +112,9 @@ broken up.
 | `flutter/lib/common/widgets/login/login_dialog.dart` | single `_openLoginDialog` function (~350 lines) |
 | `flutter/lib/web/bridge.dart` | single `RustdeskImpl` class (~1930 lines) mirroring the generated bridge API one-to-one; callers reach it through the conditional import in `models/platform_model.dart`, which does not re-export the library, so extension members would be invisible on the web target and `flutter analyze` (native branch) cannot catch that |
 | `src/ipc/handle.rs` | single `async fn handle` IPC request dispatcher (~430 lines) |
+| `src/server/connection/start.rs` | single `Connection::start` function (~720 lines) |
+| `src/server/connection/logon_response.rs` | single `Connection::send_logon_response_and_keep_alive` function (~360 lines) |
+| `src/server/connection/on_message.rs` | single `Connection::on_message` function (~1200 lines) |
 | `src/flutter_ffi.rs` | flutter_rust_bridge v1 single-file codegen input (`--rust-input`); splitting needs frb v2 or changes to every build script. New exported functions added here must be one-line forwards to the owning module; no logic lives in this file. |
 
 ### Deferred: needs Linux/macOS CI
