@@ -70,6 +70,7 @@ broken up.
 | `src/client/start_inner.rs` | single `_start_inner` function (~570 lines) |
 | `src/client/io_loop/ui_msg.rs` | single `Remote::handle_msg_from_ui` function (~470 lines) |
 | `src/client/io_loop/peer_msg.rs` | single `Remote::handle_msg_from_peer` function (~750 lines) |
+| `flutter/lib/common/my_theme.dart` | single `MyTheme` class of static members (~380 lines); a Dart class body cannot span files |
 
 ## Rust Rules
 
