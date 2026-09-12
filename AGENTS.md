@@ -127,6 +127,13 @@ split them before then:
 * `libs/scrap/src/wayland/`, `libs/scrap/src/x11/`, `libs/scrap/src/quartz/`
 * `libs/clipboard/src/platform/unix/`, `libs/enigo/src/linux/`,
   `libs/enigo/src/macos/`
+* `libs/scrap/src/common/drm_reader.rs`, `libs/scrap/src/common/drmtap_dl.rs`
+  (Linux + `drm` feature), `libs/scrap/src/android/ffi.rs`,
+  `libs/base/src/platform/linux/wayland_probe.rs`, `src/whiteboard/linux.rs`,
+  `src/whiteboard/macos.rs`
+
+`libs/scrap/examples/benchmark.rs` is a sample, not product source, and is
+left as it is.
 
 ## Rust Rules
 
