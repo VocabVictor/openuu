@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_hbb/desktop/widgets/device_action_bar.dart';
 
@@ -24,19 +23,24 @@ void main() {
         await tester.tap(buttons.at(i));
       }
       expect(calls, [0, 1, 2, 3]);
-      String? copied;
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform, (call) async {
-          if (call.method == 'Clipboard.setData') copied = call.arguments['text'];
-          return null;
-        });
-      addTearDown(() => tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, null));
       await tester.tap(find.byTooltip('More'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Copy device ID'));
+      expect(find.text('More tools'), findsOneWidget);
+      expect(tester.widget<ListTile>(find.byKey(const ValueKey('tool-4'))).enabled, isFalse);
+      await tester.tap(find.text('Reorder'));
       await tester.pumpAndSettle();
-      expect(copied, '123456789');
+      await tester.tap(find.descendant(of: find.byKey(const ValueKey('tool-1')),
+        matching: find.byTooltip('Move up')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Done'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('tool-1')));
+      await tester.pumpAndSettle();
+      expect(calls, [0, 1, 2, 3, 1]);
+      expect(find.text('More tools'), findsNothing);
+      expect(tester.getTopLeft(find.byTooltip('View only')).dx,
+        lessThan(tester.getTopLeft(find.byTooltip('Files')).dx));
+      expect(tester.takeException(), isNull);
     });
   }
 }
