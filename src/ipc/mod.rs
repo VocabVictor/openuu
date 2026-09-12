@@ -1,13 +1,13 @@
-#[path = "ipc/auth.rs"]
+#[path = "auth.rs"]
 mod ipc_auth;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-#[path = "ipc/fs.rs"]
+#[path = "fs.rs"]
 mod ipc_fs;
 // The DRM/KMS capture producer, the `_drm` channel and its SCM_RIGHTS framing live in their own
 // module, declared the same way as the other pieces of this file, so the opt-in feature adds a
 // bounded, self-contained surface here instead of ~1800 lines in the middle of the shared IPC.
 #[cfg(all(target_os = "linux", feature = "drm"))]
-#[path = "ipc/drm.rs"]
+#[path = "drm.rs"]
 mod ipc_drm;
 // Re-exported so the paths callers already use (`crate::ipc::start_drm`, `crate::ipc::connect_drm`,
 // `crate::ipc::DrmDisplayInfo`) keep working, and so the `Data` variants can name the two
