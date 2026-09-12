@@ -1,3 +1,4 @@
+import 'terminal_sessions_page.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -55,6 +56,16 @@ class _TerminalTabPageState extends State<TerminalTabPage> {
   static const IconData selectedIcon = Icons.terminal;
   static const IconData unselectedIcon = Icons.terminal_outlined;
   int _nextTerminalId = 1;
+  bool _showSessions = true;
+  Timer? _sessionStatusTimer;
+  String _sessionSnapshot = '';
+
+  List<TerminalSessionEntry> _sessionEntries() => tabController.state.value.tabs.map((tab) {
+    final parsed = _parseTabKey(tab.key);
+    final ffi = parsed == null ? null : TerminalConnectionManager.getExistingConnection(parsed.$1);
+    final connected = ffi != null && !ffi.closed && ffi.terminalModels[parsed!.$2]?.terminalOpened == true;
+    return TerminalSessionEntry(key: tab.key, name: tab.label, connected: connected);
+  }).toList();
   // Lightweight idempotency guard for async close operations
   final Set<String> _closingTabs = {};
   // When true, all session cleanup should persist (window-level close in progress)
@@ -498,6 +509,11 @@ class _TerminalTabPageState extends State<TerminalTabPage> {
   void initState() {
     super.initState();
 
+    _sessionStatusTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      if (!mounted || !_showSessions) return;
+      final snapshot = _sessionEntries().map((s) => '${s.key}:${s.connected}').join('|');
+      if (snapshot != _sessionSnapshot) setState(() => _sessionSnapshot = snapshot);
+    });
     // Add keyboard shortcut handler
     HardwareKeyboard.instance.addHandler(_handleKeyEvent);
 
@@ -505,6 +521,7 @@ class _TerminalTabPageState extends State<TerminalTabPage> {
       print(
           "[Remote Terminal] call ${call.method} with args ${call.arguments} from window $fromWindowId");
       if (call.method == kWindowEventNewTerminal) {
+        setState(() => _showSessions = true);
         final args = jsonDecode(call.arguments);
         final id = args['id'];
         windowOnTop(windowId());
@@ -536,6 +553,7 @@ class _TerminalTabPageState extends State<TerminalTabPage> {
         final lastUnderscore = currentTab.key.lastIndexOf('_');
         if (lastUnderscore > 0 &&
             currentTab.key.substring(0, lastUnderscore) == call.arguments) {
+          setState(() => _showSessions = true);
           windowOnTop(windowId());
           return true;
         }
@@ -549,6 +567,7 @@ class _TerminalTabPageState extends State<TerminalTabPage> {
 
   @override
   void dispose() {
+    _sessionStatusTimer?.cancel();
     HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     _terminalClipboardNotice.clear();
     _terminalClipboardNoticeCancel?.call();
@@ -608,6 +627,7 @@ class _TerminalTabPageState extends State<TerminalTabPage> {
   }
 
   bool _handleKeyEvent(KeyEvent event) {
+    if (_showSessions) return false;
     if (event is KeyDownEvent) {
       // Use Cmd+T on macOS, Ctrl+Shift+T on other platforms
       if (event.logicalKey == LogicalKeyboardKey.keyT) {
@@ -730,7 +750,7 @@ class _TerminalTabPageState extends State<TerminalTabPage> {
 
   @override
   Widget build(BuildContext context) {
-    final child = Scaffold(
+    final terminal = Scaffold(
         backgroundColor: Theme.of(context).cardColor,
         body: DesktopTab(
           controller: tabController,
@@ -745,6 +765,24 @@ class _TerminalTabPageState extends State<TerminalTabPage> {
             return _tabMenuBuilder(peerId, () {});
           },
         ));
+    final entries = _sessionEntries();
+    final ready = entries.any((entry) => entry.connected);
+    // Keep terminal pages mounted; authentication and PTY lifetimes remain unchanged.
+    final child = Stack(children: [
+      ExcludeFocus(excluding: _showSessions && ready,
+        child: Offstage(offstage: _showSessions && ready, child: terminal)),
+      if (_showSessions && ready) Positioned.fill(child: TerminalSessionsPage(
+        device: bind.mainGetPeerOptionSync(id: widget.params['id'], key: 'alias').isNotEmpty
+            ? bind.mainGetPeerOptionSync(id: widget.params['id'], key: 'alias') : widget.params['id'],
+        sessions: entries,
+        onCreate: _addNewTerminalForCurrentPeer,
+        onOpen: (key) { tabController.jumpToByKey(key); setState(() => _showSessions = false); },
+        onRemove: (key) => _closeTab(key),
+        onDrag: () => WindowController.fromWindowId(windowId()).startDragging(),
+        onMinimize: () => WindowController.fromWindowId(windowId()).minimize(),
+        onClose: () async { if (await handleWindowCloseButton()) WindowController.fromWindowId(windowId()).close(); },
+      )),
+    ]);
     final tabWidget = isLinux
         ? buildVirtualWindowFrame(context, child)
         : workaroundWindowBorder(
@@ -780,14 +818,17 @@ class _TerminalTabPageState extends State<TerminalTabPage> {
   }
 
   Widget _buildAddButton() {
-    return ActionIcon(
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      ActionIcon(message: 'Terminal sessions', icon: Icons.list_alt,
+        onTap: () => setState(() => _showSessions = true), isClose: false),
+      ActionIcon(
       message: 'New tab',
       icon: IconFont.add,
       onTap: () {
         _addNewTerminalForCurrentPeer();
       },
       isClose: false,
-    );
+    )]);
   }
 
   Future<bool> handleWindowCloseButton() async {
