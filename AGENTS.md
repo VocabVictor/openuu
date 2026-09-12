@@ -103,6 +103,7 @@ broken up.
 | `flutter/lib/common/my_theme.dart` | single `MyTheme` class of static members (~380 lines); a Dart class body cannot span files |
 | `flutter/lib/models/ab_model/legacy_ab.dart` | single `LegacyAb` class (~390 lines) made of `BaseAb` overrides; overrides cannot move into an extension |
 | `flutter/lib/models/ab_model/ab.dart` | single `Ab` class (~520 lines) made of `BaseAb` overrides; overrides cannot move into an extension |
+| `flutter/lib/desktop/pages/file_manager_page/view_head_tools.dart` | single `headTools` method (~460 lines) |
 | `src/flutter_ffi.rs` | flutter_rust_bridge v1 single-file codegen input (`--rust-input`); splitting needs frb v2 or changes to every build script. New exported functions added here must be one-line forwards to the owning module; no logic lives in this file. |
 
 ## Rust Rules
