@@ -3,7 +3,7 @@ use crate::keyboard::input_source::{change_input_source, get_cur_session_input_s
 #[cfg(target_os = "linux")]
 use crate::platform::linux::is_x11;
 use crate::{
-    client::file_trait::FileManager,
+    client::{file_trait::FileManager, Interface},
     common::{make_fd_to_json, make_vec_fd_to_json},
     flutter::{
         self, session_add, session_add_existed, session_start_, sessions, try_sync_peer_option,
@@ -699,6 +699,12 @@ pub fn session_close_terminal(session_id: SessionID, terminal_id: i32) {
 
 pub fn session_peer_option(session_id: SessionID, name: String, value: String) {
     if let Some(session) = sessions::get_session_by_session_id(&session_id) {
+        if name == "file-transfer-pause" {
+            if let Ok((id, paused)) = serde_json::from_str::<(i32, bool)>(&value) {
+                session.pause_job(id, paused);
+            }
+            return;
+        }
         if name == "quick-launch-request" {
             session.quick_launch_request(value);
             return;
@@ -719,6 +725,9 @@ pub fn session_peer_option(session_id: SessionID, name: String, value: String) {
 }
 
 pub fn session_get_peer_option(session_id: SessionID, name: String) -> String {
+    if name == "file-transfer-pause-supported" {
+        return "Y".to_owned();
+    }
     if let Some(session) = sessions::get_session_by_session_id(&session_id) {
         return session.get_option(name);
     }
@@ -2108,16 +2117,8 @@ pub fn session_toggle_virtual_display(session_id: SessionID, index: i32, on: boo
     }
 }
 
-pub fn session_printer_response(
-    session_id: SessionID,
-    id: i32,
-    path: String,
-    printer_name: String,
-) {
-    if let Some(session) = sessions::get_session_by_session_id(&session_id) {
-        session.printer_response(id, path, printer_name);
-    }
-}
+/// Retained for compatibility with previously generated Flutter bindings.
+pub fn session_printer_response(_session_id: SessionID, _id: i32, _path: String, _printer_name: String) {}
 
 pub fn main_set_home_dir(_home: String) {
     #[cfg(any(target_os = "android", target_os = "ios"))]
@@ -2643,33 +2644,13 @@ pub fn main_audio_support_loopback() -> SyncReturn<bool> {
     SyncReturn(is_surpport)
 }
 
+/// Retained for compatibility with previously generated Flutter bindings.
 pub fn main_get_printer_names() -> SyncReturn<String> {
-    #[cfg(target_os = "windows")]
-    return SyncReturn(
-        serde_json::to_string(&crate::platform::windows::get_printer_names().unwrap_or_default())
-            .unwrap_or_default(),
-    );
-    #[cfg(not(target_os = "windows"))]
-    return SyncReturn("".to_owned());
+    SyncReturn("[]".to_owned())
 }
 
 pub fn main_get_common(key: String) -> String {
-    if key == "is-printer-installed" {
-        #[cfg(target_os = "windows")]
-        {
-            return match remote_printer::is_rd_printer_installed(&get_app_name()) {
-                Ok(r) => r.to_string(),
-                Err(e) => e.to_string(),
-            };
-        }
-        #[cfg(not(target_os = "windows"))]
-        return false.to_string();
-    } else if key == "is-support-printer-driver" {
-        #[cfg(target_os = "windows")]
-        return crate::platform::is_win_10_or_greater().to_string();
-        #[cfg(not(target_os = "windows"))]
-        return false.to_string();
-    } else if key == "transfer-job-id" {
+    if key == "transfer-job-id" {
         return base::fs::get_next_job_id().to_string();
     } else if key == "is-remote-modify-enabled-by-control-permissions" {
         return match is_remote_modify_enabled_by_control_permissions() {
@@ -2751,38 +2732,6 @@ pub fn main_get_common_sync(key: String) -> SyncReturn<String> {
 }
 
 pub fn main_set_common(_key: String, _value: String) {
-    #[cfg(target_os = "windows")]
-    if _key == "install-printer" && crate::platform::is_win_10_or_greater() {
-        std::thread::spawn(move || {
-            let (success, msg) = match remote_printer::install_update_printer(&get_app_name()) {
-                Ok(_) => (true, "".to_owned()),
-                Err(e) => {
-                    let err = e.to_string();
-                    log::error!("Failed to install/update rd printer: {}", &err);
-                    (false, err)
-                }
-            };
-            if success {
-                // Use `ipc` to notify the server process to update the install option in the registry.
-                // Because `install_update_printer()` may prompt for permissions, there is no need to prompt again here.
-                if let Err(e) = crate::ipc::set_install_option(
-                    crate::platform::REG_NAME_INSTALL_PRINTER.to_string(),
-                    "1".to_string(),
-                ) {
-                    log::error!("Failed to set install printer option: {}", e);
-                }
-            }
-            let data = HashMap::from([
-                ("name", serde_json::json!("install-printer-res")),
-                ("success", serde_json::json!(success)),
-                ("msg", serde_json::json!(msg)),
-            ]);
-            let _res = flutter::push_global_event(
-                flutter::APP_TYPE_MAIN,
-                serde_json::ser::to_string(&data).unwrap_or("".to_owned()),
-            );
-        });
-    }
     #[cfg(any(target_os = "windows", target_os = "macos"))]
     {
         use crate::updater::get_download_file_from_url;
