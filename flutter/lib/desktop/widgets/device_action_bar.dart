@@ -1,3 +1,4 @@
+import '../../models/wol_model.dart';
 import 'package:flutter/material.dart';
 
 class DeviceActionBar extends StatefulWidget {
@@ -27,6 +28,16 @@ class _DeviceActionBarState extends State<DeviceActionBar> {
   Future<void> _showTools(bool zh) async {
     final labels = _labels(zh);
     var editing = false;
+    var wakeState = 'unavailable';
+    try { wakeState = (await WolModel.request('status', {'id': widget.id}))['state'] as String; }
+    catch (_) { /* Older servers do not expose wake support. */ }
+    if (!mounted) return;
+    final canWake = wakeState == 'available';
+    final wakeReason = wakeState == 'unregistered'
+      ? (zh ? '请先在目标电脑登录一次' : 'Sign in on the target device first')
+      : wakeState == 'no_helper'
+        ? (zh ? '需要已发现目标的同账号在线局域网节点' : 'No online LAN helper has discovered this device')
+        : (zh ? '唤醒服务暂不可用' : 'Wake service unavailable');
     final selected = await showDialog<int>(context: context, builder: (dialogContext) =>
       StatefulBuilder(builder: (context, updateDialog) => Dialog(
         backgroundColor: Colors.white,
@@ -45,18 +56,18 @@ class _DeviceActionBarState extends State<DeviceActionBar> {
             const Divider(height: 1, color: Color(0xffd9dfe5)),
             Flexible(child: SingleChildScrollView(padding: const EdgeInsets.all(24),
               child: Column(children: [
-                for (final tool in [..._order, 4, 5, 6])
+                for (final tool in [..._order, if (wakeState != 'online') 4, 5, 6])
                   Padding(padding: const EdgeInsets.only(bottom: 5), child: Material(
                     color: tool < 4 ? const Color(0xffeff4f7) : const Color(0xfffafafa),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4),
                       side: BorderSide(color: tool < 4 ? const Color(0xffd3dbe1) : const Color(0xffeceeef))),
                     child: ListTile(
                       key: ValueKey('tool-$tool'),
-                      enabled: tool < 4,
+                      enabled: tool < 4 || (tool == 4 && canWake),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       leading: Icon(_icons[tool], size: 26),
                       title: Text(labels[tool], style: const TextStyle(fontSize: 16)),
-                      subtitle: tool >= 4 ? Text(zh ? '当前设备暂不支持' : 'Not available for this device',
+                      subtitle: tool >= 4 ? Text(tool == 4 ? (canWake ? (zh ? '由在线局域网设备代发唤醒包' : 'Wake through an online LAN device') : wakeReason) : (zh ? '当前设备暂不支持' : 'Not available for this device'),
                         style: const TextStyle(fontSize: 12)) : null,
                       trailing: editing && tool < 4 ? Row(mainAxisSize: MainAxisSize.min, children: [
                         IconButton(tooltip: zh ? '上移' : 'Move up', icon: const Icon(Icons.arrow_upward, size: 18),
@@ -70,7 +81,7 @@ class _DeviceActionBarState extends State<DeviceActionBar> {
                             setState(() {});
                           }),
                       ]) : const Icon(Icons.chevron_right, size: 20),
-                      onTap: tool < 4 && !editing ? () => Navigator.pop(dialogContext, tool) : null,
+                      onTap: (tool < 4 || (tool == 4 && canWake)) && !editing ? () => Navigator.pop(dialogContext, tool) : null,
                     ),
                   )),
               ]))),
@@ -83,7 +94,15 @@ class _DeviceActionBarState extends State<DeviceActionBar> {
           ]),
         )),
       )));
-    if (mounted && selected != null) _actions[selected]();
+    if (!mounted || selected == null) return;
+    if (selected < 4) { _actions[selected](); return; }
+    var message = zh ? '已请求发送唤醒包，请等待设备上线。目标需启用 WOL 并保持供电。' : 'Wake requested. Wait for the device to come online; WOL and standby power are required.';
+    try { await WolModel.request('wake', {'id': widget.id}); }
+    catch (_) { message = zh ? '唤醒请求失败，请检查登录和在线代发节点。' : 'Wake request failed. Check your login and LAN helper.'; }
+    if (mounted) await showDialog<void>(context: context, builder: (context) => AlertDialog(
+      title: Text(zh ? '远程开机' : 'Wake up'), content: Text(message),
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(zh ? '关闭' : 'Close'))],
+    ));
   }
 
   @override

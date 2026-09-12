@@ -1,3 +1,4 @@
+import '../../models/wol_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/consts.dart';
@@ -49,6 +50,7 @@ class DesktopTabPage extends StatefulWidget {
 class _DesktopTabPageState extends State<DesktopTabPage> {
   final tabController = DesktopTabController(tabType: DesktopTabType.main);
   bool _showAssistance = false;
+  final _wol = WolModel();
 
   void showHome(bool assistance) {
     setState(() => _showAssistance = assistance);
@@ -84,6 +86,7 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
   @override
   void initState() {
     super.initState();
+    if (isWindows) _wol.start();
     // HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 
@@ -99,6 +102,7 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
 
   @override
   void dispose() {
+    _wol.dispose();
     // HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     Get.delete<DesktopTabController>();
     Get.delete<_DesktopTabPageState>();
