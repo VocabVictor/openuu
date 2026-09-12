@@ -104,9 +104,13 @@ a84c5c4d1 (bundle EC16A4976D69) is installed on the three test machines.
 * CVM smoke tests (openuu-52, docs/smoke-2026-09-13.md): round 3 on
   a84c5c4d1 with both controlled peers signed out — connection through the
   relay, 30 fps video, keyboard/mouse, RDP pinned session; no
-  "Sign in to OpenUU" in the peer logs. Peer-initiated relay (symmetric
-  NAT / forced relay) and the audit endpoint are verified after the third
-  server deployment.
+  "Sign in to OpenUU" in the peer logs. After the third server deployment
+  the audit endpoint stores records for both peers and the 404s are gone.
+  The peer-initiated relay path (hbbs answering a RelayResponse with a
+  ticket) could not be exercised: with both ends behind the same public IP
+  hbbs classifies even a forced relay as local_addr and the controller
+  requests the relay through hbbs. It is covered by unit tests on both
+  sides and remains to be verified on a symmetric-NAT or proxied peer.
 
 ## Known follow-ups
 
