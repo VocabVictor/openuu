@@ -10,6 +10,7 @@ import '../models/model.dart';
 import 'ffi_options.dart';
 import 'globals.dart';
 import 'my_theme.dart';
+import 'package:flutter_hbb/models/input_model.dart';
 
 final ButtonStyle flatButtonStyle = TextButton.styleFrom(
   minimumSize: Size(0, 36),
