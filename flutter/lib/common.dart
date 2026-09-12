@@ -1063,6 +1063,7 @@ class CustomAlertDialog extends StatelessWidget {
       {Key? key,
       this.title,
       this.titlePadding,
+      this.theme,
       required this.content,
       this.actions,
       this.contentPadding,
@@ -1071,6 +1072,7 @@ class CustomAlertDialog extends StatelessWidget {
       this.onCancel})
       : super(key: key);
 
+  final ThemeData? theme;
   final Widget? title;
   final EdgeInsetsGeometry? titlePadding;
   final Widget content;
@@ -1082,6 +1084,11 @@ class CustomAlertDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (theme != null) return Theme(data: theme!, child: Builder(builder: _buildDialog));
+    return _buildDialog(context);
+  }
+
+  Widget _buildDialog(BuildContext context) {
     // request focus
     FocusScopeNode scopeNode = FocusScopeNode();
     Future.delayed(Duration.zero, () {

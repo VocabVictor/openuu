@@ -11,12 +11,19 @@ import 'package:window_manager/window_manager.dart';
 // import 'package:flutter/services.dart';
 
 import '../../common/shared_state.dart';
+import '../../common/widgets/login.dart';
+import 'desktop_welcome_page.dart';
 
 class DesktopTabPage extends StatefulWidget {
   const DesktopTabPage({Key? key}) : super(key: key);
 
   @override
   State<DesktopTabPage> createState() => _DesktopTabPageState();
+
+  static void showHome({bool assistance = false}) {
+    final page = Get.find<_DesktopTabPageState>();
+    page.showHome(assistance);
+  }
 
   static void onAddSetting(
       {SettingsTabKey initialPage = SettingsTabKey.general}) {
@@ -39,8 +46,15 @@ class DesktopTabPage extends StatefulWidget {
 
 class _DesktopTabPageState extends State<DesktopTabPage> {
   final tabController = DesktopTabController(tabType: DesktopTabType.main);
+  bool _showAssistance = false;
+
+  void showHome(bool assistance) {
+    setState(() => _showAssistance = assistance);
+    tabController.jumpTo(0);
+  }
 
   _DesktopTabPageState() {
+    Get.put<_DesktopTabPageState>(this);
     RemoteCountState.init();
     Get.put<DesktopTabController>(tabController);
     tabController.add(TabInfo(
@@ -85,6 +99,7 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
   void dispose() {
     // HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     Get.delete<DesktopTabController>();
+    Get.delete<_DesktopTabPageState>();
 
     super.dispose();
   }
@@ -106,13 +121,54 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
                 ),
               ),
             )));
+    final content = Obx(() {
+      final signedIn = gFFI.userModel.isLogin;
+      final homeSelected =
+          tabController.state.value.selectedTabInfo.key == kTabLabelHomePage;
+      final showWelcome = isWindows &&
+          !bind.isIncomingOnly() &&
+          !signedIn &&
+          homeSelected &&
+          !_showAssistance;
+      return Stack(children: [
+        // Keep the existing home mounted: it owns remote-window event handlers.
+        Offstage(
+            offstage: showWelcome,
+            child: Column(children: [
+              if (isWindows && !signedIn && _showAssistance && homeSelected)
+                Material(
+                    child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                            onPressed: () =>
+                                setState(() => _showAssistance = false),
+                            icon: const Icon(Icons.arrow_back),
+                            label: const Text('OpenUU')))),
+              Expanded(child: tabWidget),
+            ])),
+        if (showWelcome)
+          DesktopWelcomePage(
+            onLogin: () {
+              loginDialog();
+            },
+            onAssistance: () => setState(() => _showAssistance = true),
+            onFavorites: () {
+              gFFI.peerTabModel.setCurrentTab(1);
+              setState(() => _showAssistance = true);
+            },
+            onSettings: bind.isDisableSettings()
+                ? null
+                : () => DesktopTabPage.onAddSetting(),
+          ),
+      ]);
+    });
     return isMacOS || kUseCompatibleUiMode
-        ? tabWidget
+        ? content
         : Obx(
             () => DragToResizeArea(
               resizeEdgeSize: stateGlobal.resizeEdgeSize.value,
               enableResizeEdges: windowManagerEnableResizeEdges,
-              child: tabWidget,
+              child: content,
             ),
           );
   }

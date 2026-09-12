@@ -113,11 +113,18 @@ class ButtonOP extends StatelessWidget {
     final buttonLabel = translate("Continue with {${branding.label}}");
     return Row(children: [
       Container(
-        height: height,
-        width: 200,
+        height: isWindows ? 42 : height,
+        width: isWindows ? 320 : 200,
         child: Obx(() => ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
+              backgroundColor: isWindows ? Colors.white : primaryColor,
+              foregroundColor: isWindows ? const Color(0xff303743) : null,
+              side:
+                  isWindows ? const BorderSide(color: Color(0xffdce2e9)) : null,
+              shape: isWindows
+                  ? RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8))
+                  : null,
             ).copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
             onPressed:
                 curOP.value == 'rustdesk' || !canStartAuth() ? null : onTap,
@@ -607,10 +614,10 @@ class LoginWidgetOP extends StatelessWidget {
                 cancelAuth: cancelAuth,
                 canStartAuth: canStartAuth,
               ),
-              const Divider(
-                indent: 5,
-                endIndent: 5,
-              )
+              if (isWindows)
+                const SizedBox(height: 10)
+              else
+                const Divider(indent: 5, endIndent: 5)
             ])
         .expand((i) => i)
         .toList();
@@ -619,7 +626,7 @@ class LoginWidgetOP extends StatelessWidget {
     }
     return SingleChildScrollView(
         child: Container(
-            width: 200,
+            width: isWindows ? 320 : 200,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -677,7 +684,7 @@ class LoginWidgetUserPass extends StatelessWidget {
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
                 height: 38,
-                width: 200,
+                width: isWindows ? 320 : 200,
                 child: Obx(() => ElevatedButton(
                       child: Text(
                         translate('Login'),
@@ -965,13 +972,43 @@ Future<bool?> _openLoginDialog() async {
     );
     final titlePadding = EdgeInsets.fromLTRB(MyTheme.dialogPadding, 0, 0, 0);
 
-    return CustomAlertDialog(
-      title: title,
-      titlePadding: titlePadding,
-      contentBoxConstraints: BoxConstraints(minWidth: 400),
+    final dialog = CustomAlertDialog(
+      title: isWindows
+          ? Row(children: [
+              const Icon(Icons.all_inclusive,
+                  color: Color(0xff3978ff), size: 28),
+              const SizedBox(width: 12),
+              const Expanded(
+                  child: Text('OpenUU',
+                      style: TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.w600))),
+              IconButton(
+                  onPressed: onDialogCancel,
+                  tooltip: translate('Close'),
+                  icon: const Icon(Icons.close, size: 20)),
+            ])
+          : title,
+      titlePadding:
+          isWindows ? const EdgeInsets.fromLTRB(28, 20, 16, 0) : titlePadding,
+      contentBoxConstraints: BoxConstraints(
+          minWidth: isWindows ? 360 : 400,
+          maxWidth: isWindows ? 360 : double.infinity),
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          if (isWindows) ...[
+            const SizedBox(height: 4),
+            Text(translate('Login'),
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                    ? '登录账号，连接你的设备'
+                    : 'Sign in to connect to your devices',
+                style: const TextStyle(fontSize: 13, color: Color(0xff858c98))),
+            const SizedBox(height: 16),
+          ],
           const SizedBox(
             height: 8.0,
           ),
@@ -990,6 +1027,50 @@ Future<bool?> _openLoginDialog() async {
       ),
       onCancel: onDialogCancel,
       onSubmit: onLogin,
+    );
+    if (!isWindows) return dialog;
+    final base = Theme.of(context);
+    OutlineInputBorder border(Color color) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: color));
+    return CustomAlertDialog(
+      title: dialog.title,
+      titlePadding: dialog.titlePadding,
+      content: dialog.content,
+      contentBoxConstraints: dialog.contentBoxConstraints,
+      onCancel: onDialogCancel,
+      onSubmit: onLogin,
+      theme: base.copyWith(
+        textTheme: base.textTheme.apply(fontFamily: 'Microsoft YaHei'),
+        dialogTheme: const DialogTheme(
+            backgroundColor: Color(0xfff8fbff),
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(14)))),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          labelStyle: const TextStyle(fontSize: 14, color: Color(0xff8a929e)),
+          floatingLabelBehavior: FloatingLabelBehavior.never,
+          prefixIconColor: const Color(0xff8993a1),
+          suffixIconColor: const Color(0xff8993a1),
+          enabledBorder: border(const Color(0xffdce2e9)),
+          focusedBorder: border(const Color(0xff3978ff)),
+          border: border(const Color(0xffdce2e9)),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xff3978ff),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          textStyle:
+              const TextStyle(fontFamily: 'Microsoft YaHei', fontSize: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        )),
+      ),
     );
   }).whenComplete(oidcAuth.close);
 

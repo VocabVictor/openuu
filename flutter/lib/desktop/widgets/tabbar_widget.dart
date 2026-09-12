@@ -512,7 +512,10 @@ class _DesktopTabState extends State<DesktopTab>
   Widget build(BuildContext context) {
     return Column(children: [
       Obx(() {
-        if (stateGlobal.showTabBar.isTrue &&
+        final settingsShell = isWindows && !bind.isIncomingOnly() &&
+            tabType == DesktopTabType.main &&
+            state.value.selectedTabInfo.key == kTabLabelSettingPage;
+        if (!settingsShell && stateGlobal.showTabBar.isTrue &&
             !(kUseCompatibleUiMode && isHideSingleItem())) {
           final showBottomDivider = _showTabBarBottomDivider(tabType);
           return SizedBox(
