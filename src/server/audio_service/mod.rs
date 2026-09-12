@@ -24,6 +24,11 @@ pub const NAME: &'static str = "audio";
 pub const AUDIO_DATA_SIZE_U8: usize = 960 * 4; // 10ms in 48000 stereo
 static RESTARTING: AtomicBool = AtomicBool::new(false);
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
+mod pa_impl;
+mod encoder;
+use encoder::*;
+
 lazy_static::lazy_static! {
     static ref VOICE_CALL_INPUT_DEVICE: Arc::<Mutex::<Option<String>>> = Default::default();
 }
@@ -75,95 +80,6 @@ pub fn restart() {
         return;
     }
     RESTARTING.store(true, Ordering::SeqCst);
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-mod pa_impl {
-    use super::*;
-
-    /// Reading the sample bytes back as `f32` needs a 4-byte aligned pointer.
-    /// Returns an aligned copy only when `data` is not already aligned; `None`
-    /// means the caller can reinterpret `data` where it is, with no copy.
-    fn align_to_32_if_needed(data: &[u8]) -> Option<hbb_common::mem::AlignedU8Vec> {
-        if (data.as_ptr() as usize & 3) == 0 {
-            return None;
-        }
-        let mut buf = hbb_common::mem::aligned_u8_vec(data.len(), 4);
-        buf.extend_from_slice(data);
-        Some(buf)
-    }
-
-    #[tokio::main(flavor = "current_thread")]
-    pub async fn run(sp: EmptyExtraFieldService) -> ResultType<()> {
-        hbb_common::sleep(0.1).await; // one moment to wait for _pa ipc
-        RESTARTING.store(false, Ordering::SeqCst);
-        #[cfg(target_os = "linux")]
-        let mut stream = crate::ipc::connect(1000, "_pa").await?;
-        let mut encoder = AudioEncoder::new(Encoder::new(
-            crate::platform::PA_SAMPLE_RATE,
-            Stereo,
-            LowDelay,
-        )?);
-        #[cfg(target_os = "linux")]
-        allow_err!(
-            stream
-                .send(&crate::ipc::Data::Config((
-                    "audio-input".to_owned(),
-                    Some(super::get_audio_input())
-                )))
-                .await
-        );
-        #[cfg(target_os = "linux")]
-        let zero_audio_frame: Vec<f32> = vec![0.; AUDIO_DATA_SIZE_U8 / 4];
-        #[cfg(target_os = "android")]
-        let mut android_data = vec![];
-        while sp.ok() && !RESTARTING.load(Ordering::SeqCst) {
-            sp.snapshot(|sps| {
-                sps.send(create_format_msg(crate::platform::PA_SAMPLE_RATE, 2));
-                Ok(())
-            })?;
-
-            #[cfg(target_os = "linux")]
-            if let Ok(data) = stream.next_raw().await {
-                if data.len() == 0 {
-                    send_f32(&zero_audio_frame, &mut encoder, &sp);
-                    continue;
-                }
-
-                if data.len() != AUDIO_DATA_SIZE_U8 {
-                    continue;
-                }
-
-                let data: Vec<u8> = data.into();
-                let aligned = align_to_32_if_needed(&data);
-                let bytes = aligned.as_deref().unwrap_or(&data[..]);
-                // SAFETY: `bytes` is 4-byte aligned (either checked above or freshly
-                // allocated with align 4), and only whole f32s are read from it.
-                let data = unsafe {
-                    std::slice::from_raw_parts::<f32>(bytes.as_ptr() as _, bytes.len() / 4)
-                };
-                send_f32(data, &mut encoder, &sp);
-            }
-
-            #[cfg(target_os = "android")]
-            if scrap::android::ffi::get_audio_raw(&mut android_data, &mut vec![]).is_some() {
-                // Keep `android_data` as the reusable receive buffer: overwriting it with
-                // an exact-capacity aligned buffer only made the next `get_audio_raw`
-                // reallocate it, which dropped the alignment again.
-                let aligned = align_to_32_if_needed(&android_data);
-                let bytes = aligned.as_deref().unwrap_or(&android_data[..]);
-                // SAFETY: `bytes` is 4-byte aligned (either checked above or freshly
-                // allocated with align 4), and only whole f32s are read from it.
-                let data = unsafe {
-                    std::slice::from_raw_parts::<f32>(bytes.as_ptr() as _, bytes.len() / 4)
-                };
-                send_f32(data, &mut encoder, &sp);
-            } else {
-                hbb_common::sleep(0.1).await;
-            }
-        }
-        Ok(())
-    }
 }
 
 #[inline]
@@ -732,101 +648,5 @@ mod cpal_impl {
             drop(processor);
             drop(worker);
         }
-    }
-}
-
-fn create_format_msg(sample_rate: u32, channels: u16) -> Message {
-    let format = AudioFormat {
-        sample_rate,
-        channels: channels as _,
-        ..Default::default()
-    };
-    let mut misc = Misc::new();
-    misc.set_audio_format(format);
-    let mut msg = Message::new();
-    msg.set_misc(misc);
-    msg
-}
-
-// Use a per-encoder counter for the Noise(Zero) Gate Attack Time.
-// every audio data length is set to 480
-// MAX_AUDIO_ZERO_COUNT=800 is similar as Gate Attack Time 3~5s(Linux) || 6~8s(Windows)
-const MAX_AUDIO_ZERO_COUNT: u16 = 800;
-
-struct AudioEncoder {
-    encoder: Encoder,
-    zero_count: u16,
-}
-
-impl AudioEncoder {
-    fn new(encoder: Encoder) -> Self {
-        Self {
-            encoder,
-            zero_count: 0,
-        }
-    }
-
-    fn should_encode(&mut self, data: &[f32]) -> bool {
-        if data.iter().filter(|x| **x != 0.).next().is_some() {
-            self.zero_count = 0;
-        } else if self.zero_count > MAX_AUDIO_ZERO_COUNT {
-            if self.zero_count == MAX_AUDIO_ZERO_COUNT + 1 {
-                log::debug!("Audio Zero Gate Attack");
-                self.zero_count += 1;
-            }
-            return false;
-        } else {
-            self.zero_count += 1;
-        }
-        true
-    }
-}
-
-fn send_f32(data: &[f32], encoder: &mut AudioEncoder, sp: &GenericService) {
-    if !encoder.should_encode(data) {
-        return;
-    }
-    #[cfg(target_os = "android")]
-    {
-        // the permitted opus data size are 120, 240, 480, 960, 1920, and 2880
-        // if data size is bigger than BATCH_SIZE, AND is an integer multiple of BATCH_SIZE
-        // then upload in batches
-        const BATCH_SIZE: usize = 960;
-        let input_size = data.len();
-        if input_size > BATCH_SIZE && input_size % BATCH_SIZE == 0 {
-            let n = input_size / BATCH_SIZE;
-            for i in 0..n {
-                match encoder
-                    .encoder
-                    .encode_vec_float(&data[i * BATCH_SIZE..(i + 1) * BATCH_SIZE], BATCH_SIZE)
-                {
-                    Ok(data) => {
-                        let mut msg_out = Message::new();
-                        msg_out.set_audio_frame(AudioFrame {
-                            data: data.into(),
-                            ..Default::default()
-                        });
-                        sp.send(msg_out);
-                    }
-                    Err(error) => log::warn!("Failed to encode audio frame: {error:?}"),
-                }
-            }
-        } else {
-            log::debug!("invalid audio data size:{} ", input_size);
-            return;
-        }
-    }
-
-    #[cfg(not(target_os = "android"))]
-    match encoder.encoder.encode_vec_float(data, data.len() * 6) {
-        Ok(data) => {
-            let mut msg_out = Message::new();
-            msg_out.set_audio_frame(AudioFrame {
-                data: data.into(),
-                ..Default::default()
-            });
-            sp.send(msg_out);
-        }
-        Err(error) => log::warn!("Failed to encode audio frame: {error:?}"),
     }
 }
