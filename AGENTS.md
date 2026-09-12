@@ -40,9 +40,9 @@ OpenUU is an independent product; upstream RustDesk is never merged back, so
 upstream file layout carries no weight.
 
 * No source file (`.rs`, `.dart`, `.cc`, `.cpp`, `.py`) may exceed **300 lines**
-  (blank lines and comments included). `src/lang/*.rs` translation tables and
-  generated files (`bridge_generated.rs`, `generated_bridge*.dart`) are the only
-  exceptions.
+  (blank lines and comments included). `src/lang/*.rs` translation tables,
+  generated files (`bridge_generated*.rs`, `generated_bridge*.dart`) and the
+  `libs/hbb_common` submodule are the only exceptions.
 * A file that would cross 300 lines must be split into a directory module
   (`foo.rs` -> `foo/mod.rs` + `foo/<topic>.rs`; `foo.dart` -> `foo/foo.dart`
   + `foo/<topic>.dart`) grouped by responsibility, not by line count.
@@ -56,6 +56,18 @@ upstream file layout carries no weight.
 
 This rule overrides "Be minimally invasive" for the purpose of splitting
 oversized files; it does not license unrelated refactoring inside the split.
+
+### Tracked exceptions
+
+A file whose size comes from a single function longer than 300 lines may stay
+over the limit only when listed here with the reason. Reducing it is a separate
+task with tests, never a line-count-driven rewrite inside a split commit. Add a
+row when a split leaves such a file behind; remove it when the function is
+broken up.
+
+| File | Reason |
+| --- | --- |
+| `src/client/start_inner.rs` | single `_start_inner` function (~570 lines) |
 
 ## Rust Rules
 
