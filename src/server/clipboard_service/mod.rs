@@ -32,6 +32,13 @@ use tokio::runtime::Runtime;
 #[cfg(target_os = "android")]
 static CLIPBOARD_SERVICE_OK: AtomicBool = AtomicBool::new(false);
 
+mod run;
+use run::*;
+#[cfg(target_os = "linux")]
+mod wayland;
+#[cfg(target_os = "linux")]
+use wayland::*;
+
 #[cfg(not(target_os = "android"))]
 struct Handler {
     ctx: Option<ClipboardContext>,
@@ -50,121 +57,6 @@ pub fn new(name: String) -> GenericService {
     let svc = EmptyExtraFieldService::new(name, false);
     GenericService::run(&svc.clone(), run);
     svc.sp
-}
-
-#[cfg(not(target_os = "android"))]
-fn run(sp: EmptyExtraFieldService) -> ResultType<()> {
-    #[cfg(all(feature = "unix-file-copy-paste", target_os = "linux"))]
-    let _fuse_call_on_ret = {
-        if sp.name() == FILE_NAME {
-            Some(init_fuse_context(false).map(|_| crate::SimpleCallOnReturn {
-                b: true,
-                f: Box::new(|| {
-                    uninit_fuse_context(false);
-                }),
-            }))
-        } else {
-            None
-        }
-    };
-
-    let (tx_cb_result, rx_cb_result) = channel();
-    let ctx = Some(ClipboardContext::new().map_err(|e| io::Error::new(io::ErrorKind::Other, e))?);
-    clipboard_listener::subscribe(sp.name(), tx_cb_result)?;
-    let mut handler = Handler {
-        ctx,
-        #[cfg(target_os = "windows")]
-        stream: None,
-        #[cfg(target_os = "windows")]
-        rt: None,
-    };
-
-    while sp.ok() {
-        match rx_cb_result.recv_timeout(Duration::from_millis(INTERVAL)) {
-            Ok(CallbackResult::Next) => {
-                #[cfg(feature = "unix-file-copy-paste")]
-                if sp.name() == FILE_NAME {
-                    handler.check_clipboard_file();
-                    continue;
-                }
-                if let Some(msg) = handler.get_clipboard_msg() {
-                    sp.send(msg);
-                }
-            }
-            Ok(CallbackResult::Stop) => {
-                log::debug!("Clipboard listener stopped");
-                break;
-            }
-            Ok(CallbackResult::StopWithError(err)) => {
-                bail!("Clipboard listener stopped with error: {}", err);
-            }
-            Err(RecvTimeoutError::Timeout) => {}
-            Err(RecvTimeoutError::Disconnected) => {
-                log::error!("Clipboard listener disconnected");
-                break;
-            }
-        }
-    }
-
-    clipboard_listener::unsubscribe(&sp.name());
-
-    Ok(())
-}
-
-#[cfg(target_os = "linux")]
-const WAYLAND_CLIPBOARD_SKIP_CHECK_MAX_UTF8_BYTES: usize =
-    super::input_service::WAYLAND_CLIPBOARD_INPUT_MAX_TEXT_CHARS * 4;
-
-#[cfg(target_os = "linux")]
-fn decode_utf8_prefix(bytes: &[u8]) -> Option<String> {
-    let end = bytes.len().min(WAYLAND_CLIPBOARD_SKIP_CHECK_MAX_UTF8_BYTES);
-    let slice = &bytes[..end];
-    match std::str::from_utf8(slice) {
-        Ok(text) => Some(text.to_owned()),
-        Err(e) => {
-            if e.error_len().is_some() {
-                return None;
-            }
-            let valid_up_to = e.valid_up_to();
-            std::str::from_utf8(&slice[..valid_up_to])
-                .ok()
-                .map(ToOwned::to_owned)
-        }
-    }
-}
-
-#[cfg(target_os = "linux")]
-fn decode_text_clipboard(clipboard: &Clipboard) -> Option<String> {
-    if clipboard.format.enum_value() != Ok(ClipboardFormat::Text) {
-        return None;
-    }
-    if clipboard.compress {
-        let bytes = hbb_common::compress::decompress(&clipboard.content);
-        return decode_utf8_prefix(&bytes);
-    }
-    decode_utf8_prefix(&clipboard.content)
-}
-
-#[cfg(target_os = "linux")]
-fn should_skip_wayland_clipboard_sync(msg: &Message) -> bool {
-    if crate::platform::linux::is_x11() {
-        return false;
-    }
-    let is_recent_wayland_input = |clipboard: &Clipboard| -> bool {
-        let Some(text) = decode_text_clipboard(clipboard) else {
-            return false;
-        };
-        super::input_service::is_recent_wayland_clipboard_input(&text)
-    };
-
-    match &msg.union {
-        Some(message::Union::Clipboard(clipboard)) => is_recent_wayland_input(clipboard),
-        Some(message::Union::MultiClipboards(multi_clipboards)) => multi_clipboards
-            .clipboards
-            .iter()
-            .any(is_recent_wayland_input),
-        _ => false,
-    }
 }
 
 #[cfg(not(target_os = "android"))]
@@ -328,19 +220,6 @@ impl Handler {
         // unreachable!
         bail!("failed to get clipboard data from cm");
     }
-}
-
-#[cfg(target_os = "android")]
-fn run(sp: EmptyExtraFieldService) -> ResultType<()> {
-    CLIPBOARD_SERVICE_OK.store(sp.ok(), Ordering::SeqCst);
-    while sp.ok() {
-        if let Some(msg) = crate::clipboard::get_clipboards_msg(false) {
-            sp.send(msg);
-        }
-        std::thread::sleep(Duration::from_millis(INTERVAL));
-    }
-    CLIPBOARD_SERVICE_OK.store(false, Ordering::SeqCst);
-    Ok(())
 }
 
 #[cfg(test)]
