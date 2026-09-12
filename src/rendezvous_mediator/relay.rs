@@ -68,6 +68,11 @@ impl RendezvousMediator {
         }
         msg_out.set_relay_response(rr);
         socket.send(&msg_out).await?;
+        let peer_ticket = if waits_for_peer_ticket(initiate, &peer_ticket) {
+            peer_ticket_from_hbbs(&mut socket, &uuid).await
+        } else {
+            peer_ticket
+        };
         crate::create_relay_connection(
             server,
             relay_server,
@@ -162,5 +167,80 @@ impl RendezvousMediator {
         socket.send_raw(bytes).await?;
         crate::accept_connection(server.clone(), socket, peer_addr, true, meta).await;
         Ok(())
+    }
+}
+
+const PEER_TICKET_WAIT_MS: u64 = 1_500;
+
+/// Only an unattended peer (no session of its own) that initiated the relay waits for hbbs to
+/// answer its RelayResponse with a ticket (openuu-server docs/relay-ticket-peer-initiated.md).
+/// A logged-in peer, or one that already holds a forwarded ticket, keeps its timing untouched.
+fn waits_for_peer_ticket(initiate: bool, peer_ticket: &str) -> bool {
+    initiate && peer_ticket.is_empty() && crate::account::session_token().is_empty()
+}
+
+/// The ticket a new hbbs sends back as RequestRelay{uuid, token} on the socket the
+/// RelayResponse went out on; empty when nothing matching arrives in time (old hbbs).
+async fn peer_ticket_from_hbbs(socket: &mut Stream, uuid: &str) -> String {
+    if let Some(Ok(bytes)) = socket.next_timeout(PEER_TICKET_WAIT_MS).await {
+        if let Ok(msg) = RendezvousMessage::parse_from_bytes(&bytes) {
+            if let Some(rendezvous_message::Union::RequestRelay(rf)) = msg.union {
+                if rf.uuid == uuid && !rf.token.is_empty() {
+                    log::info!("peer ticket received from hbbs for relay {}", uuid);
+                    return rf.token;
+                }
+            }
+        }
+    }
+    String::new()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hbb_common::tokio::net::{TcpListener, TcpStream};
+
+    #[test]
+    fn only_an_unattended_initiator_waits() {
+        // No account is configured in the test environment: session_token() is empty.
+        assert!(waits_for_peer_ticket(true, ""));
+        assert!(!waits_for_peer_ticket(false, ""), "answering a controller's request");
+        assert!(!waits_for_peer_ticket(true, "ticket"), "already holds a forwarded ticket");
+    }
+
+    async fn pair() -> (Stream, Stream) {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let client = TcpStream::connect(addr).await.unwrap();
+        let (server, _) = listener.accept().await.unwrap();
+        (Stream::from(client, addr), Stream::from(server, addr))
+    }
+
+    fn request_relay(uuid: &str, token: &str) -> RendezvousMessage {
+        let mut msg = RendezvousMessage::new();
+        msg.set_request_relay(RequestRelay {
+            uuid: uuid.into(),
+            token: token.into(),
+            ..Default::default()
+        });
+        msg
+    }
+
+    #[hbb_common::tokio::test]
+    async fn takes_the_ticket_for_its_own_uuid() {
+        let (mut peer, mut hbbs) = pair().await;
+        hbbs.send(&request_relay("uuid-1", "ticket-1")).await.unwrap();
+        assert_eq!(peer_ticket_from_hbbs(&mut peer, "uuid-1").await, "ticket-1");
+    }
+
+    #[hbb_common::tokio::test]
+    async fn ignores_another_uuid_and_silence() {
+        let (mut peer, mut hbbs) = pair().await;
+        hbbs.send(&request_relay("uuid-2", "ticket-2")).await.unwrap();
+        assert_eq!(peer_ticket_from_hbbs(&mut peer, "uuid-1").await, "");
+        let (mut peer, _hbbs) = pair().await;
+        let started = std::time::Instant::now();
+        assert_eq!(peer_ticket_from_hbbs(&mut peer, "uuid-1").await, "");
+        assert!(started.elapsed() < std::time::Duration::from_secs(3));
     }
 }
