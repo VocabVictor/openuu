@@ -113,6 +113,9 @@ mod elevation;
 mod rdp_window;
 mod logon_token;
 mod display;
+mod certificate;
+mod input_chars;
+mod wake_lock;
 pub use cursor::*;
 use cursor_dc::*;
 pub use service::*;
@@ -130,6 +133,9 @@ pub use elevation::*;
 pub use rdp_window::*;
 pub use logon_token::*;
 pub use display::*;
+pub use certificate::*;
+pub use input_chars::*;
+pub use wake_lock::*;
 pub(crate) use acl::current_process_user_sid_string;
 pub use acl::{
     set_path_permission, set_path_permission_for_portable_service_shmem_dir,
@@ -198,178 +204,6 @@ extern "C" {
 
 extern "system" {
     fn BlockInput(v: BOOL) -> BOOL;
-}
-
-#[inline]
-pub fn uninstall_cert() -> ResultType<()> {
-    cert::uninstall_cert()
-}
-
-mod cert {
-    use hbb_common::ResultType;
-
-    extern "C" {
-        fn DeleteRustDeskTestCertsW();
-    }
-    pub fn uninstall_cert() -> ResultType<()> {
-        unsafe {
-            DeleteRustDeskTestCertsW();
-        }
-        Ok(())
-    }
-}
-
-#[inline]
-pub fn get_char_from_vk(vk: u32) -> Option<char> {
-    get_char_from_unicode(get_unicode_from_vk(vk)?)
-}
-
-pub fn get_char_from_unicode(unicode: u16) -> Option<char> {
-    let buff = [unicode];
-    if let Some(chr) = String::from_utf16(&buff[..1]).ok()?.chars().next() {
-        if chr.is_control() {
-            return None;
-        } else {
-            Some(chr)
-        }
-    } else {
-        None
-    }
-}
-
-pub fn get_unicode_from_vk(vk: u32) -> Option<u16> {
-    const BUF_LEN: i32 = 32;
-    let mut buff = [0_u16; BUF_LEN as usize];
-    let buff_ptr = buff.as_mut_ptr();
-    let len = unsafe {
-        let current_window_thread_id = GetWindowThreadProcessId(GetForegroundWindow(), null_mut());
-        let layout = GetKeyboardLayout(current_window_thread_id);
-
-        // refs: https://github.com/rustdesk-org/rdev/blob/25a99ce71ab42843ad253dd51e6a35e83e87a8a4/src/windows/keyboard.rs#L115
-        let press_state = 129;
-        let mut state: [BYTE; 256] = [0; 256];
-        let shift_left = rdev::get_modifier(rdev::Key::ShiftLeft);
-        let shift_right = rdev::get_modifier(rdev::Key::ShiftRight);
-        if shift_left {
-            state[VK_LSHIFT as usize] = press_state;
-        }
-        if shift_right {
-            state[VK_RSHIFT as usize] = press_state;
-        }
-        if shift_left || shift_right {
-            state[VK_SHIFT as usize] = press_state;
-        }
-        ToUnicodeEx(vk, 0x00, &state as _, buff_ptr, BUF_LEN, 0, layout)
-    };
-    if len == 1 {
-        Some(buff[0])
-    } else {
-        None
-    }
-}
-
-pub fn is_process_consent_running() -> ResultType<bool> {
-    let output = std::process::Command::new("cmd")
-        .args(&["/C", "tasklist | findstr consent.exe"])
-        .creation_flags(CREATE_NO_WINDOW)
-        .output()?;
-    Ok(output.status.success() && !output.stdout.is_empty())
-}
-
-pub struct WakeLock(u32);
-// Failed to compile keepawake-rs on i686
-impl WakeLock {
-    pub fn new(display: bool, idle: bool, sleep: bool) -> Self {
-        let mut flag = ES_CONTINUOUS;
-        if display {
-            flag |= ES_DISPLAY_REQUIRED;
-        }
-        if idle {
-            flag |= ES_SYSTEM_REQUIRED;
-        }
-        if sleep {
-            flag |= ES_AWAYMODE_REQUIRED;
-        }
-        unsafe { SetThreadExecutionState(flag) };
-        WakeLock(flag)
-    }
-
-    pub fn set_display(&mut self, display: bool) -> ResultType<()> {
-        let flag = if display {
-            self.0 | ES_DISPLAY_REQUIRED
-        } else {
-            self.0 & !ES_DISPLAY_REQUIRED
-        };
-        if flag != self.0 {
-            unsafe { SetThreadExecutionState(flag) };
-            self.0 = flag;
-        }
-        Ok(())
-    }
-}
-
-impl Drop for WakeLock {
-    fn drop(&mut self) {
-        unsafe { SetThreadExecutionState(ES_CONTINUOUS) };
-    }
-}
-
-// `check_process("--tray", ..)` can miss a tray process that is already running,
-// and every miss spawns one more tray icon.
-//
-// The case confirmed in #15689: `run_after_run_cmds()` spawns the tray in the
-// caller's own context, so installing or toggling the service from a RustDesk
-// that was itself started elevated leaves a high integrity tray behind. A main
-// window started normally afterwards runs at medium integrity and cannot open
-// that process with `PROCESS_QUERY_INFORMATION | PROCESS_VM_READ`. sysinfo then
-// falls back to `PROCESS_QUERY_LIMITED_INFORMATION`, which is not enough for
-// `GetModuleFileNameExW`, so the executable path comes back empty and the tray
-// is skipped before its command line is ever looked at.
-//
-// A second blind spot: 32-bit builds read the command line through `wmic`
-// (#11638), which is no longer installed by default since Windows 11 24H2.
-//
-// Both are cases of one process failing to inspect another, and patching the
-// inspection has regressed twice already (#6692), so use a named mutex instead:
-// the kernel answers without us needing any access to the other process.
-//
-// Returns `false` if another tray process is already running in this session.
-pub fn try_lock_tray_single_instance() -> bool {
-    use winapi::um::{
-        errhandlingapi::{GetLastError, SetLastError},
-        synchapi::CreateMutexW,
-    };
-    // `Local\` is the per session namespace, so the name is scoped to this
-    // session already and cannot be squatted by another user.
-    let name = wide_string(&format!("Local\\{}_tray", crate::get_app_name()));
-    unsafe {
-        // A successful `CreateMutexW` doesn't clear the last error, clear it to
-        // reliably detect `ERROR_ALREADY_EXISTS`.
-        SetLastError(0);
-        // The handle is deliberately kept open for the lifetime of the process.
-        let handle = CreateMutexW(null_mut(), FALSE, name.as_ptr());
-        let last_error = GetLastError();
-        if !handle.is_null() {
-            if last_error == ERROR_ALREADY_EXISTS {
-                CloseHandle(handle);
-                return false;
-            }
-            return true;
-        }
-        if last_error == ERROR_ACCESS_DENIED {
-            // The mutex exists but was created by a tray running at a higher
-            // integrity level, which is exactly the elevated tray described
-            // above. Defer to it instead of adding a second icon.
-            return false;
-        }
-        // Unexpected: show the tray icon anyway, a duplicated icon is better
-        // than never showing the tray icon at all.
-        log::warn!(
-            "Failed to create the tray single instance mutex: {}",
-            io::Error::from_raw_os_error(last_error as _)
-        );
-        true
-    }
 }
 
 /// Calculate the total size of a directory in KB
