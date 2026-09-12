@@ -4,8 +4,6 @@
 #![allow(non_snake_case)]
 #![allow(deref_nullptr)]
 
-use super::*;
-
 pub type size_t = ::std::os::raw::c_ulonglong;
 pub type __vcrt_bool = bool;
 pub type wchar_t = ::std::os::raw::c_ushort;
