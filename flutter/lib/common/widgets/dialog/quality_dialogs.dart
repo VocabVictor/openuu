@@ -9,6 +9,7 @@ import 'package:flutter_hbb/consts.dart';
 import '../../../common.dart';
 import '../../../models/model.dart';
 import '../../../models/platform_model.dart';
+import 'package:flutter_hbb/models/input_model.dart';
 
 customImageQualityDialog(SessionID sessionId, String id, FFI ffi) async {
   double initQuality = kDefaultQuality;

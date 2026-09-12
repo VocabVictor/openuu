@@ -24,6 +24,7 @@ import '.././popup_menu.dart';
 import '.././kb_layout_type_chooser.dart';
 import 'package:flutter_hbb/utils/scale.dart';
 import 'package:flutter_hbb/common/widgets/custom_scale_base.dart';
+import 'package:flutter_hbb/models/input_model.dart';
 
 part 'chat_voice_menu.dart';
 part 'display_menu.dart';
