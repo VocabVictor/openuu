@@ -263,7 +263,6 @@ async fn connect_and_login(
     Ok(Some(stream))
 }
 
-
 /// A mapping's login is built from the window's shared handler:
 /// `create_login_msg` reads `port_forward` and `port_forward_multiplex`,
 /// `handle_login_from_ui` reads `hash`. Mappings log in concurrently, so each
