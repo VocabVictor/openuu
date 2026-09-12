@@ -374,10 +374,6 @@ pub fn core_main() -> Option<Vec<String>> {
             return None;
         } else if args[0] == "--server" {
             log::info!("start --server with user {}", crate::username());
-            #[cfg(windows)]
-            if let Some(path) = crate::platform::windows::config_import::user_config_for_first_run() {
-                import_config(&path);
-            }
             #[cfg(target_os = "linux")]
             {
                 hbb_common::allow_err!(crate::platform::check_autostart_config());
