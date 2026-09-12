@@ -95,6 +95,7 @@ mod acl;
 mod installer_handoff;
 mod installer_shell;
 mod msi_registry;
+pub mod sessions;
 pub(crate) use acl::current_process_user_sid_string;
 pub use acl::{
     set_path_permission, set_path_permission_for_portable_service_shmem_dir,
@@ -692,10 +693,14 @@ async fn run_service(_arguments: Vec<OsString>) -> ResultType<()> {
     status_handle.set_service_status(next_status)?;
 
     let mut session_id = unsafe { get_current_session(share_rdp()) };
+    let mut pinned_session = sessions::PinnedSession::new();
+    let mut stored_usid = pinned_session.resolve().flatten();
+    if let Some(usid) = stored_usid {
+        session_id = usid;
+    }
     log::info!("session id {}", session_id);
     let mut h_process = launch_server(session_id, true).await.unwrap_or(NULL);
     let mut incoming = ipc::new_listener(crate::POSTFIX_SERVICE).await?;
-    let mut stored_usid = None;
     loop {
         let sids: Vec<_> = get_available_sessions(false)
             .iter()
@@ -704,6 +709,13 @@ async fn run_service(_arguments: Vec<OsString>) -> ResultType<()> {
         if !sids.contains(&session_id) || !is_share_rdp() {
             let current_active_session = unsafe { get_current_session(share_rdp()) };
             if session_id != current_active_session {
+                if stored_usid.is_some() {
+                    log::warn!(
+                        "pinned session {} is gone, following the active session",
+                        session_id
+                    );
+                    stored_usid = None;
+                }
                 session_id = current_active_session;
                 // https://github.com/rustdesk/rustdesk/discussions/10039
                 let count = ipc::get_port_forward_session_count(1000).await.unwrap_or(0);
@@ -758,6 +770,18 @@ async fn run_service(_arguments: Vec<OsString>) -> ResultType<()> {
             },
             Err(_) => {
                 // timeout
+                if let Some(target) = pinned_session.resolve() {
+                    if target != stored_usid {
+                        if let Some(usid) = target {
+                            log::info!("session pinned from {} to {}", session_id, usid);
+                            session_id = usid;
+                            h_process = launch_server(session_id, true).await.unwrap_or(NULL);
+                        } else {
+                            log::info!("pinned session released");
+                        }
+                        stored_usid = target;
+                    }
+                }
                 unsafe {
                     let tmp = get_current_session(share_rdp());
                     if tmp == 0xFFFFFFFF {

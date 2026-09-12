@@ -3844,6 +3844,9 @@ impl Connection {
                             crate::platform::get_current_process_session_id()
                         {
                             let sessions = crate::platform::get_available_sessions(false);
+                            crate::platform::windows::sessions::pin_session_from_selection(
+                                sid, &sessions,
+                            );
                             if crate::platform::is_installed()
                                 && crate::platform::is_share_rdp()
                                 && raii::AuthedConnID::non_port_forward_conn_count() == 1

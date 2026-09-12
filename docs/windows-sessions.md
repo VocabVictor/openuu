@@ -139,3 +139,25 @@
 1. 立即：按方案 A 的情况一/二配置，验证痛点是否消失，同时确认目标机是 Windows Server（多交互会话）而非客户端版。
 2. 第二阶段实施方案 B：`windows.rs` 的 `run_service` 增加持久化固定会话，`connection.rs` 放宽一行条件，Flutter 设置页加一个下拉；主控端选择持久化到 `PeerConfig.options` 作为可选项。
 3. 方案 C 仅在明确需要"两个主控端同时分别控两个会话"时再评估。
+
+## 6. 实施说明（方案 B，第二阶段）
+
+### 6.1 机制
+
+- 选项 `pinned-windows-session`（`libs/base/src/config/keys.rs` 的 `OPTION_PINNED_WINDOWS_SESSION`）存被控端 Config，值是 **Windows 用户名**而不是会话号（RDP 会话号每次登录都变）。空值 = 现状（自动跟随）。
+- 逻辑集中在 `src/platform/windows/sessions.rs`：
+  - `PinnedSession::resolve()`：最多每 5 秒直接读一次 Config2 文件里的该选项（服务进程与 `--server` 各自缓存 Config，只有读文件才能看到 GUI 改的值），要求"共享 RDP"开启，再把用户名匹配到当前 Active 会话（不区分大小写；同一用户既有控制台又有 RDP 会话时取控制台）。
+  - 服务主循环（`run_service`）三处薄钩子：启动时用解析结果初始化 `stored_usid` 并直接在该会话拉起 `--server`；超时分支若解析结果与 `stored_usid` 不同则切换（或释放）；固定会话消失（用户注销）时打 warn、清 `stored_usid`，退回上游自动跟随。用户再登录后 5 秒内自动切回。
+  - `pin_session_from_selection`：主控端在"多个 Windows 会话"弹框里选定会话时，`--server` 把该会话的用户名写回选项，与设置页保持一致；选中无人登录的会话则清空固定值。
+- 主控端设置页：`flutter/lib/desktop/widgets/pinned_session_setting.dart`，挂在"安全"卡片"允许 RDP 会话共享"之下。会话列表来自 `main_get_common("windows-sessions")`（JSON：`user`、`name`），写入走已有的 `main_set_option`。便携模式显示但禁用，并提示需安装为服务。
+- 未设置该选项时，`run_service`、`connection.rs` 的既有分支行为与上游完全一致。
+
+### 6.2 使用步骤
+
+1. 被控机以 MSI/服务模式安装 OpenUU，保持"允许 RDP 会话共享"开启。
+2. 在被控机（或远程连上后）打开 设置 → 安全 → "固定被控会话到 Windows 用户"，选择 `Console: Administrator` 或 `RDP-Tcp#N: Administrator`。
+3. 之后无论谁通过 RDP 登录其他账户，主控端看到的始终是 Administrator 的会话；主控端连接时不再弹出选会话框（若弹出并选择了其他会话，固定值会随之改为该用户）。
+4. 要临时控制 alice：在下拉里选 alice，或在连接弹框中选 alice；改回 Administrator 同理。
+5. 选"跟随当前活动会话（默认）"即恢复上游行为。
+
+限制：固定的用户未登录时退回自动跟随（日志有 warn）；被固定的 RDP 会话若被断开（非注销）会黑屏，属 Windows 行为；主控端一侧不持久化选择（`PeerConfig.options` 方案本阶段未做）。

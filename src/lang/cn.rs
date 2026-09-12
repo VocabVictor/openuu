@@ -763,5 +763,10 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("The screen sharing request ended without completing on the remote device", "远程设备上的屏幕共享请求已结束，但未完成"),
         ("RustDesk could not obtain a usable screen from the XDG Desktop Portal, the PipeWire library may be too old", "RustDesk 无法从 XDG Desktop Portal 获取可用的屏幕，PipeWire 库可能过旧"),
         ("RustDesk could not load a GStreamer component needed for screen capture ({})", "RustDesk 无法加载屏幕捕获所需的 GStreamer 组件 ({})"),
+        ("Pin incoming sessions to a Windows user", "固定被控会话到 Windows 用户"),
+        ("Follow the active session", "跟随当前活动会话（默认）"),
+        ("Not logged in", "未登录"),
+        ("pinned-windows-session-tip", "即使其他用户通过 RDP 登录，被控画面也保持在该用户的会话。需要安装为服务并开启 RDP 会话共享。"),
+        ("pinned-windows-session-service-tip", "需安装为服务后才能固定会话。"),
     ].iter().cloned().collect();
 }

@@ -763,5 +763,10 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("The screen sharing request ended without completing on the remote device", "A solicitação de compartilhamento de tela no dispositivo remoto foi encerrada sem ser concluída."),
         ("RustDesk could not obtain a usable screen from the XDG Desktop Portal, the PipeWire library may be too old", "O RustDesk não conseguiu obter uma tela utilizável do XDG Desktop Portal. A biblioteca do PipeWire pode estar desatualizada."),
         ("RustDesk could not load a GStreamer component needed for screen capture ({})", "O RustDesk não conseguiu carregar um componente do GStreamer necessário para a captura de tela ({})."),
+        ("Pin incoming sessions to a Windows user", ""),
+        ("Follow the active session", ""),
+        ("Not logged in", ""),
+        ("pinned-windows-session-tip", ""),
+        ("pinned-windows-session-service-tip", ""),
     ].iter().cloned().collect();
 }

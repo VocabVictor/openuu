@@ -2673,6 +2673,11 @@ pub fn main_get_common(key: String) -> String {
         };
         #[cfg(not(target_os = "linux"))]
         return String::new();
+    } else if key == "windows-sessions" {
+        #[cfg(windows)]
+        return crate::platform::windows::sessions::get_pinnable_sessions_json();
+        #[cfg(not(windows))]
+        return String::new();
     } else if key == "permanent-password-set" {
         return ui_interface::is_permanent_password_set().to_string();
     } else if key == "local-permanent-password-set" {

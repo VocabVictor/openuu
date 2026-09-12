@@ -755,5 +755,10 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("port-forward-mux-tip", "Port yönləndirmə xəritələnməsinin hər əlaqəsini qarşı tərəfə açılan tək əlaqə üzərindən daşıyır, hər biri üçün yenidən qoşulub giriş etmək əvəzinə."),
         ("Enable WebRTC P2P connection", "WebRTC P2P əlaqəsini aktivləşdir"),
         ("Enable TCP hole punching", "TCP deşik açmanı aktivləşdir"),
+        ("Pin incoming sessions to a Windows user", ""),
+        ("Follow the active session", ""),
+        ("Not logged in", ""),
+        ("pinned-windows-session-tip", ""),
+        ("pinned-windows-session-service-tip", ""),
     ].iter().cloned().collect();
 }
