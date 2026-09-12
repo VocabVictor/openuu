@@ -24,6 +24,8 @@ import '../../widgets/tabbar_widget.dart';
 import 'package:flutter_hbb/native/custom_cursor.dart'
     if (dart.library.html) 'package:flutter_hbb/web/custom_cursor.dart';
 import 'package:flutter_hbb/models/input_model.dart';
+part 'view.dart';
+part 'body.dart';
 
 final SimpleWrapper<bool> _firstEnterImage = SimpleWrapper(false);
 
@@ -73,6 +75,7 @@ class ViewCameraPage extends StatefulWidget {
 
 class _ViewCameraPageState extends State<ViewCameraPage>
     with AutomaticKeepAliveClientMixin, MultiWindowListener {
+  void _setState(VoidCallback fn) => setState(fn);
   Timer? _timer;
   String keyboardMode = "legacy";
   bool _isWindowBlur = false;
@@ -244,107 +247,6 @@ class _ViewCameraPageState extends State<ViewCameraPage>
     removeSharedStates(widget.id);
   }
 
-  Widget emptyOverlay() => BlockableOverlay(
-        /// the Overlay key will be set with _blockableOverlayState in BlockableOverlay
-        /// see override build() in [BlockableOverlay]
-        state: _blockableOverlayState,
-        underlying: Container(
-          color: Colors.transparent,
-        ),
-      );
-
-  Widget buildBody(BuildContext context) {
-    remoteToolbar(BuildContext context) => RemoteToolbar(
-          id: widget.id,
-          ffi: _ffi,
-          state: widget.toolbarState,
-          onEnterOrLeaveImageSetter: (id, func) {
-            _instanceIdOnEnterOrLeaveImage4Toolbar = id;
-            _onEnterOrLeaveImage4Toolbar = func;
-          },
-          onEnterOrLeaveImageCleaner: (id) {
-            // If _instanceIdOnEnterOrLeaveImage4Toolbar != id
-            // it means `_onEnterOrLeaveImage4Toolbar` is not set or it has been changed to another toolbar.
-            if (_instanceIdOnEnterOrLeaveImage4Toolbar == id) {
-              _instanceIdOnEnterOrLeaveImage4Toolbar = null;
-              _onEnterOrLeaveImage4Toolbar = null;
-            }
-          },
-          setRemoteState: setState,
-        );
-
-    bodyWidget() {
-      return Stack(
-        children: [
-          Container(
-            color: kColorCanvas,
-            child: getBodyForDesktop(context),
-          ),
-          Stack(
-            children: [
-              _ffi.ffiModel.pi.isSet.isTrue &&
-                      _ffi.ffiModel.waitForFirstImage.isTrue
-                  ? emptyOverlay()
-                  : () {
-                      if (!_ffi.ffiModel.isPeerAndroid) {
-                        return Offstage();
-                      } else {
-                        return Obx(() => Offstage(
-                              offstage: _ffi.dialogManager
-                                  .mobileActionsOverlayVisible.isFalse,
-                              child: Overlay(initialEntries: [
-                                makeMobileActionsOverlayEntry(
-                                  () => _ffi.dialogManager
-                                      .setMobileActionsOverlayVisible(false),
-                                  ffi: _ffi,
-                                )
-                              ]),
-                            ));
-                      }
-                    }(),
-              // Use Overlay to enable rebuild every time on menu button click.
-              _ffi.ffiModel.pi.isSet.isTrue
-                  ? Overlay(
-                      initialEntries: [OverlayEntry(builder: remoteToolbar)])
-                  : remoteToolbar(context),
-              _ffi.ffiModel.pi.isSet.isFalse ? emptyOverlay() : Offstage(),
-            ],
-          ),
-        ],
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      body: Obx(() {
-        final imageReady = _ffi.ffiModel.pi.isSet.isTrue &&
-            _ffi.ffiModel.waitForFirstImage.isFalse;
-        if (imageReady) {
-          // If the privacy mode(disable physical displays) is switched,
-          // we should not dismiss the dialog immediately.
-          if (DateTime.now().difference(togglePrivacyModeTime) >
-              const Duration(milliseconds: 3000)) {
-            // `dismissAll()` is to ensure that the state is clean.
-            // It's ok to call dismissAll() here.
-            _ffi.dialogManager.dismissAll();
-            // Recreate the block state to refresh the state.
-            _blockableOverlayState = BlockableOverlayState();
-            _blockableOverlayState.applyFfi(_ffi);
-          }
-          // Block the whole `bodyWidget()` when dialog shows.
-          return BlockableOverlay(
-            underlying: bodyWidget(),
-            state: _blockableOverlayState,
-          );
-        } else {
-          // `_blockableOverlayState` is not recreated here.
-          // The toolbar's block state won't work properly when reconnecting, but that's okay.
-          return bodyWidget();
-        }
-      }),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -360,125 +262,6 @@ class _ViewCameraPageState extends State<ViewCameraPage>
           ChangeNotifierProvider.value(value: _ffi.canvasModel),
           ChangeNotifierProvider.value(value: _ffi.recordingModel),
         ], child: buildBody(context)));
-  }
-
-  void enterView(PointerEnterEvent evt) {
-    _cursorOverImage.value = true;
-    _firstEnterImage.value = true;
-    if (_onEnterOrLeaveImage4Toolbar != null) {
-      try {
-        _onEnterOrLeaveImage4Toolbar!(true);
-      } catch (e) {
-        //
-      }
-    }
-    // See [onWindowBlur].
-    if (!isWindows) {
-      if (!_rawKeyFocusNode.hasFocus) {
-        _rawKeyFocusNode.requestFocus();
-      }
-      _ffi.inputModel.enterOrLeave(true);
-    }
-  }
-
-  void leaveView(PointerExitEvent evt) {
-    if (_ffi.ffiModel.keyboard) {
-      _ffi.inputModel.tryMoveEdgeOnExit(evt.position);
-    }
-
-    _cursorOverImage.value = false;
-    _firstEnterImage.value = false;
-    if (_onEnterOrLeaveImage4Toolbar != null) {
-      try {
-        _onEnterOrLeaveImage4Toolbar!(false);
-      } catch (e) {
-        //
-      }
-    }
-    // See [onWindowBlur].
-    if (!isWindows) {
-      _ffi.inputModel.enterOrLeave(false);
-    }
-  }
-
-  Widget _buildRawTouchAndPointerRegion(
-    Widget child,
-    PointerEnterEventListener? onEnter,
-    PointerExitEventListener? onExit,
-  ) {
-    return RawTouchGestureDetectorRegion(
-      child: _buildRawPointerMouseRegion(child, onEnter, onExit),
-      ffi: _ffi,
-      isCamera: true,
-    );
-  }
-
-  Widget _buildRawPointerMouseRegion(
-    Widget child,
-    PointerEnterEventListener? onEnter,
-    PointerExitEventListener? onExit,
-  ) {
-    return CameraRawPointerMouseRegion(
-      onEnter: onEnter,
-      onExit: onExit,
-      onPointerDown: (event) {
-        // A double check for blur status.
-        // Note: If there's an `onPointerDown` event is triggered, `_isWindowBlur` is expected being false.
-        // Sometimes the system does not send the necessary focus event to flutter. We should manually
-        // handle this inconsistent status by setting `_isWindowBlur` to false. So we can
-        // ensure the grab-key thread is running when our users are clicking the remote canvas.
-        if (_isWindowBlur) {
-          debugPrint(
-              "Unexpected status: onPointerDown is triggered while the remote window is in blur status");
-          _isWindowBlur = false;
-        }
-        if (!_rawKeyFocusNode.hasFocus) {
-          _rawKeyFocusNode.requestFocus();
-        }
-      },
-      inputModel: _ffi.inputModel,
-      child: child,
-    );
-  }
-
-  Widget getBodyForDesktop(BuildContext context) {
-    var paints = <Widget>[
-      MouseRegion(onEnter: (evt) {
-        if (!isWeb) bind.hostStopSystemKeyPropagate(stopped: false);
-      }, onExit: (evt) {
-        if (!isWeb) bind.hostStopSystemKeyPropagate(stopped: true);
-      }, child: LayoutBuilder(builder: (context, constraints) {
-        final c = Provider.of<CanvasModel>(context, listen: false);
-        Future.delayed(Duration.zero, () => c.updateViewStyle());
-        final peerDisplay = CurrentDisplayState.find(widget.id);
-        return Obx(
-          () => _ffi.ffiModel.pi.isSet.isFalse
-              ? Container(color: Colors.transparent)
-              : Obx(() {
-                  _ffi.textureModel.updateCurrentDisplay(peerDisplay.value);
-                  return ImagePaint(
-                    id: widget.id,
-                    cursorOverImage: _cursorOverImage,
-                    listenerBuilder: (child) => _buildRawTouchAndPointerRegion(
-                        child, enterView, leaveView),
-                    ffi: _ffi,
-                  );
-                }),
-        );
-      }))
-    ];
-
-    paints.add(
-      Positioned(
-        top: 10,
-        right: 10,
-        child: _buildRawTouchAndPointerRegion(
-            QualityMonitor(_ffi.qualityMonitorModel), null, null),
-      ),
-    );
-    return Stack(
-      children: paints,
-    );
   }
 
   @override
