@@ -68,6 +68,8 @@ broken up.
 | File | Reason |
 | --- | --- |
 | `src/client/start_inner.rs` | single `_start_inner` function (~570 lines) |
+| `src/client/io_loop/ui_msg.rs` | single `Remote::handle_msg_from_ui` function (~470 lines) |
+| `src/client/io_loop/peer_msg.rs` | single `Remote::handle_msg_from_peer` function (~750 lines) |
 
 ## Rust Rules
 
