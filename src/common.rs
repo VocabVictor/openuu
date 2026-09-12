@@ -2222,7 +2222,15 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
     ThrottledInterval::new(i)
 }
 
+pub fn apply_openuu_app_name() {
+    // Runs before any config, IPC or registry access so OpenUU never shares
+    // %APPDATA%\RustDesk, the RustDesk named pipes or install keys with an
+    // upstream RustDesk on the same machine.
+    *config::APP_NAME.write().unwrap() = "OpenUU".to_owned();
+}
+
 pub fn load_custom_client() {
+    apply_openuu_app_name();
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
