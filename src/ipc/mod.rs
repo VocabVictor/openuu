@@ -1,4 +1,4 @@
-#[path = "auth.rs"]
+#[path = "auth/mod.rs"]
 mod ipc_auth;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 #[path = "fs.rs"]

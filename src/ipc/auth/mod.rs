@@ -27,48 +27,14 @@ use std::{
 };
 #[cfg(windows)]
 use windows::Win32::{Foundation::HANDLE, System::Pipes::GetNamedPipeClientProcessId};
-
 #[cfg(windows)]
-#[inline]
-pub(crate) fn should_allow_everyone_create_on_windows(postfix: &str) -> bool {
-    postfix.is_empty() || hbb_common::config::is_service_ipc_postfix(postfix)
-}
-
+mod windows_conn;
 #[cfg(windows)]
-#[inline]
-pub(crate) fn portable_service_listener_security_attributes() -> io::Result<SecurityAttributes> {
-    let user_sid = crate::platform::windows::current_process_user_sid_string().map_err(|err| {
-        io::Error::new(
-            io::ErrorKind::Other,
-            format!("failed to resolve current process SID: {}", err),
-        )
-    })?;
-    debug_assert!(
-        user_sid.starts_with("S-1-")
-            && user_sid
-                .bytes()
-                .all(|byte| byte.is_ascii_digit() || byte == b'-'),
-        "current_process_user_sid_string returned a non-SDDL SID: {}",
-        user_sid
-    );
-    // SDDL:
-    // - `D:P`                => protected DACL (no inherited ACEs)
-    // - `(A;;GA;;;SY)`       => allow GENERIC_ALL to LocalSystem
-    // - `(A;;GA;;;{user_sid})` => allow GENERIC_ALL to current process user SID
-    // References:
-    // - Security Descriptor String Format: https://learn.microsoft.com/en-us/windows/win32/secauthz/security-descriptor-string-format
-    // - ACE strings in SDDL: https://learn.microsoft.com/en-us/windows/win32/secauthz/ace-strings
-    let sddl = format!("D:P(A;;GA;;;SY)(A;;GA;;;{user_sid})");
-    SecurityAttributes::from_sddl(&sddl).map_err(|err| {
-        io::Error::new(
-            io::ErrorKind::Other,
-            format!(
-                "failed to build portable service listener security attributes from SDDL '{}': {}",
-                sddl, err
-            ),
-        )
-    })
-}
+mod windows_auth;
+#[cfg(windows)]
+pub(crate) use windows_auth::*;
+#[cfg(windows)]
+pub(crate) use windows_conn::*;
 
 #[cfg(target_os = "macos")]
 #[inline]
@@ -104,62 +70,6 @@ fn macos_service_ipc_allows_gui_and_service_binaries(
         && allowed_exe
             .iter()
             .any(|name| os_str_eq_ignore_ascii_case(current_name, *name))
-}
-
-#[cfg(target_os = "windows")]
-#[inline]
-fn windows_portable_service_ipc_allows_logon_helper_executable(
-    _peer_exe: &Path,
-    postfix: &str,
-) -> bool {
-    if postfix != "_portable_service" {
-        return false;
-    }
-    #[cfg(feature = "flutter")]
-    {
-        false
-    }
-    #[cfg(not(feature = "flutter"))]
-    {
-        let Some((_, expected)) = crate::platform::windows::portable_service_logon_helper_paths()
-        else {
-            return false;
-        };
-        let Ok(expected) = fs::canonicalize(expected) else {
-            return false;
-        };
-        let Ok(current_exe) = current_exe_canonical_path() else {
-            return false;
-        };
-        portable_service_helper_is_trusted(_peer_exe, &expected, &current_exe)
-    }
-}
-
-#[cfg(windows)]
-#[inline]
-pub(crate) fn is_allowed_windows_session_scoped_peer(
-    client_is_system: bool,
-    client_session_id: Option<u32>,
-    expected_session_id: Option<u32>,
-) -> bool {
-    client_is_system
-        || matches!(
-            (client_session_id, expected_session_id),
-            (Some(client), Some(expected)) if client == expected
-        )
-}
-
-#[cfg(windows)]
-#[inline]
-fn is_allowed_windows_portable_service_peer(
-    client_is_system: Option<bool>,
-    _client_session_id: Option<u32>,
-    _expected_session_id: Option<u32>,
-) -> bool {
-    // Portable-service listener DACL includes SYSTEM and current-process SID.
-    // In the portable-service path, current process is expected to run as SYSTEM,
-    // and the higher-layer peer policy stays SYSTEM-only.
-    matches!(client_is_system, Some(true))
 }
 
 #[cfg(any(target_os = "macos", target_os = "linux"))]
@@ -416,57 +326,6 @@ fn os_str_eq_ignore_ascii_case(
         .eq_ignore_ascii_case(&right.to_string_lossy())
 }
 
-#[cfg(all(windows, not(feature = "flutter")))]
-#[inline]
-fn file_sha256(path: &Path) -> ResultType<[u8; 32]> {
-    let mut file = fs::File::open(path)?;
-    let mut hasher = Sha256::new();
-    let mut buffer = [0u8; 8 * 1024];
-    loop {
-        let read_bytes = file.read(&mut buffer)?;
-        if read_bytes == 0 {
-            break;
-        }
-        hasher.update(&buffer[..read_bytes]);
-    }
-    Ok(hasher.finalize().into())
-}
-
-#[cfg(all(windows, not(feature = "flutter")))]
-#[inline]
-fn portable_service_helper_is_trusted(
-    peer_exe: &Path,
-    expected_exe: &Path,
-    current_exe: &Path,
-) -> bool {
-    if !executable_paths_match(peer_exe, expected_exe) {
-        return false;
-    }
-    let peer_hash = match file_sha256(peer_exe) {
-        Ok(hash) => hash,
-        Err(err) => {
-            log::warn!(
-                "Failed to hash peer portable helper executable '{}': {}",
-                peer_exe.display(),
-                err
-            );
-            return false;
-        }
-    };
-    let current_hash = match file_sha256(current_exe) {
-        Ok(hash) => hash,
-        Err(err) => {
-            log::warn!(
-                "Failed to hash current executable '{}' for portable helper trust check: {}",
-                current_exe.display(),
-                err
-            );
-            return false;
-        }
-    };
-    peer_hash == current_hash
-}
-
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 #[inline]
 fn ensure_peer_executable_matches_current_by_pid(peer_pid: u32, postfix: &str) -> ResultType<()> {
@@ -549,29 +408,6 @@ pub(crate) fn log_rejected_uinput_connection(
     );
 }
 
-#[cfg(windows)]
-#[inline]
-pub(crate) fn log_rejected_windows_ipc_connection(
-    postfix: &str,
-    peer_pid: Option<u32>,
-    peer_session_id: Option<u32>,
-    expected_session_id: Option<u32>,
-    peer_is_system: Option<bool>,
-    peer_is_elevated: Option<bool>,
-) {
-    hbb_common::throttled_log!(
-        UNAUTHORIZED_IPC_LOG_INTERVAL,
-        warn,
-        "Rejected unauthorized connection on ipc channel: postfix={}, peer_pid={:?}, peer_session_id={:?}, expected_session_id={:?}, peer_is_system={:?}, peer_is_elevated={:?}",
-        postfix,
-        peer_pid,
-        peer_session_id,
-        expected_session_id,
-        peer_is_system,
-        peer_is_elevated
-    );
-}
-
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 pub(crate) fn authorize_service_scoped_ipc_connection(stream: &Connection, postfix: &str) -> bool {
     let peer_pid = stream.peer_pid();
@@ -618,94 +454,6 @@ pub(crate) fn authorize_user_server_process(
     paths_refer_to_same_file(&peer_exe, &expected_path)
 }
 
-#[cfg(windows)]
-pub(crate) fn authorize_windows_main_ipc_connection(stream: &Connection, postfix: &str) -> bool {
-    let (
-        authorized,
-        peer_pid,
-        peer_session_id,
-        server_session_id,
-        peer_is_system,
-        peer_is_elevated,
-    ) = stream.server_authorization_status();
-    if !authorized {
-        log_rejected_windows_ipc_connection(
-            postfix,
-            peer_pid,
-            peer_session_id,
-            server_session_id,
-            peer_is_system,
-            peer_is_elevated,
-        );
-        return false;
-    }
-    if let Err(err) = ensure_peer_executable_matches_current_by_pid_opt(peer_pid, postfix) {
-        log::warn!(
-            "Rejected unauthorized connection on ipc channel due to executable mismatch: postfix={}, peer_pid={:?}, err={}",
-            postfix,
-            peer_pid,
-            err
-        );
-        return false;
-    }
-    true
-}
-
-#[cfg(windows)]
-pub(crate) fn authorize_windows_portable_service_ipc_connection(
-    stream: &Connection,
-    postfix: &str,
-) -> bool {
-    // Portable service IPC policy:
-    // - only SYSTEM peers are authorized by is_allowed_windows_portable_service_peer()
-    // - expected_session_id is still collected for diagnostics and identity checks
-    // - final privilege boundary is enforced by named-pipe ACL + one-time token handshake
-    // - when peer identity is unavailable on some hosts, executable verification remains
-    //   best-effort telemetry (not fail-closed) to avoid breaking valid SYSTEM bootstrap
-    //   flows that cannot be fully introspected
-    let expected_session_id = crate::platform::windows::get_current_process_session_id();
-    let (authorized, peer_pid, peer_session_id, peer_is_system) =
-        stream.portable_service_authorization_status_for_session(expected_session_id);
-    if !authorized {
-        // Session lookup may succeed while SYSTEM identity lookup fails, so only the
-        // SYSTEM identity result determines whether peer identity is unavailable here.
-        // Don't use `peer_pid.is_some() && peer_session_id.is_none() && peer_is_system.is_none();` here.
-        let identity_unavailable = peer_pid.is_some() && peer_is_system.is_none();
-        if identity_unavailable {
-            // In portable-service startup, resolving SYSTEM peer identity may fail on some hosts.
-            // `ProcessIdToSessionId` can still succeed while `OpenProcessToken(TOKEN_QUERY)` is
-            // denied by the peer token DACL or missing privileges. Treat that partial identity
-            // failure as unavailable and defer final authorization to pipe ACL + token handshake.
-            if let Err(err) = ensure_peer_executable_matches_current_by_pid_opt(peer_pid, postfix) {
-                log::warn!(
-                    "Portable service ipc peer identity unavailable and executable verification failed; continue with ACL+token-gated flow: postfix={}, peer_pid={:?}, err={}",
-                    postfix,
-                    peer_pid,
-                    err
-                );
-            } else {
-                log::warn!(
-                    "Portable service ipc peer identity unavailable; executable verification matched, continue with ACL+token-gated flow: postfix={}, peer_pid={:?}, expected_session_id={:?}",
-                    postfix,
-                    peer_pid,
-                    expected_session_id
-                );
-            }
-            return true;
-        }
-        log::warn!(
-            "Rejected unauthorized connection on portable service ipc channel: postfix={}, peer_pid={:?}, peer_session_id={:?}, expected_session_id={:?}, peer_is_system={:?}",
-            postfix,
-            peer_pid,
-            peer_session_id,
-            expected_session_id,
-            peer_is_system
-        );
-        return false;
-    }
-    true
-}
-
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 impl<T> ConnectionTmpl<T>
 where
@@ -726,146 +474,6 @@ where
 
     pub(super) fn peer_pid(&self) -> Option<u32> {
         peer_pid_from_fd(self.inner.get_ref().as_raw_fd())
-    }
-}
-
-#[cfg(windows)]
-impl ConnectionTmpl<parity_tokio_ipc::Connection> {
-    fn peer_pid(&self) -> Option<u32> {
-        let pipe_handle = self.inner.get_ref().as_raw_handle();
-        if pipe_handle.is_null() {
-            return None;
-        }
-        let mut pid = 0u32;
-        let ok = unsafe { GetNamedPipeClientProcessId(HANDLE(pipe_handle), &mut pid as *mut u32) }
-            .is_ok();
-        if ok && pid != 0 {
-            Some(pid)
-        } else {
-            None
-        }
-    }
-
-    fn server_authorization_status(
-        &self,
-    ) -> (
-        bool,
-        Option<u32>,
-        Option<u32>,
-        Option<u32>,
-        Option<bool>,
-        Option<bool>,
-    ) {
-        let peer_pid = self.peer_pid();
-        let server_session_id = crate::platform::windows::get_current_process_session_id();
-        let peer_session_id =
-            peer_pid.and_then(crate::platform::windows::get_session_id_of_process);
-        let peer_is_system_result =
-            peer_pid.map(crate::platform::windows::is_process_running_as_system);
-        let peer_is_system = peer_is_system_result
-            .as_ref()
-            .and_then(|r| r.as_ref().ok().copied());
-        let session_authorized = is_allowed_windows_session_scoped_peer(
-            peer_is_system.unwrap_or(false),
-            peer_session_id,
-            server_session_id,
-        );
-        let peer_is_elevated_result = if session_authorized {
-            None
-        } else {
-            peer_pid.map(|pid| crate::platform::windows::is_elevated(Some(pid)))
-        };
-        let peer_is_elevated = peer_is_elevated_result
-            .as_ref()
-            .and_then(|r| r.as_ref().ok().copied());
-        if server_session_id.is_none()
-            && !peer_is_system.unwrap_or(false)
-            && !peer_is_elevated.unwrap_or(false)
-        {
-            // When the server session id cannot be determined, the session-id allow-path is
-            // disabled and only privileged peers can be authorized.
-            log::debug!(
-                "IPC authorization: server session id unavailable; rejecting non-privileged peer, peer_pid={:?}, peer_session_id={:?}",
-                peer_pid,
-                peer_session_id
-            );
-        }
-        // Main IPC trusts same-session peers, LocalSystem, and elevated administrators.
-        // Service-scoped IPC channels keep their own stricter authorization paths.
-        let authorized = session_authorized || peer_is_elevated.unwrap_or(false);
-        if !authorized {
-            if let (Some(pid), Some(Err(err))) = (peer_pid, peer_is_system_result.as_ref()) {
-                log::debug!(
-                    "Failed to determine whether peer process is SYSTEM, pid={}, err={}",
-                    pid,
-                    err
-                );
-            }
-            if let (Some(pid), Some(Err(err))) = (peer_pid, peer_is_elevated_result.as_ref()) {
-                log::debug!(
-                    "Failed to determine whether peer process is elevated, pid={}, err={}",
-                    pid,
-                    err
-                );
-            }
-        }
-        (
-            authorized,
-            peer_pid,
-            peer_session_id,
-            server_session_id,
-            peer_is_system,
-            peer_is_elevated,
-        )
-    }
-
-    pub(crate) fn service_authorization_status_for_session(
-        &self,
-        expected_active_session_id: Option<u32>,
-    ) -> (bool, Option<u32>, Option<u32>, Option<bool>) {
-        let peer_pid = self.peer_pid();
-        let peer_session_id =
-            peer_pid.and_then(crate::platform::windows::get_session_id_of_process);
-        let peer_is_system_result =
-            peer_pid.map(crate::platform::windows::is_process_running_as_system);
-        let peer_is_system = peer_is_system_result
-            .as_ref()
-            .and_then(|r| r.as_ref().ok().copied());
-        let authorized = is_allowed_windows_session_scoped_peer(
-            peer_is_system.unwrap_or(false),
-            peer_session_id,
-            expected_active_session_id,
-        );
-        if !authorized {
-            if let (Some(pid), Some(Err(err))) = (peer_pid, peer_is_system_result.as_ref()) {
-                log::debug!(
-                    "Failed to determine whether peer process is SYSTEM, pid={}, err={}",
-                    pid,
-                    err
-                );
-            }
-        }
-        (authorized, peer_pid, peer_session_id, peer_is_system)
-    }
-
-    pub(crate) fn portable_service_authorization_status_for_session(
-        &self,
-        expected_active_session_id: Option<u32>,
-    ) -> (bool, Option<u32>, Option<u32>, Option<bool>) {
-        // Portable-service policy:
-        // only SYSTEM peers are allowed.
-        let (_service_authorized, peer_pid, peer_session_id, peer_is_system) =
-            self.service_authorization_status_for_session(expected_active_session_id);
-        (
-            is_allowed_windows_portable_service_peer(
-                peer_is_system,
-                peer_session_id,
-                expected_active_session_id,
-            ),
-            peer_pid,
-            peer_session_id,
-            peer_is_system,
-        )
     }
 }
 
