@@ -15,11 +15,11 @@
 * `libs/base/src/config/keys.rs` the single import path for all options
 
 ### Key Components
-- **Remote Desktop Protocol**: Custom protocol implemented in `src/rendezvous_mediator.rs` for communicating with rustdesk-server
+- **Remote Desktop Protocol**: Custom protocol implemented in `src/rendezvous_mediator/` for communicating with rustdesk-server
 - **Screen Capture**: Platform-specific screen capture in `libs/scrap/`
 - **Input Handling**: Cross-platform input simulation in `libs/enigo/`
 - **Audio/Video Services**: Real-time audio/video streaming in `src/server/`
-- **File Transfer**: Secure file transfer implementation in `libs/base/src/fs.rs`
+- **File Transfer**: Secure file transfer implementation in `libs/base/src/fs/`
 
 `hbb_common` is a git submodule shared with the server, so changing it costs a
 round-trip. Put client-only code in `libs/base` instead; it is a normal
@@ -200,7 +200,7 @@ split them before then:
 * Prefer purely additive changes: layer new (`#[cfg]`-gated) blocks or new functions around existing code instead of restructuring it. The ideal diff for a fix adds lines and modifies/deletes none.
 * Do not extract or reshape existing code just to enable your new code; look for a mechanism that leaves existing lines untouched (e.g. hide/show an existing object instead of refactoring its construction into a helper for rebuilding).
 * Accept a little duplication over a restructure. A new function that repeats a few lines of an existing one is a better diff than reshaping the original so both can share it.
-* Put new logic in self-contained functions in the module it belongs to (platform-specific logic in `src/platform/`, with `use` inside the function body to avoid churning shared import blocks). Call sites in shared files (`src/tray.rs`, `src/core_main.rs`, `src/server/connection.rs`, …) should be thin one-line hooks.
+* Put new logic in self-contained functions in the module it belongs to (platform-specific logic in `src/platform/`, with `use` inside the function body to avoid churning shared import blocks). Call sites in shared files (`src/tray.rs`, `src/core_main/`, `src/server/connection.rs`, …) should be thin one-line hooks.
 
 ### Scope check before touching shared code
 
