@@ -7,7 +7,7 @@ use std::{
 
 // The generic payload, shared by every customer and compiled in once per release.
 #[cfg(windows)]
-const BIN_DATA: &[u8] = include_bytes!("../data.bin");
+const BIN_DATA: &[u8] = include_bytes!("../../data.bin");
 
 // The per-customer payload, injected into the RCDATA resource after the template
 // has been built, so that customizing a client needs no recompilation.
