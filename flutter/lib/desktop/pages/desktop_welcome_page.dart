@@ -13,6 +13,8 @@ class DesktopWelcomePage extends StatelessWidget {
   final VoidCallback? onDevices;
   final Widget? content;
   final bool settingsSelected;
+  final Widget? header;
+  final Widget? deviceItem;
   const DesktopWelcomePage(
       {super.key,
       required this.onLogin,
@@ -21,6 +23,8 @@ class DesktopWelcomePage extends StatelessWidget {
       this.onSettings,
       this.onDevices,
       this.content,
+      this.header,
+      this.deviceItem,
       this.settingsSelected = false});
 
   static const blue = Color(0xff3979ff);
@@ -80,8 +84,9 @@ class DesktopWelcomePage extends StatelessWidget {
                 width: sidebarWidth,
                 child: Column(children: [
                   _group(t('我的设备', 'My devices'), Icons.devices_outlined),
+                  if (deviceItem != null) deviceItem!,
                   _item(t('全部设备', 'All devices'), Icons.grid_view_rounded,
-                      !settingsSelected, onDevices ?? () {}),
+                      !settingsSelected && deviceItem == null, onDevices ?? () {}),
                   _group(t('远程协助', 'Remote assistance'), Icons.crop_free),
                   _item(t('开始协助', 'Start assistance'), Icons.screen_share,
                       false, onAssistance),
@@ -110,7 +115,7 @@ class DesktopWelcomePage extends StatelessWidget {
                                   constraints.maxHeight < 600 ? 20 : 30,
                                   inset,
                                   8),
-                              child: Text(
+                              child: header ?? Text(
                                   settingsSelected
                                       ? t('设置', 'Settings')
                                       : t('全部设备', 'All devices'),

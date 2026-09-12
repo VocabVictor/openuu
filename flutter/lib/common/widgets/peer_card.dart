@@ -1,3 +1,6 @@
+import '../../desktop/pages/desktop_device_page.dart';
+import '../../desktop/pages/desktop_tab_page.dart';
+import 'login.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -71,6 +74,9 @@ class _PeerCardState extends State<_PeerCard>
           } else {
             if (isMobile) {
               widget.connect(context, peer.id);
+            } else if (isWindows && !bind.isIncomingOnly() &&
+                ['windows', 'linux', 'mac os', 'macos'].contains(peer.platform.toLowerCase())) {
+              _showDevice(peer);
             } else {
               peerTabModel.select(peer);
             }
@@ -78,6 +84,28 @@ class _PeerCardState extends State<_PeerCard>
         },
         onLongPress: () => peerTabModel.select(peer),
         child: child);
+  }
+
+  void _showDevice(Peer peer) {
+    final navigator = Navigator.of(context);
+    void leave(VoidCallback action) { navigator.pop(); action(); }
+    navigator.push(PageRouteBuilder<void>(
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+      pageBuilder: (pageContext, _, __) => DesktopDevicePage(
+        name: peer.alias.isNotEmpty ? peer.alias : (peer.hostname.isNotEmpty ? peer.hostname : peer.id),
+        id: peer.id, online: peer.online,
+        onBack: () => navigator.pop(),
+        onLogin: () => loginDialog(),
+        onSettings: () => leave(() => DesktopTabPage.onAddSetting()),
+        onAssistance: () => leave(() => DesktopTabPage.showHome(assistance: true)),
+        onFavorites: () => leave(() { gFFI.peerTabModel.setCurrentTab(1); }),
+        onConnect: () => widget.connect(context, peer.id),
+        onFiles: () => connectInPeerTab(context, peer, widget.tab, isFileTransfer: true),
+        onTerminal: () => connectInPeerTab(context, peer, widget.tab, isTerminal: true),
+        onTunnel: () => connectInPeerTab(context, peer, widget.tab, isTcpTunneling: true),
+      ),
+    ));
   }
 
   Widget _buildPortrait() {
