@@ -127,7 +127,8 @@ split them before then:
 * `src/server/uinput.rs`, `src/server/wayland.rs`, `src/server/rdp_input.rs`,
   `src/server/drm_capturer.rs`
 * `src/platform/linux.rs`, `src/platform/macos.rs`, `src/platform/gtk_sudo.rs`
-* `src/ipc/fs.rs` (Linux/macOS), `src/ipc/drm.rs` (Linux + `drm` feature)
+* `src/ipc/fs.rs` (Linux/macOS), `src/ipc/drm.rs` (Linux + `drm` feature),
+  `src/ipc/auth/mod.rs` (Unix socket credentials; ruled deferred with them)
 * `libs/scrap/src/wayland/`, `libs/scrap/src/x11/`, `libs/scrap/src/quartz/`
 * `libs/clipboard/src/platform/unix/`, `libs/enigo/src/linux/`,
   `libs/enigo/src/macos/`
