@@ -101,6 +101,7 @@ class UserModel {
 
       final user = UserPayload.fromJson(data);
       _parseAndUpdateUser(user);
+      await _syncGateToken(token);
     } catch (e) {
       debugPrint('Failed to refreshCurrentUser: $e');
       // Surface failures in the address book / group tabs, which offer a
@@ -135,6 +136,17 @@ class UserModel {
       userName.value = (userInfo['name'] ?? '').toString();
       displayName.value = (userInfo['display_name'] ?? '').toString();
       avatar.value = (userInfo['avatar'] ?? '').toString();
+    }
+  }
+
+  /// The Rust side gates outgoing connections on the `openuu-account-token`
+  /// option (src/account.rs), while older builds only stored the session in
+  /// the local `access_token`. Once the server has confirmed the session,
+  /// copy the token to the gate key so an upgraded install that still shows
+  /// the user as signed in can actually connect.
+  Future<void> _syncGateToken(String token) async {
+    if (bind.mainGetOptionSync(key: 'openuu-account-token') != token) {
+      await bind.mainSetOption(key: 'openuu-account-token', value: token);
     }
   }
 
@@ -214,6 +226,7 @@ class UserModel {
       if (bind.mainGetLocalOption(key: 'access_token') != token) { sessionVerified.value = false; return false; }
       final user = UserPayload.fromJson(jsonDecode(response.body));
       _parseAndUpdateUser(user);
+      await _syncGateToken(token);
       return isLogin;
     } catch (_) { sessionVerified.value = false; return false; }
   }
