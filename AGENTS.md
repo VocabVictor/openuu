@@ -101,6 +101,7 @@ broken up.
 | `src/flutter/invoke_ui.rs` | single `impl InvokeUiSession for FlutterHandler` block (~520 lines); a trait impl cannot span files |
 | `src/ui_cm_interface/ipc_runner.rs` | single `IpcTaskRunner::run` function (~330 lines) |
 | `src/ui_cm_interface/fs_handler.rs` | single `handle_fs` function (~320 lines) |
+| `src/core_main/mod.rs` | single `core_main` function (~680 lines) |
 | `flutter/lib/common/my_theme.dart` | single `MyTheme` class of static members (~380 lines); a Dart class body cannot span files |
 | `flutter/lib/models/ab_model/legacy_ab.dart` | single `LegacyAb` class (~390 lines) made of `BaseAb` overrides; overrides cannot move into an extension |
 | `flutter/lib/models/ab_model/ab.dart` | single `Ab` class (~520 lines) made of `BaseAb` overrides; overrides cannot move into an extension |
