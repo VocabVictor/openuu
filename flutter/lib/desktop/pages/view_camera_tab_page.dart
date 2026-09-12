@@ -22,6 +22,7 @@ import 'package:get/get.dart';
 import 'package:bot_toast/bot_toast.dart';
 
 import '../../models/platform_model.dart';
+import 'package:flutter_hbb/models/model.dart';
 
 class _MenuTheme {
   static const Color blueColor = MyTheme.button;

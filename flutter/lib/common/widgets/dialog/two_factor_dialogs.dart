@@ -6,6 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../../common.dart';
 import '../../../models/platform_model.dart';
 import 'code_fields.dart';
+import 'package:flutter_hbb/models/model.dart';
 
 void changeBot({Function()? callback}) async {
   if (bind.mainHasValidBotSync()) {

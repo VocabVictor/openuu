@@ -11,6 +11,7 @@ import '../models/platform_model.dart';
 import 'ffi_options.dart';
 import 'globals.dart';
 import 'widgets_misc.dart';
+import 'package:flutter_hbb/models/model.dart';
 
 /// Flutter can't not catch PointerMoveEvent when size is 1
 /// This will happen in Android AccessibilityService Input

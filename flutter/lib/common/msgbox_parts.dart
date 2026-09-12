@@ -11,6 +11,7 @@ import 'ffi_options.dart';
 import 'globals.dart';
 import 'my_theme.dart';
 import 'overlay.dart';
+import 'package:flutter_hbb/models/model.dart';
 
 // TODO
 // - Remove argument "contentPadding", no need for it, all should look the same.

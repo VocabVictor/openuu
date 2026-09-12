@@ -9,6 +9,7 @@ import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter_hbb/models/model.dart';
 
 class InstallPage extends StatefulWidget {
   const InstallPage({Key? key}) : super(key: key);

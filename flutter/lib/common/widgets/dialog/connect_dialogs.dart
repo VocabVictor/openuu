@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../common.dart';
 import '../../../models/platform_model.dart';
 import 'validation.dart';
+import 'package:flutter_hbb/models/model.dart';
 
 void wrongPasswordDialog(SessionID sessionId,
     OverlayDialogManager dialogManager, type, title, text) {
