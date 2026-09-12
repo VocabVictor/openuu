@@ -40,6 +40,13 @@ a `NuGet.Config` with the nuget.org source is in effect (the machine-wide one ma
 
 Run `msiexec /i package.msi /l*v install.log` to record the log.
 
+## Known not included
+
+The package (and the CI zip) carry only the Flutter bundle. Two optional upstream extras are
+not shipped and are not built by CI: the `usbmmidd_v2` virtual display driver and the
+`WindowInjection.dll` privacy-mode helper (RustDeskTempTopMostWindow). The related
+custom actions stay harmless when the files are absent.
+
 ## Usage
 
 1. Put the custom dialog bitmaps in "Resources" directory. The supported bitmaps are `['WixUIBannerBmp', 'WixUIDialogBmp', 'WixUIExclamationIco', 'WixUIInfoIco', 'WixUINewIco', 'WixUIUpIco']`.
