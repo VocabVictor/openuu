@@ -6,7 +6,6 @@
 * `src/` Rust app
 * `src/server/` audio / clipboard / input / video / network
 * `src/platform/` platform-specific code
-* `src/ui/` legacy Sciter UI (deprecated)
 * `flutter/` current UI
 * `libs/hbb_common/` shared with the server: rendezvous proto, sockets, `Config` core
 * `libs/base/` (crate `base`) client-only: option keys, message proto, file transfer, platform code
@@ -28,8 +27,7 @@ workspace member. `base::config::keys` re-exports the handful of keys
 `hbb_common` still reads, so callers get the whole set from that one path.
 
 ### UI Architecture
-- **Legacy UI**: Sciter-based (deprecated) - files in `src/ui/`
-- **Modern UI**: Flutter-based - files in `flutter/`
+- **UI**: Flutter only (the Sciter UI was removed) - files in `flutter/`
   - Desktop: `flutter/lib/desktop/`
   - Mobile: `flutter/lib/mobile/`
   - Shared: `flutter/lib/common/` and `flutter/lib/models/`
@@ -49,8 +47,9 @@ upstream file layout carries no weight.
 * Splits are mechanical: move code, keep names, re-export from the module root
   (`pub use`) so call sites do not change in the same commit. Behaviour changes
   and splits never share a commit.
-* Every split commit must pass `cargo check --lib --no-default-features
-  --features flutter` and `flutter analyze` with no new diagnostics.
+* Every split commit must pass `cargo check --lib --features flutter` (the
+  `flutter` feature is on by default) and `flutter analyze` with no new
+  diagnostics.
 * When a task touches a legacy file that is still over 300 lines, split that
   file first in its own commit, then make the change.
 
@@ -127,10 +126,6 @@ split them before then:
 * `libs/scrap/src/wayland/`, `libs/scrap/src/x11/`, `libs/scrap/src/quartz/`
 * `libs/clipboard/src/platform/unix/`, `libs/enigo/src/linux/`,
   `libs/enigo/src/macos/`
-
-The legacy Sciter UI (`src/ui.rs`, `src/ui/`) is also left alone: OpenUU ships
-the Flutter UI only, and the Sciter UI, its feature flag and the related Cargo
-defaults are scheduled for wholesale removal as a separate behaviour change.
 
 ## Rust Rules
 
