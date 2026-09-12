@@ -21,12 +21,11 @@ name = "service"
 path = "src/service.rs"
 
 [features]
-inline = []
 use_samplerate = ["samplerate", "libsamplerate-sys"]
 use_rubato = ["rubato"]
 use_dasp = ["dasp"]
 flutter = ["flutter_rust_bridge"]
-default = ["use_dasp"]
+default = ["use_dasp", "flutter"]
 hwcodec = ["scrap/hwcodec"]
 vram = ["scrap/vram"]
 mediacodec = ["scrap/mediacodec"]
