@@ -13,6 +13,7 @@ import 'package:window_manager/window_manager.dart';
 import '../../common/shared_state.dart';
 import '../../common/widgets/login.dart';
 import 'desktop_welcome_page.dart';
+import 'desktop_devices_page.dart';
 
 class DesktopTabPage extends StatefulWidget {
   const DesktopTabPage({Key? key}) : super(key: key);
@@ -130,12 +131,13 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
           !bind.isIncomingOnly() &&
           !signedIn &&
           homeSelected;
+      final showDevices = isWindows && !bind.isIncomingOnly() && signedIn && homeSelected && !_showAssistance;
       return Stack(children: [
         // Keep the existing home mounted: it owns remote-window event handlers.
         Offstage(
-            offstage: showWelcome,
+            offstage: showWelcome || showDevices,
             child: Column(children: [
-              if (isWindows && !signedIn && _showAssistance && homeSelected)
+              if (isWindows && _showAssistance && homeSelected)
                 Material(
                     child: Align(
                         alignment: Alignment.centerLeft,
@@ -146,6 +148,7 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
                             label: const Text('OpenUU')))),
               Expanded(child: tabWidget),
             ])),
+        if (showDevices) const DesktopDevicesPage(),
         if (showWelcome)
           DesktopWelcomePage(
             onLogin: () {
