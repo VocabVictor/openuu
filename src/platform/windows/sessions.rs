@@ -59,23 +59,21 @@ pub(super) fn resolve_pinned_session(pinned_user: &str, sessions: &[(u32, String
 }
 
 /// Extract the pinned user from the raw config file text without loading the
-/// whole config into the process-wide cache.
+/// whole config into the process-wide cache. The file is parsed as TOML so
+/// both the single-quoted strings `Config` writes and hand-edited
+/// double-quoted values are accepted.
 pub(super) fn parse_pinned_session_user(config_toml: &str) -> String {
-    for line in config_toml.lines() {
-        let Some((key, value)) = line.split_once('=') else {
-            continue;
-        };
-        if key.trim().trim_matches('"') != OPTION_PINNED_WINDOWS_SESSION {
-            continue;
+    match hbb_common::toml::from_str::<Config2>(config_toml) {
+        Ok(config) => config
+            .options
+            .get(OPTION_PINNED_WINDOWS_SESSION)
+            .cloned()
+            .unwrap_or_default(),
+        Err(err) => {
+            log::debug!("Failed to parse config for the pinned session: {}", err);
+            String::new()
         }
-        let value = value.trim();
-        let value = value
-            .strip_prefix('"')
-            .and_then(|v| v.strip_suffix('"'))
-            .unwrap_or(value);
-        return value.replace("\\\"", "\"").replace("\\\\", "\\");
     }
-    String::new()
 }
 
 fn pinned_session_user_from_file() -> String {
@@ -179,11 +177,14 @@ mod tests {
 
     #[test]
     fn parses_option_from_config_text() {
-        let text = "[options]\nkey = \"x\"\npinned-windows-session = \"Admin\\\\istrator\"\n";
-        assert_eq!(parse_pinned_session_user(text), "Admin\\istrator");
-        let quoted = "\"pinned-windows-session\" = \"alice\"";
-        assert_eq!(parse_pinned_session_user(quoted), "alice");
-        assert_eq!(parse_pinned_session_user("[options]\nother = \"1\"\n"), "");
+        let single = "[options]\nkey = 'x'\npinned-windows-session = 'Administrator'\n";
+        assert_eq!(parse_pinned_session_user(single), "Administrator");
+        let double = "[options]\npinned-windows-session = \"Admin\\\\istrator\"\n";
+        assert_eq!(parse_pinned_session_user(double), "Admin\\istrator");
+        let spaced = "[options]\npinned-windows-session = 'Domain User'\n";
+        assert_eq!(parse_pinned_session_user(spaced), "Domain User");
+        assert_eq!(parse_pinned_session_user("[options]\nother = '1'\n"), "");
         assert_eq!(parse_pinned_session_user(""), "");
+        assert_eq!(parse_pinned_session_user("not toml ="), "");
     }
 }
