@@ -102,12 +102,16 @@ mod service;
 mod process_launch;
 mod sas_desktop;
 mod session;
+mod install_info;
+mod install_cmds;
 pub use cursor::*;
 use cursor_dc::*;
 pub use service::*;
 pub use process_launch::*;
 pub use sas_desktop::*;
 pub use session::*;
+pub use install_info::*;
+pub use install_cmds::*;
 pub(crate) use acl::current_process_user_sid_string;
 pub use acl::{
     set_path_permission, set_path_permission_for_portable_service_shmem_dir,
@@ -133,17 +137,6 @@ const MSI_WINDOWS_INSTALLER_VALUE: u32 = 1;
 const MSI_EXIT_SUCCESS_REBOOT_INITIATED: u32 = 1641;
 const MSI_EXIT_SUCCESS_REBOOT_REQUIRED: u32 = 3010;
 const HKLM_PREFIX: &str = "HKEY_LOCAL_MACHINE\\";
-
-fn validate_install_app_name(app_name: &str) -> ResultType<()> {
-    if app_name.is_empty()
-        || !app_name
-            .chars()
-            .all(|character| character.is_ascii_alphanumeric() || character == '-')
-    {
-        bail!("Application name must match [a-zA-Z0-9-]+");
-    }
-    Ok(())
-}
 
 extern "C" {
     fn get_current_session(rdp: BOOL) -> DWORD;
@@ -187,212 +180,6 @@ extern "C" {
 
 extern "system" {
     fn BlockInput(v: BOOL) -> BOOL;
-}
-
-const IS1: &str = "{54E86BC2-6C85-41F3-A9EB-1A94AC9B1F93}_is1";
-
-fn get_subkey(name: &str, wow: bool) -> String {
-    let tmp = format!(
-        "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{}",
-        name
-    );
-    if wow {
-        tmp.replace("Microsoft", "Wow6432Node\\Microsoft")
-    } else {
-        tmp
-    }
-}
-
-fn get_valid_subkey() -> String {
-    let app_name = crate::get_app_name();
-    let subkey = format!("{HKLM_PREFIX}Software\\{app_name}\\InstallState\\{app_name}");
-    if !get_reg_of(&subkey, "InstallLocation").is_empty() {
-        return subkey;
-    }
-    let subkey = get_subkey(IS1, false);
-    if !get_reg_of(&subkey, "InstallLocation").is_empty() {
-        return subkey;
-    }
-    let subkey = get_subkey(IS1, true);
-    if !get_reg_of(&subkey, "InstallLocation").is_empty() {
-        return subkey;
-    }
-    let subkey = get_subkey(&app_name, true);
-    if !get_reg_of(&subkey, "InstallLocation").is_empty() {
-        return subkey;
-    }
-    return get_subkey(&app_name, false);
-}
-
-// Return install options other than InstallLocation.
-pub fn get_install_options() -> String {
-    let app_name = crate::get_app_name();
-    let subkey = format!(".{}", app_name.to_lowercase());
-    let mut opts = HashMap::new();
-
-    let desktop_shortcuts = get_reg_of_hkcr(&subkey, REG_NAME_INSTALL_DESKTOPSHORTCUTS);
-    if let Some(desktop_shortcuts) = desktop_shortcuts {
-        opts.insert(REG_NAME_INSTALL_DESKTOPSHORTCUTS, desktop_shortcuts);
-    }
-    let start_menu_shortcuts = get_reg_of_hkcr(&subkey, REG_NAME_INSTALL_STARTMENUSHORTCUTS);
-    if let Some(start_menu_shortcuts) = start_menu_shortcuts {
-        opts.insert(REG_NAME_INSTALL_STARTMENUSHORTCUTS, start_menu_shortcuts);
-    }
-    serde_json::to_string(&opts).unwrap_or("{}".to_owned())
-}
-
-pub fn get_silent_install_options() -> &'static str {
-    "desktopicon startmenu"
-}
-
-// This function return Option<String>, because some registry value may be empty.
-fn get_reg_of_hkcr(subkey: &str, name: &str) -> Option<String> {
-    let hkcr = RegKey::predef(HKEY_CLASSES_ROOT);
-    if let Ok(tmp) = hkcr.open_subkey(subkey.replace("HKEY_CLASSES_ROOT\\", "")) {
-        return tmp.get_value(name).ok();
-    }
-    None
-}
-
-pub fn get_install_info() -> (String, String, String, String) {
-    get_install_info_with_subkey(get_valid_subkey())
-}
-
-fn get_default_install_info() -> (String, String, String, String) {
-    get_install_info_with_subkey(get_subkey(&crate::get_app_name(), false))
-}
-
-fn get_default_install_path() -> String {
-    let mut pf = "C:\\Program Files".to_owned();
-    if let Ok(x) = std::env::var("ProgramFiles") {
-        if std::path::Path::new(&x).exists() {
-            pf = x;
-        }
-    }
-    #[cfg(target_pointer_width = "32")]
-    {
-        let tmp = pf.replace("Program Files", "Program Files (x86)");
-        if std::path::Path::new(&tmp).exists() {
-            pf = tmp;
-        }
-    }
-    format!("{}\\{}", pf, crate::get_app_name())
-}
-
-pub fn check_update_broker_process() -> ResultType<()> {
-    let process_exe = win_topmost_window::INJECTED_PROCESS_EXE;
-    let origin_process_exe = win_topmost_window::ORIGIN_PROCESS_EXE;
-
-    let exe_file = std::env::current_exe()?;
-    let Some(cur_dir) = exe_file.parent() else {
-        bail!("Cannot get parent of current exe file");
-    };
-    let cur_exe = cur_dir.join(process_exe);
-
-    // Force update broker exe if failed to check modified time.
-    let cmds = format!(
-        "
-        chcp 65001
-        taskkill /F /IM {process_exe}
-        copy /Y \"{origin_process_exe}\" \"{cur_exe}\"
-    ",
-        cur_exe = cur_exe.to_string_lossy(),
-    );
-
-    if !std::path::Path::new(&cur_exe).exists() {
-        run_cmds(cmds, false, "update_broker")?;
-        return Ok(());
-    }
-
-    let ori_modified = fs::metadata(origin_process_exe)?.modified()?;
-    if let Ok(metadata) = fs::metadata(&cur_exe) {
-        if let Ok(cur_modified) = metadata.modified() {
-            if cur_modified == ori_modified {
-                return Ok(());
-            } else {
-                log::info!(
-                    "broker process updated, modify time from {:?} to {:?}",
-                    cur_modified,
-                    ori_modified
-                );
-            }
-        }
-    }
-
-    run_cmds(cmds, false, "update_broker")?;
-
-    Ok(())
-}
-
-fn get_install_info_with_subkey(subkey: String) -> (String, String, String, String) {
-    let mut path = get_reg_of(&subkey, "InstallLocation");
-    if path.is_empty() {
-        path = get_default_install_path();
-    }
-    path = path.trim_end_matches('\\').to_owned();
-    let start_menu = format!(
-        "%ProgramData%\\Microsoft\\Windows\\Start Menu\\Programs\\{}",
-        crate::get_app_name()
-    );
-    let exe = format!("{}\\{}.exe", path, crate::get_app_name());
-    (subkey, path, start_menu, exe)
-}
-
-pub fn copy_raw_cmd(src_raw: &str, _raw: &str, _path: &str) -> ResultType<String> {
-    let main_raw = format!(
-        "XCOPY \"{}\" \"{}\" /Y /E /H /C /I /K /R /Z",
-        PathBuf::from(src_raw)
-            .parent()
-            .ok_or(anyhow!("Can't get parent directory of {src_raw}"))?
-            .to_string_lossy()
-            .to_string(),
-        _path
-    );
-    return Ok(main_raw);
-}
-
-pub fn copy_exe_cmd(src_exe: &str, exe: &str, path: &str) -> ResultType<String> {
-    let main_exe = copy_raw_cmd(src_exe, exe, path)?;
-    Ok(format!(
-        "
-        {main_exe}
-        copy /Y \"{ORIGIN_PROCESS_EXE}\" \"{path}\\{broker_exe}\"
-        ",
-        ORIGIN_PROCESS_EXE = win_topmost_window::ORIGIN_PROCESS_EXE,
-        broker_exe = win_topmost_window::INJECTED_PROCESS_EXE,
-    ))
-}
-
-#[inline]
-pub fn rename_exe_cmd(src_exe: &str, path: &str) -> ResultType<String> {
-    let src_exe_filename = PathBuf::from(src_exe)
-        .file_name()
-        .ok_or(anyhow!("Can't get file name of {src_exe}"))?
-        .to_string_lossy()
-        .to_string();
-    let app_name = crate::get_app_name();
-    if src_exe_filename == format!("{app_name}.exe") {
-        Ok("".to_owned())
-    } else {
-        Ok(format!(
-            "
-        move /Y \"{path}\\{src_exe_filename}\" \"{path}\\{app_name}.exe\"
-        ",
-        ))
-    }
-}
-
-#[inline]
-pub fn remove_meta_toml_cmd(is_msi: bool, path: &str) -> String {
-    if is_msi && crate::is_custom_client() {
-        format!(
-            "
-        del /F /Q \"{path}\\meta.toml\"
-        ",
-        )
-    } else {
-        "".to_owned()
-    }
 }
 
 fn get_after_install(
@@ -700,34 +487,6 @@ pub fn uninstall_me(kill_self: bool) -> ResultType<()> {
     run_cmds(get_uninstall(kill_self)?, true, "uninstall")
 }
 
-fn write_vbs(cmds: String, tip: &str) -> ResultType<PathBuf> {
-    const UTF16LE_BOM: &[u8] = &[0xFF, 0xFE];
-    let mut tmp = std::env::temp_dir();
-    if vec!["&", "@", "^"]
-        .drain(..)
-        .any(|s| tmp.to_string_lossy().to_string().contains(s))
-    {
-        if let Ok(dir) = user_accessible_folder() {
-            tmp = dir;
-        }
-    }
-    tmp.push(format!("{}_{}.vbs", crate::get_app_name(), tip));
-    let mut file = fs::File::create(&tmp)?;
-    let cmds = cmds.replace("\r\n", "\n").replace('\n', "\r\n");
-    let mut utf16: Vec<u16> = cmds.encode_utf16().collect();
-    file.write_all(UTF16LE_BOM)?;
-    file.write_all(to_le(&mut utf16))?;
-    file.sync_all()?;
-    Ok(tmp)
-}
-
-fn to_le(v: &mut [u16]) -> &[u8] {
-    for b in v.iter_mut() {
-        *b = b.to_le()
-    }
-    unsafe { v.align_to().1 }
-}
-
 pub fn toggle_blank_screen(v: bool) {
     let v = if v { TRUE } else { FALSE };
     unsafe {
@@ -759,46 +518,6 @@ pub fn add_recent_document(path: &str) {
     unsafe {
         AddRecentDocument(wstr);
     }
-}
-
-pub fn is_installed() -> bool {
-    let (_, _, _, exe) = get_install_info();
-    std::fs::metadata(exe).is_ok()
-}
-
-pub fn get_reg(name: &str) -> String {
-    let (subkey, _, _, _) = get_install_info();
-    get_reg_of(&subkey, name)
-}
-
-fn get_reg_of(subkey: &str, name: &str) -> String {
-    let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
-    if let Ok(tmp) = hklm.open_subkey(subkey.replace("HKEY_LOCAL_MACHINE\\", "")) {
-        if let Ok(v) = tmp.get_value(name) {
-            return v;
-        }
-    }
-    "".to_owned()
-}
-
-fn get_public_base_dir() -> PathBuf {
-    if let Ok(allusersprofile) = std::env::var("ALLUSERSPROFILE") {
-        let path = PathBuf::from(&allusersprofile);
-        if path.exists() {
-            return path;
-        }
-    }
-    if let Ok(public) = std::env::var("PUBLIC") {
-        let path = PathBuf::from(public).join("Documents");
-        if path.exists() {
-            return path;
-        }
-    }
-    let program_data_dir = PathBuf::from("C:\\ProgramData");
-    if program_data_dir.exists() {
-        return program_data_dir;
-    }
-    std::env::temp_dir()
 }
 
 #[inline]
