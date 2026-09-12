@@ -34,6 +34,29 @@ workspace member. `base::config::keys` re-exports the handful of keys
   - Mobile: `flutter/lib/mobile/`
   - Shared: `flutter/lib/common/` and `flutter/lib/models/`
 
+## File Size Rule (mandatory)
+
+OpenUU is an independent product; upstream RustDesk is never merged back, so
+upstream file layout carries no weight.
+
+* No source file (`.rs`, `.dart`, `.cc`, `.cpp`, `.py`) may exceed **300 lines**
+  (blank lines and comments included). `src/lang/*.rs` translation tables and
+  generated files (`bridge_generated.rs`, `generated_bridge*.dart`) are the only
+  exceptions.
+* A file that would cross 300 lines must be split into a directory module
+  (`foo.rs` -> `foo/mod.rs` + `foo/<topic>.rs`; `foo.dart` -> `foo/foo.dart`
+  + `foo/<topic>.dart`) grouped by responsibility, not by line count.
+* Splits are mechanical: move code, keep names, re-export from the module root
+  (`pub use`) so call sites do not change in the same commit. Behaviour changes
+  and splits never share a commit.
+* Every split commit must pass `cargo check --lib --no-default-features
+  --features flutter` and `flutter analyze` with no new diagnostics.
+* When a task touches a legacy file that is still over 300 lines, split that
+  file first in its own commit, then make the change.
+
+This rule overrides "Be minimally invasive" for the purpose of splitting
+oversized files; it does not license unrelated refactoring inside the split.
+
 ## Rust Rules
 
 * Avoid `unwrap()` / `expect()` in production code.
