@@ -1663,6 +1663,17 @@ impl<T: InvokeUiSession> Session<T> {
     }
 
     #[inline]
+    pub fn quick_launch_request(&self, request: String) {
+        if request.len() > 32768 || self.lc.read().map(|lc| lc.get_toggle_option("view-only")).unwrap_or(true) {
+            return;
+        }
+        let mut misc = Misc::new();
+        misc.set_quick_launch_request(request);
+        let mut msg = Message::new();
+        msg.set_misc(misc);
+        self.send(Data::Message(msg));
+    }
+
     pub fn request_init_msgs(&self, display: usize) {
         self.send_message_query(display);
     }
@@ -1698,6 +1709,7 @@ impl<T: InvokeUiSession> Session<T> {
 }
 
 pub trait InvokeUiSession: Send + Sync + Clone + 'static + Sized + Default {
+    fn quick_launch_response(&self, _response: String) {}
     fn set_cursor_data(&self, cd: CursorData);
     fn set_cursor_id(&self, id: String);
     fn set_cursor_position(&self, cp: CursorPosition);

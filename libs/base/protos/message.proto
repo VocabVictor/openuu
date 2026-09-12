@@ -101,6 +101,7 @@ message Features {
   bool privacy_mode = 1;
   bool terminal = 2;
   bool port_forward_mux = 3;
+  bool quick_launch = 5;
 }
 
 message CodecAbility {
@@ -856,6 +857,8 @@ message Misc {
     DisplayResolution change_display_resolution = 36;
     MessageQuery message_query = 37;
     int32 follow_current_display = 38;
+    string quick_launch_request = 39;
+    string quick_launch_response = 40;
   }
 }
 

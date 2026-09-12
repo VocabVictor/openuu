@@ -641,6 +641,9 @@ impl FlutterHandler {
 }
 
 impl InvokeUiSession for FlutterHandler {
+    fn quick_launch_response(&self, response: String) {
+        self.push_event("quick_launch_response", &[("response", response)], &[]);
+    }
     fn set_cursor_data(&self, cd: CursorData) {
         let colors = hbb_common::compress::decompress(&cd.colors);
         self.push_event(
@@ -874,6 +877,7 @@ impl InvokeUiSession for FlutterHandler {
         let mut features: HashMap<&str, bool> = Default::default();
         for ref f in pi.features.iter() {
             features.insert("privacy_mode", f.privacy_mode);
+            features.insert("quick_launch", f.quick_launch);
         }
         // compatible with 1.1.9
         if get_version_number(&pi.version) < get_version_number("1.2.0") {

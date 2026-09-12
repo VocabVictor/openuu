@@ -2072,6 +2072,11 @@ impl<T: InvokeUiSession> Remote<T> {
                         log::info!("update supported encoding:{:?}", e);
                         self.handler.lc.write().unwrap().supported_encoding = e;
                     }
+                    Some(misc::Union::QuickLaunchResponse(response)) => {
+                        if response.len() <= 2 * 1024 * 1024 {
+                            self.handler.ui_handler.quick_launch_response(response);
+                        }
+                    }
                     Some(misc::Union::FollowCurrentDisplay(d_idx)) => {
                         self.handler.set_current_display(d_idx);
                     }

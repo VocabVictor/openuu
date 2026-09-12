@@ -1975,6 +1975,7 @@ impl Connection {
         pi.username = username;
         pi.sas_enabled = sas_enabled;
         pi.features = Some(Features {
+            quick_launch: cfg!(any(target_os = "windows", target_os = "macos", target_os = "linux")),
             privacy_mode: privacy_mode::is_privacy_mode_supported(),
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             terminal,
@@ -3783,6 +3784,20 @@ impl Connection {
                             self.inner.id,
                             Some(Instant::now().into()),
                         );
+                    }
+                    Some(misc::Union::QuickLaunchRequest(request)) => {
+                        let denied = crate::quick_launch::denied(&request);
+                        let response = if self.authorized && self.is_authed_remote_conn() && self.peer_keyboard_enabled() {
+                            match hbb_common::tokio::task::spawn_blocking(move || crate::quick_launch::handle(&request)).await {
+                                Ok(response) => response,
+                                Err(error) => { log::error!("Quick launch worker failed: {error}"); denied }
+                            }
+                        } else { denied };
+                        let mut misc = Misc::new();
+                        misc.set_quick_launch_response(response);
+                        let mut msg = Message::new();
+                        msg.set_misc(misc);
+                        self.send(msg).await;
                     }
                     Some(misc::Union::RestartRemoteDevice(_)) => {
                         #[cfg(not(any(target_os = "android", target_os = "ios")))]

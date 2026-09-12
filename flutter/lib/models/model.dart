@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'quick_launch_model.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -336,7 +337,9 @@ class FfiModel with ChangeNotifier {
   StreamEventHandler startEventListener(SessionID sessionId, String peerId) {
     return (evt) async {
       var name = evt['name'];
-      if (name == 'msgbox') {
+      if (name == 'quick_launch_response') {
+        QuickLaunchRequests.receive(evt['response'] ?? '', scope: sessionId.toString());
+      } else if (name == 'msgbox') {
         handleMsgBox(evt, sessionId, peerId);
       } else if (name == 'toast') {
         handleToast(evt, sessionId, peerId);
@@ -1462,6 +1465,7 @@ class FfiModel with ChangeNotifier {
       }
       Map<String, dynamic> features = json.decode(evt['features']);
       _pi.features.privacyMode = features['privacy_mode'] == true;
+      _pi.features.quickLaunch = features['quick_launch'] == true;
       if (!isCache) {
         handleResolutions(peerId, evt["resolutions"]);
       }
@@ -3876,7 +3880,7 @@ class FFI {
         if (supported != true) {
           bind.sessionClose(sessionId: sessionId);
           msgBox(sessionId, 'error', 'View Mode',
-              'The native library must be updated to support view-only sessions.', '', dialogManager);
+              'Cannot start a locked view-only session. Update the native library or close the existing control session first.', '', dialogManager);
           return;
         }
         ffiModel.setViewOnly(id, true);
@@ -4216,6 +4220,7 @@ class Resolution {
 }
 
 class Features {
+  bool quickLaunch = false;
   bool privacyMode = false;
 }
 

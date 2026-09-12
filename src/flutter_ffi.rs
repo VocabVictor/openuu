@@ -699,8 +699,15 @@ pub fn session_close_terminal(session_id: SessionID, terminal_id: i32) {
 
 pub fn session_peer_option(session_id: SessionID, name: String, value: String) {
     if let Some(session) = sessions::get_session_by_session_id(&session_id) {
+        if name == "quick-launch-request" {
+            session.quick_launch_request(value);
+            return;
+        }
         if name == "view-only-session" {
             if value == "Y" {
+                if sessions::get_session_count(session.get_id(), ConnType::DEFAULT_CONN) != 1 {
+                    return;
+                }
                 if let Ok(mut lc) = session.lc.write() {
                     lc.view_only_session = true;
                 }

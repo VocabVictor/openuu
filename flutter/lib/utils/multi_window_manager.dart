@@ -224,6 +224,7 @@ class RustDeskMultiWindowManager {
     String methodName,
     String remoteId,
     List<int> windows, {
+    String? quickLaunch,
     bool viewOnly = false,
     String? password,
     bool? forceRelay,
@@ -235,6 +236,7 @@ class RustDeskMultiWindowManager {
     var params = {
       "type": type.index,
       "id": remoteId,
+      "quickLaunch": quickLaunch,
       "viewOnly": viewOnly,
       "password": password,
       "forceRelay": forceRelay
@@ -253,7 +255,15 @@ class RustDeskMultiWindowManager {
     }
     final msg = jsonEncode(params);
     // Never activate an existing control session for a view-only request.
-    if (viewOnly) {
+    if (quickLaunch != null) {
+      for (final windowId in List<int>.from(windows)) {
+        if (await DesktopMultiWindow.invokeMethod(windowId, 'quick_launch',
+            {'id': remoteId, 'app': quickLaunch}) == true) {
+          return MultiWindowCallResult(windowId, null);
+        }
+      }
+    }
+    if (viewOnly || quickLaunch != null) {
       final windowId = await newSessionWindow(type, remoteId, msg, windows, false);
       return MultiWindowCallResult(windowId, null);
     }
@@ -276,6 +286,7 @@ class RustDeskMultiWindowManager {
 
   Future<MultiWindowCallResult> newRemoteDesktop(
     String remoteId, {
+    String? quickLaunch,
     bool viewOnly = false,
     String? password,
     bool? isSharedPassword,
@@ -287,6 +298,7 @@ class RustDeskMultiWindowManager {
       kWindowEventNewRemoteDesktop,
       remoteId,
       _remoteDesktopWindows,
+      quickLaunch: quickLaunch,
       viewOnly: viewOnly,
       password: password,
       forceRelay: forceRelay,

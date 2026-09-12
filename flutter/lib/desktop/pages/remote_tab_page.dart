@@ -1,3 +1,4 @@
+import '../widgets/quick_launch.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'dart:ui' as ui;
@@ -100,6 +101,7 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
           toolbarState: ToolbarState(),
           tabController: tabController,
           switchUuid: params['switch_uuid'],
+          quickLaunch: params['quickLaunch'],
           viewOnly: params['viewOnly'] == true,
           forceRelay: params['forceRelay'],
           isSharedPassword: params['isSharedPassword'],
@@ -427,6 +429,23 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
 
     dynamic returnValue;
     // for simplify, just replace connectionId
+    if (call.method == 'quick_launch') {
+      final peerId = call.arguments['id'];
+      for (final tab in tabController.state.value.tabs) {
+        if (tab.key != peerId || tab.page is! RemotePage) continue;
+        final page = tab.page as RemotePage;
+        await windowOnTop(windowId());
+        tabController.jumpToByKey(peerId);
+        if (page.ffi.viewOnlySession || page.ffi.ffiModel.viewOnly || !page.ffi.ffiModel.pi.isSet.isTrue) {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('请等待控制连接就绪；观看连接需先关闭。 / Wait for a control session; close any view-only session first.')));
+        } else if (mounted) {
+          showQuickLaunch(context, page.ffi, call.arguments['app'] ?? '');
+        }
+        return true;
+      }
+      return false;
+    }
     if (call.method == kWindowEventNewRemoteDesktop) {
       final args = jsonDecode(call.arguments);
       final id = args['id'];
@@ -474,6 +493,7 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
           toolbarState: ToolbarState(),
           tabController: tabController,
           switchUuid: switchUuid,
+          quickLaunch: args['quickLaunch'],
           viewOnly: args['viewOnly'] == true,
           forceRelay: args['forceRelay'],
           isSharedPassword: args['isSharedPassword'],

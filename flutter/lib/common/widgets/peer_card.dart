@@ -101,6 +101,7 @@ class _PeerCardState extends State<_PeerCard>
         onAssistance: () => leave(() => DesktopTabPage.showHome(assistance: true)),
         onFavorites: () => leave(() { gFFI.peerTabModel.setCurrentTab(1); }),
         onConnect: () => widget.connect(context, peer.id),
+        onQuickLaunch: (app) => connectInPeerTab(context, peer, widget.tab, quickLaunch: app),
         onWatch: () => connectInPeerTab(context, peer, widget.tab, viewOnly: true),
         onFiles: () => connectInPeerTab(context, peer, widget.tab, isFileTransfer: true),
         onTerminal: () => connectInPeerTab(context, peer, widget.tab, isTerminal: true),
@@ -1568,7 +1569,8 @@ class TagPainter extends CustomPainter {
 }
 
 void connectInPeerTab(BuildContext context, Peer peer, PeerTabIndex tab,
-    {bool viewOnly = false,
+    {String? quickLaunch,
+    bool viewOnly = false,
     bool isFileTransfer = false,
     bool isViewCamera = false,
     bool isTcpTunneling = false,
@@ -1601,6 +1603,7 @@ void connectInPeerTab(BuildContext context, Peer peer, PeerTabIndex tab,
     }
   }
   connect(context, peer.id,
+      quickLaunch: quickLaunch,
       viewOnly: viewOnly,
       password: password,
       isSharedPassword: isSharedPassword,

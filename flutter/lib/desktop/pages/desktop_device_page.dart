@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'desktop_welcome_page.dart';
+import '../widgets/quick_launch.dart';
 import '../widgets/device_action_bar.dart';
 
 /// Device details use the existing peer connection actions supplied by the caller.
 class DesktopDevicePage extends StatelessWidget {
+  final void Function(String)? onQuickLaunch;
   final String name;
   final String id;
   final bool online;
   final VoidCallback onBack, onLogin, onSettings, onAssistance, onFavorites;
   final VoidCallback onConnect, onWatch, onFiles, onTerminal, onTunnel;
 
-  const DesktopDevicePage({super.key, required this.name, required this.id,
+  const DesktopDevicePage({super.key, this.onQuickLaunch, required this.name, required this.id,
     required this.online, required this.onBack, required this.onLogin,
     required this.onSettings, required this.onAssistance, required this.onFavorites,
     required this.onConnect, required this.onWatch, required this.onFiles, required this.onTerminal,
@@ -65,10 +67,7 @@ class DesktopDevicePage extends StatelessWidget {
             const SizedBox(height: 22),
             Text(t('快速启动', 'Quick launch'), style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 10),
-            Container(width: double.infinity, padding: const EdgeInsets.all(28),
-              decoration: BoxDecoration(border: Border.all(color: const Color(0xffdce2e7)), borderRadius: BorderRadius.circular(6)),
-              child: Column(children: [const Icon(Icons.add_circle_outline, size: 36, color: Colors.grey),
-                const SizedBox(height: 10), Text(t('暂不支持远程应用快捷启动', 'Remote application shortcuts are not available'), style: const TextStyle(color: Colors.grey, fontSize: 13))])),
+            if (onQuickLaunch != null) QuickLaunchPanel(peer: id, onOpen: onQuickLaunch!),
           ]));
       }),
     );

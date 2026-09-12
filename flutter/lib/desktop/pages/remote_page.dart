@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../widgets/quick_launch.dart';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,7 @@ class RemotePage extends StatefulWidget {
     this.switchUuid,
     this.forceRelay,
     this.viewOnly = false,
+    this.quickLaunch,
     this.isSharedPassword,
   }) : super(key: key) {
     initSharedStates(id);
@@ -61,6 +63,7 @@ class RemotePage extends StatefulWidget {
   final String? switchUuid;
   final bool? forceRelay;
   final bool viewOnly;
+  final String? quickLaunch;
   final bool? isSharedPassword;
   final SimpleWrapper<State<RemotePage>?> _lastState = SimpleWrapper(null);
   final DesktopTabController? tabController;
@@ -166,6 +169,18 @@ class _RemotePageState extends State<RemotePage>
           .updateStatus(bind.sessionGetIsRecording(sessionId: _ffi.sessionId));
     });
     _ffi.canvasModel.initializeEdgeScrollFallback(this);
+    if (widget.quickLaunch != null) {
+      var shown = false;
+      void openQuickLaunch() {
+        if (shown || !mounted || !_ffi.ffiModel.pi.isSet.isTrue) return;
+        shown = true;
+        _ffi.ffiModel.removeListener(openQuickLaunch);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) showQuickLaunch(context, _ffi, widget.quickLaunch!);
+        });
+      }
+      _ffi.ffiModel.addListener(openQuickLaunch);
+    }
     _ffi.start(
       widget.id,
       password: widget.password,
