@@ -103,7 +103,7 @@ pub(super) async fn start_hbbs_sync_async() {
                         hasher.update(url.as_bytes());
                         hasher.update(&v.as_bytes());
                         let res = hasher.finalize();
-                        hash = hbb_common::base64::encode(&res[..]);
+                        hash = hbb_common::base64::Engine::encode(&hbb_common::base64::engine::general_purpose::STANDARD, &res[..]);
                         let old_hash = config::Status::get("sysinfo_hash");
                         let ver = config::Status::get("sysinfo_ver"); // sysinfo_ver is the version of sysinfo on server's side
                         if hash == old_hash {

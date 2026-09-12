@@ -62,7 +62,6 @@ mod tests {
     mod helpers;
     use helpers::*;
     mod channel_tests;
-    use channel_tests::*;
     mod cap_tests;
     use cap_tests::*;
 

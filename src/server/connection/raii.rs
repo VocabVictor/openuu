@@ -42,7 +42,7 @@ impl AuthedConnID {
         conn_type: AuthConnType,
         session_key: SessionKey,
         sender: mpsc::UnboundedSender<Data>,
-        lr: LoginRequest,
+        _lr: LoginRequest,
     ) -> Self {
         AUTHED_CONNS.lock().unwrap().push(AuthedConn {
             conn_id,

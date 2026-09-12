@@ -141,28 +141,4 @@ impl TransferJob {
             ..Default::default()
         }))
     }
-
-    // Only for generic job and file stream
-    pub(super) async fn send_current_digest(&mut self, stream: &mut Stream) -> ResultType<()> {
-        let (last_modified, file_size) = self.get_current_digest().await?;
-        let mut msg = Message::new();
-        let mut resp = FileResponse::new();
-        resp.set_digest(FileTransferDigest {
-            id: self.id,
-            file_num: self.file_num,
-            last_modified,
-            file_size,
-            is_resume: self.is_resume,
-            ..Default::default()
-        });
-        msg.set_file_response(resp);
-        stream.send(&msg).await?;
-        log::info!(
-            "id: {}, file_num: {}, digest message is sent. waiting for confirm. msg: {:?}",
-            self.id,
-            self.file_num,
-            msg
-        );
-        Ok(())
-    }
 }

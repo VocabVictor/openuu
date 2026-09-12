@@ -22,7 +22,7 @@ use hbb_common::{
     bail,
     compress::{compress, decompress},
     config::Config,
-    get_version_number, ResultType, Stream,
+    get_version_number, ResultType,
 };
 
 static NEXT_JOB_ID: AtomicI32 = AtomicI32::new(1);

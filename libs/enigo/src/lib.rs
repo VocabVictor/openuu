@@ -96,6 +96,7 @@ pub use mouse::*;
 mod key;
 pub use key::*;
 mod stub;
-use stub::*;
+#[cfg(any(target_os = "android", target_os = "ios"))]
+use stub::Enigo;
 #[cfg(test)]
 mod tests;

@@ -7,7 +7,7 @@ use super::*;
 #[cfg(target_os = "linux")]
 pub(super) const CLIPBOARD_SYNC_DELAY_MS: u64 = 50;
 #[cfg(target_os = "linux")]
-pub(super) const WAYLAND_CLIPBOARD_INPUT_FILTER_WINDOW: Duration = Duration::from_secs(1);
+pub(super) const WAYLAND_CLIPBOARD_INPUT_FILTER_WINDOW: std::time::Duration = Duration::from_secs(1);
 #[cfg(target_os = "linux")]
 pub(super) const WAYLAND_CLIPBOARD_INPUT_MAX_RECORDS: usize = 256;
 #[cfg(target_os = "linux")]

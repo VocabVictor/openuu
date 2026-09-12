@@ -36,8 +36,8 @@ pub(super) fn key_sleep() {
     // `std::thread::sleep(Duration::from_millis(20));` may sleep 90ms or more.
     // Though `/Applications/RustDesk.app/Contents/MacOS/rustdesk --server` in terminal is ok.
     let now = Instant::now();
-    while now.elapsed() < Duration::from_millis(12) {
-        std::thread::sleep(Duration::from_millis(1));
+    while now.elapsed() < std::time::Duration::from_millis(12) {
+        std::thread::sleep(std::time::Duration::from_millis(1));
     }
 }
 

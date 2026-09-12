@@ -1060,6 +1060,7 @@ pub fn main_get_options_sync() -> SyncReturn<String> {
 }
 
 pub fn main_set_options(json: String) {
+    #[cfg_attr(not(target_os = "android"), allow(unused_mut))]
     let mut map: HashMap<String, String> = serde_json::from_str(&json).unwrap_or(HashMap::new());
     #[cfg(target_os = "android")]
     {

@@ -7,7 +7,7 @@ impl Client {
     pub async fn start(
         peer: &str,
         key: &str,
-        token: &str,
+        _token: &str,
         conn_type: ConnType,
         interface: impl Interface,
     ) -> ResultType<(

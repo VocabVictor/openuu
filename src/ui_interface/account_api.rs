@@ -62,23 +62,6 @@ pub enum DeployResult {
     Error(String),
 }
 
-impl DeployResult {
-    pub fn message(&self) -> String {
-        match self {
-            Self::Ok => "".to_owned(),
-            Self::NotEnabled => "The server does not require explicit deployment.".to_owned(),
-            Self::InvalidInput => "Invalid input.".to_owned(),
-            Self::IdTaken(id) => {
-                format!(
-                    "Id `{}` is already used by another machine on the server.",
-                    id
-                )
-            }
-            Self::Error(err) => err.clone(),
-        }
-    }
-}
-
 pub fn deploy_device(token: String, new_id: Option<String>) -> DeployResult {
     if Config::no_register_device() {
         return DeployResult::Error("Cannot deploy an unregistrable device!".to_owned());

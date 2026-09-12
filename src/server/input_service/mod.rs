@@ -23,7 +23,7 @@ use std::{
     ops::{Deref, DerefMut},
     sync::atomic::{AtomicBool, Ordering},
     thread,
-    time::{self, Duration, Instant},
+    time::{self, Instant},
 };
 
 #[cfg(windows)]

@@ -66,7 +66,7 @@ pub fn handle(raw: &str) -> String {
                         .ok_or_else(|| anyhow!("Application is no longer in the desktop catalog"))?
                 };
                 if request.operation == "icon" {
-                    let icon = app_icon(&app).map(|bytes| hbb_common::base64::encode(bytes)).unwrap_or_default();
+                    let icon = app_icon(&app).map(|bytes| hbb_common::base64::Engine::encode(&hbb_common::base64::engine::general_purpose::STANDARD, bytes)).unwrap_or_default();
                     return Ok(serde_json::json!({"icon": icon}));
                 }
                 launch(&app, &request.arguments, &session)?;
