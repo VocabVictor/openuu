@@ -1614,7 +1614,7 @@ String translate(String name) {
   if (name.startsWith('Failed to') && name.contains(': ')) {
     return name.split(': ').map((x) => translate(x)).join(': ');
   }
-  return platformFFI.translate(name, localeName);
+  return platformFFI.translate(name, localeName).replaceAll('RustDesk', 'OpenUU');
 }
 
 // This function must be kept the same as the one in rust and sciter code.
@@ -4194,7 +4194,7 @@ List<String> getPrinterNames() {
 String _appName = '';
 String get appName {
   if (_appName.isEmpty) {
-    _appName = bind.mainGetAppNameSync();
+    _appName = 'OpenUU';
   }
   return _appName;
 }

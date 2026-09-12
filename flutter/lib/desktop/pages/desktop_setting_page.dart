@@ -2618,7 +2618,7 @@ class _AboutState extends State<_About> {
                     'OpenUU',
                     const Icon(Icons.all_inclusive,
                         color: DesktopWelcomePage.blue),
-                    description: 'Based on RustDesk'),
+                    description: 'Remote desktop'),
                 info('Version', version),
                 info('Build Date', buildDate),
                 info('Fingerprint', fingerprint),
@@ -2629,7 +2629,7 @@ class _AboutState extends State<_About> {
                     IconButton(
                         icon: const Icon(Icons.open_in_new, size: 20),
                         onPressed: () =>
-                            launchUrlString('https://rustdesk.com'))),
+                            launchUrlString('https://github.com/VocabVictor/openuu'))),
                 _settingRow(
                     context,
                     'Privacy Statement',
@@ -2680,7 +2680,7 @@ class _AboutState extends State<_About> {
                   ).marginSymmetric(vertical: 4.0)),
               InkWell(
                   onTap: () {
-                    launchUrlString('https://rustdesk.com');
+                    launchUrlString('https://github.com/VocabVictor/openuu');
                   },
                   child: Text(
                     translate('Website'),

@@ -4,7 +4,7 @@ version = "1.5.0"
 authors = ["rustdesk <info@rustdesk.com>"]
 edition = "2021"
 build= "build.rs"
-description = "RustDesk Remote Desktop"
+description = "OpenUU Remote Desktop"
 default-run = "rustdesk"
 rust-version = "1.75"
 
@@ -236,8 +236,8 @@ webrtc-sctp = { git = "https://github.com/rustdesk-org/webrtc", rev = "db3b07a9d
 
 [package.metadata.winres]
 LegalCopyright = "Copyright © 2026 Purslane Tech Pte. Ltd. All rights reserved."
-ProductName = "RustDesk"
-FileDescription = "RustDesk Remote Desktop"
+ProductName = "OpenUU"
+FileDescription = "OpenUU Remote Desktop"
 OriginalFilename = "rustdesk.exe"
 
 [target.'cfg(target_os="windows")'.build-dependencies]
