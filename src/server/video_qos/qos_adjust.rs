@@ -1,0 +1,207 @@
+use super::*;
+
+// Common adjust functions
+impl VideoQoS {
+    pub fn new_display(&mut self, video_service_name: String) {
+        self.displays
+            .insert(video_service_name, DisplayData::default());
+    }
+
+    pub fn remove_display(&mut self, video_service_name: &str) {
+        self.displays.remove(video_service_name);
+    }
+
+    pub fn update_display_data(&mut self, video_service_name: &str, send_counter: usize) {
+        if let Some(display) = self.displays.get_mut(video_service_name) {
+            display.send_counter += send_counter;
+        }
+        self.adjust_fps();
+        let abr_enabled = self.in_vbr_state();
+        if abr_enabled {
+            if self.since(self.adjust_ratio_instant).as_secs() >= ADJUST_RATIO_INTERVAL as u64 {
+                let dynamic_screen = self
+                    .displays
+                    .iter()
+                    .any(|d| d.1.send_counter >= ADJUST_RATIO_INTERVAL * DYNAMIC_SCREEN_THRESHOLD);
+                self.adjust_ratio(dynamic_screen);
+            }
+        } else {
+            self.ratio = self.latest_quality().ratio();
+        }
+    }
+
+    #[inline]
+    pub(super) fn highest_fps(&self) -> u32 {
+        self.users
+            .values()
+            .map(|u| u.fps_cap())
+            .min()
+            .unwrap_or(FPS)
+            .clamp(MIN_FPS, MAX_FPS)
+    }
+
+    // Get latest quality settings from all users
+    pub fn latest_quality(&self) -> Quality {
+        self.users
+            .iter()
+            .map(|(_, u)| u.quality)
+            .filter(|q| *q != None)
+            .max_by(|a, b| a.unwrap_or_default().0.cmp(&b.unwrap_or_default().0))
+            .flatten()
+            .unwrap_or((0, Quality::Balanced))
+            .1
+    }
+
+    // Lowest ratio the latest quality allows: keeps about 1Mbps at high resolutions.
+    pub(super) fn min_ratio(&self) -> f32 {
+        let current_bitrate = self.bitrate();
+        let ratio_1mbps = if current_bitrate > 0 {
+            Some((self.ratio * 1000.0 / current_bitrate as f32).max(BR_MIN_HIGH_RESOLUTION))
+        } else {
+            None
+        };
+        match self.latest_quality() {
+            Quality::Best => {
+                let mut min = BR_BEST / 2.5;
+                if let Some(ratio_1mbps) = ratio_1mbps {
+                    if min > ratio_1mbps {
+                        min = ratio_1mbps;
+                    }
+                }
+                min.max(BR_MIN)
+            }
+            Quality::Balanced => {
+                let mut min = (BR_BALANCED / 2.0).min(0.4);
+                if let Some(ratio_1mbps) = ratio_1mbps {
+                    if min > ratio_1mbps {
+                        min = ratio_1mbps;
+                    }
+                }
+                min.max(BR_MIN_HIGH_RESOLUTION)
+            }
+            Quality::Low | Quality::Custom(_) => BR_MIN_HIGH_RESOLUTION,
+        }
+    }
+
+    // Whether congestion can still be answered with a lower bitrate.  Within two
+    // percent of the floor another step is not worth waiting a cooldown for.
+    pub(super) fn can_reduce_bitrate(&self) -> bool {
+        self.in_vbr_state() && !self.displays.is_empty() && self.ratio > self.min_ratio() * 1.02
+    }
+
+    // Every ratio adjustment starts a new window for the dynamic screen counters.
+    pub(super) fn reset_send_counters(&mut self) {
+        self.displays.values_mut().for_each(|d| d.send_counter = 0);
+    }
+
+    // Adjust quality ratio based on network delay and screen changes
+    pub(super) fn adjust_ratio(&mut self, dynamic_screen: bool) {
+        if !self.in_vbr_state() {
+            return;
+        }
+        // Get maximum delay from all users
+        let max_delay = self.users.iter().map(|u| u.1.delay.avg_delay()).max();
+        let Some(max_delay) = max_delay else {
+            return;
+        };
+        // Each viewer judges its own delay; the stream takes the most conservative
+        // step any viewer asks for.
+        let reduction = self
+            .users
+            .values()
+            .filter_map(|u| u.delay.ratio_reduction())
+            .reduce(f32::min);
+        if reduction.is_none() && max_delay >= DELAY_THRESHOLD_150MS {
+            // Elevated but unconfirmed: no change, and no cooldown either, so a
+            // confirmation on the next reply is acted on at once.
+            self.reset_send_counters();
+            return;
+        }
+
+        let target_ratio = self.latest_quality().ratio();
+        let current_ratio = self.ratio;
+        let current_bitrate = self.bitrate();
+
+        // Calculate ratio for adding 150kbps bandwidth
+        let ratio_add_150kbps = if current_bitrate > 0 {
+            Some((current_bitrate + 150) as f32 * current_ratio / current_bitrate as f32)
+        } else {
+            None
+        };
+
+        let min = self.min_ratio();
+        let max = target_ratio * MAX_BR_MULTIPLE;
+
+        let mut v = current_ratio;
+
+        // Three bad replies in a row confirm congestion; with a bitrate-targeted
+        // encoder the bitrate is then the only thing that drains the queue, so it
+        // comes down hard.  Increases need every viewer below the threshold.
+        if let Some(factor) = reduction {
+            v = current_ratio * factor;
+        } else if max_delay < 50 {
+            if dynamic_screen {
+                v = current_ratio * 1.15;
+            }
+        } else if max_delay < 100 {
+            if dynamic_screen {
+                v = current_ratio * 1.1;
+            }
+        } else if dynamic_screen {
+            v = current_ratio * 1.05;
+        }
+
+        // Limit quality increase rate for better stability
+        if let Some(ratio_add_150kbps) = ratio_add_150kbps {
+            if v > ratio_add_150kbps
+                && ratio_add_150kbps > current_ratio
+                && current_ratio >= BR_SPEED
+            {
+                v = ratio_add_150kbps;
+            }
+        }
+
+        if reduction.is_some() {
+            for user in self.users.values_mut() {
+                if user.delay.needs_bitrate_reduction()
+                    && user.delay.replies_after_bitrate_reduction.is_none()
+                {
+                    // One outstanding probe may have started before the bitrate change.
+                    user.delay.replies_after_bitrate_reduction =
+                        Some(if v.clamp(min, max) < current_ratio {
+                            0
+                        } else {
+                            2
+                        });
+                }
+            }
+        }
+        self.ratio = v.clamp(min, max);
+        self.reset_send_counters();
+        self.adjust_ratio_instant = self.now();
+    }
+
+    // Adjust fps based on network delay and user response time
+    pub(super) fn adjust_fps(&mut self) {
+        let highest_fps = self.highest_fps();
+        // Get minimum fps from all users
+        let mut fps = self
+            .users
+            .iter()
+            .map(|u| u.1.delay.fps.unwrap_or(INIT_FPS))
+            .min()
+            .unwrap_or(INIT_FPS);
+
+        // Every viewer inside its first second keeps the stream at INIT_FPS to
+        // ensure stability; each viewer carries its own start-up clock.
+        if self.users.values().any(|u| {
+            u.joined_at
+                .is_some_and(|joined| self.since(joined).as_secs() < 1)
+        }) {
+            fps = fps.min(INIT_FPS);
+        }
+
+        // Ensure fps stays within valid range
+        self.fps = fps.clamp(MIN_FPS, highest_fps);
+    }
+}
