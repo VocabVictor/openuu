@@ -95,56 +95,7 @@ mod mouse;
 pub use mouse::*;
 mod key;
 pub use key::*;
-
-#[cfg(any(target_os = "android", target_os = "ios"))]
-struct Enigo;
-
-impl Enigo {
-    /// Constructs a new `Enigo` instance.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use enigo::*;
-    /// let mut enigo = Enigo::new();
-    /// ```
-    pub fn new() -> Self {
-        #[cfg(any(target_os = "android", target_os = "ios"))]
-        return Enigo {};
-        #[cfg(not(any(target_os = "android", target_os = "ios")))]
-        Self::default()
-    }
-}
-
-use std::fmt;
-
-impl fmt::Debug for Enigo {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Enigo")
-    }
-}
-
+mod stub;
+use stub::*;
 #[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_get_key_state() {
-        let mut enigo = Enigo::new();
-        let keys = [Key::CapsLock, Key::NumLock];
-        for k in keys.iter() {
-            enigo.key_click(k.clone());
-            let a = enigo.get_key_state(k.clone());
-            enigo.key_click(k.clone());
-            let b = enigo.get_key_state(k.clone());
-            assert!(a != b);
-        }
-        let keys = [Key::Control, Key::Alt, Key::Shift];
-        for k in keys.iter() {
-            enigo.key_down(k.clone()).ok();
-            let a = enigo.get_key_state(k.clone());
-            enigo.key_up(k.clone());
-            let b = enigo.get_key_state(k.clone());
-            assert!(a != b);
-        }
-    }
-}
+mod tests;
