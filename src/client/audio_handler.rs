@@ -3,21 +3,21 @@ use super::*;
 /// Audio handler for the [`Client`].
 #[derive(Default)]
 pub struct AudioHandler {
-    audio_decoder: Option<(AudioDecoder, Vec<f32>)>,
+    pub(super) audio_decoder: Option<(AudioDecoder, Vec<f32>)>,
     #[cfg(target_os = "linux")]
-    simple: Option<psimple::Simple>,
+    pub(super) simple: Option<psimple::Simple>,
     #[cfg(not(target_os = "linux"))]
-    audio_buffer: AudioBuffer,
+    pub(super) audio_buffer: AudioBuffer,
     #[cfg(not(target_os = "linux"))]
-    audio_resampler: Option<crate::audio_resampler::AudioResampler>,
-    sample_rate: (u32, u32),
+    pub(super) audio_resampler: Option<crate::audio_resampler::AudioResampler>,
+    pub(super) sample_rate: (u32, u32),
     #[cfg(not(target_os = "linux"))]
-    audio_stream: Option<Box<dyn StreamTrait>>,
-    channels: u16,
+    pub(super) audio_stream: Option<Box<dyn StreamTrait>>,
+    pub(super) channels: u16,
     #[cfg(not(target_os = "linux"))]
-    device_channel: u16,
+    pub(super) device_channel: u16,
     #[cfg(not(target_os = "linux"))]
-    playback_status: Arc<audio_playback::AudioPlaybackStatus>,
+    pub(super) playback_status: Arc<audio_playback::AudioPlaybackStatus>,
 }
 
 impl AudioHandler {
