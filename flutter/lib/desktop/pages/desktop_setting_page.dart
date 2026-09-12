@@ -74,7 +74,6 @@ class DesktopSettingPage extends StatefulWidget {
         bind.mainGetBuildinOption(key: kOptionHideNetworkSetting) != 'Y')
       SettingsTabKey.network,
     if (!bind.isIncomingOnly()) SettingsTabKey.display,
-    if (!bind.isDisableAccount()) SettingsTabKey.account,
     if (isWindows &&
         !bind.isDisableSettings() &&
         bind.mainGetBuildinOption(key: kOptionHideRemotePrinterSetting) != 'Y')
@@ -2013,6 +2012,27 @@ class _DisplayState extends State<_Display> {
     ]).marginOnly(bottom: _kListViewBottomMargin);
   }
 
+  Widget _choiceCard(BuildContext context, String title, String current,
+      Map<String, String> options, void Function(String) onChanged,
+      {bool enabled = true, Widget? detail}) {
+    return Card(
+      margin: const EdgeInsets.only(left: _kCardLeftMargin, top: 8),
+      child: Column(children: [
+        LayoutBuilder(builder: (context, bounds) => _settingRow(context, title,
+          SizedBox(width: bounds.maxWidth < 600 ? 160 : 220,
+            child: ComboBox(
+              keys: options.keys.toList(),
+              values: options.values.map(translate).toList(),
+              initialKey: current,
+              enabled: enabled,
+              onChanged: onChanged,
+            ).marginOnly(left: 15)), enabled: enabled)),
+        if (detail != null)
+          Padding(padding: const EdgeInsets.fromLTRB(20, 8, 20, 16), child: detail),
+      ]),
+    );
+  }
+
   Widget viewStyle(BuildContext context) {
     final isOptFixed = isOptionFixed(kOptionViewStyle);
     onChanged(String value) async {
@@ -2021,6 +2041,12 @@ class _DisplayState extends State<_Display> {
     }
 
     final groupValue = bind.mainGetUserDefaultOption(key: kOptionViewStyle);
+    if (isWindows && !bind.isIncomingOnly()) {
+      return _choiceCard(context, 'Default View Style', groupValue, {
+        kRemoteViewStyleOriginal: 'Scale original',
+        kRemoteViewStyleAdaptive: 'Scale adaptive',
+      }, onChanged, enabled: !isOptFixed);
+    }
     return _Card(title: 'Default View Style', children: [
       _Radio(context,
           value: kRemoteViewStyleOriginal,
@@ -2051,6 +2077,19 @@ class _DisplayState extends State<_Display> {
       setState(() {});
     }
 
+    if (isWindows && !bind.isIncomingOnly()) {
+      return _choiceCard(context, 'Default Scroll Style', groupValue, {
+        kRemoteScrollStyleAuto: 'ScrollAuto',
+        kRemoteScrollStyleBar: 'Scrollbar',
+        kRemoteScrollStyleEdge: 'ScrollEdge',
+      }, onChanged, enabled: !isOptFixed,
+        detail: groupValue == kRemoteScrollStyleEdge ? EdgeThicknessControl(
+          value: double.tryParse(bind.mainGetUserDefaultOption(
+            key: kOptionEdgeScrollEdgeThickness)) ?? 100.0,
+          onChanged: isOptionFixed(kOptionEdgeScrollEdgeThickness)
+            ? null : onEdgeScrollEdgeThicknessChanged,
+        ) : null);
+    }
     return _Card(title: 'Default Scroll Style', children: [
       _Radio(context,
           value: kRemoteScrollStyleAuto,
@@ -2091,6 +2130,16 @@ class _DisplayState extends State<_Display> {
 
     final isOptFixed = isOptionFixed(kOptionImageQuality);
     final groupValue = bind.mainGetUserDefaultOption(key: kOptionImageQuality);
+    if (isWindows && !bind.isIncomingOnly()) {
+      return _choiceCard(context, 'Default Image Quality', groupValue, {
+        kRemoteImageQualityBest: 'Good image quality',
+        kRemoteImageQualityBalanced: 'Balanced',
+        kRemoteImageQualityLow: 'Optimize reaction time',
+        kRemoteImageQualityCustom: 'Custom',
+      }, onChanged, enabled: !isOptFixed,
+        detail: groupValue == kRemoteImageQualityCustom
+          ? customImageQualitySetting() : null);
+    }
     return _Card(title: 'Default Image Quality', children: [
       _Radio(context,
           value: kRemoteImageQualityBest,
@@ -2149,12 +2198,14 @@ class _DisplayState extends State<_Display> {
     final groupValue =
         bind.mainGetUserDefaultOption(key: kOptionCodecPreference);
     var hwRadios = [];
+    final codecOptions = {'auto': 'Auto', 'vp8': 'VP8', 'vp9': 'VP9', 'av1': 'AV1'};
     final isOptFixed = isOptionFixed(kOptionCodecPreference);
     try {
       final Map codecsJson = jsonDecode(bind.mainSupportedHwdecodings());
       final h264 = codecsJson['h264'] ?? false;
       final h265 = codecsJson['h265'] ?? false;
       if (h264) {
+        codecOptions['h264'] = 'H264';
         hwRadios.add(_Radio(context,
             value: 'h264',
             groupValue: groupValue,
@@ -2162,6 +2213,7 @@ class _DisplayState extends State<_Display> {
             onChanged: isOptFixed ? null : onChanged));
       }
       if (h265) {
+        codecOptions['h265'] = 'H265';
         hwRadios.add(_Radio(context,
             value: 'h265',
             groupValue: groupValue,
@@ -2170,6 +2222,10 @@ class _DisplayState extends State<_Display> {
       }
     } catch (e) {
       debugPrint("failed to parse supported hwdecodings, err=$e");
+    }
+    if (isWindows && !bind.isIncomingOnly()) {
+      return _choiceCard(context, 'Default Codec', groupValue, codecOptions,
+        onChanged, enabled: !isOptFixed);
     }
     return _Card(title: 'Default Codec', children: [
       _Radio(context,
@@ -2218,6 +2274,12 @@ class _DisplayState extends State<_Display> {
     String groupValue = bind.mainGetOptionSync(key: key);
     if (groupValue.isEmpty) {
       groupValue = bind.mainDefaultPrivacyModeImpl();
+    }
+    if (isWindows && !bind.isIncomingOnly()) {
+      return _choiceCard(context, 'Privacy mode', groupValue, {
+        for (final impl in privacyModeImpls)
+          (impl as List<dynamic>)[0] as String: impl[1] as String,
+      }, onChanged);
     }
     return _Card(
       title: 'Privacy mode',
