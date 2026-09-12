@@ -111,6 +111,20 @@ broken up.
 | `flutter/lib/web/bridge.dart` | single `RustdeskImpl` class (~1930 lines) mirroring the generated bridge API one-to-one; callers reach it through the conditional import in `models/platform_model.dart`, which does not re-export the library, so extension members would be invisible on the web target and `flutter analyze` (native branch) cannot catch that |
 | `src/flutter_ffi.rs` | flutter_rust_bridge v1 single-file codegen input (`--rust-input`); splitting needs frb v2 or changes to every build script. New exported functions added here must be one-line forwards to the owning module; no logic lives in this file. |
 
+### Deferred: needs Linux/macOS CI
+
+Files that only compile on Linux or macOS cannot be verified on the Windows
+build machines, and an unverified mechanical move is a blind edit. They stay
+as they are until a `cargo check` workflow for those targets exists; do not
+split them before then:
+
+* `src/server/uinput.rs`, `src/server/wayland.rs`, `src/server/rdp_input.rs`,
+  `src/server/drm_capturer.rs`
+* `src/platform/linux.rs`, `src/platform/macos.rs`, `src/platform/gtk_sudo.rs`
+* `libs/scrap/src/wayland/`, `libs/scrap/src/x11/`, `libs/scrap/src/quartz/`
+* `libs/clipboard/src/platform/unix/`, `libs/enigo/src/linux/`,
+  `libs/enigo/src/macos/`
+
 ## Rust Rules
 
 * Avoid `unwrap()` / `expect()` in production code.
