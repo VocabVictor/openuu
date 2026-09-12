@@ -62,27 +62,13 @@ class DesktopWelcomePage extends StatelessWidget {
                                     fontWeight: FontWeight.w500,
                                     color: Color(0xff172333)))
                           ])))),
-              IconButton(
-                  iconSize: 16,
-                  tooltip: t('登录', 'Sign in'),
-                  onPressed: onLogin,
-                  icon: const Icon(Icons.person_outline)),
+              _titleBarButton(t('登录', 'Sign in'), Icons.person_outline, onLogin),
               if (onSettings != null)
-                IconButton(
-                    iconSize: 16,
-                    tooltip: t('设置', 'Settings'),
-                    onPressed: onSettings,
-                    icon: const Icon(Icons.menu)),
-              IconButton(
-                  iconSize: 16,
-                  tooltip: t('最小化', 'Minimize'),
-                  onPressed: () => windowManager.minimize(),
-                  icon: const Icon(Icons.remove)),
-              IconButton(
-                  iconSize: 16,
-                  tooltip: t('关闭', 'Close'),
-                  onPressed: () => windowManager.close(),
-                  icon: const Icon(Icons.close)),
+                _titleBarButton(t('设置', 'Settings'), Icons.menu, onSettings!),
+              _titleBarButton(t('最小化', 'Minimize'), Icons.remove,
+                  () => windowManager.minimize()),
+              _titleBarButton(t('关闭', 'Close'), Icons.close,
+                  () => windowManager.close()),
               const SizedBox(width: 10),
             ])),
         Expanded(child: LayoutBuilder(builder: (context, constraints) {
@@ -142,6 +128,33 @@ class DesktopWelcomePage extends StatelessWidget {
           ]);
         })),
       ]),
+    );
+  }
+
+  Widget _titleBarButton(String tooltip, IconData icon, VoidCallback onTap) {
+    const shape = RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(4)));
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Tooltip(
+        message: tooltip,
+        child: SizedBox.square(
+          dimension: 36,
+          child: Material(
+            color: Colors.transparent,
+            shape: shape,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              customBorder: shape,
+              hoverColor: const Color(0x14000000),
+              focusColor: const Color(0x14000000),
+              highlightColor: const Color(0x1f000000),
+              onTap: onTap,
+              child: Center(child: Icon(icon, size: 16)),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

@@ -547,6 +547,26 @@ class _DesktopTabState extends State<DesktopTab>
 
   List<Widget> _tabWidgets = [];
   Widget _buildPageView() {
+    if (isWindows && !bind.isIncomingOnly() && tabType == DesktopTabType.main) {
+      // Match the shell's selected state in the same frame, rather than exposing
+      // the previous page while jumpTo waits for its PageController to attach.
+      return Obx(() {
+        final tabs = state.value.tabs;
+        final selected = state.value.selected;
+        return IndexedStack(
+          index: selected,
+          sizing: StackFit.expand,
+          children: [
+            for (var index = 0; index < tabs.length; index++)
+              TickerMode(
+                key: ValueKey(tabs[index].key),
+                enabled: index == selected,
+                child: tabs[index].page,
+              ),
+          ],
+        );
+      });
+    }
     final child = Container(
         child: Obx(() => PageView(
             controller: state.value.pageController,
