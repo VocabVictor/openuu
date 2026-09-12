@@ -160,6 +160,10 @@ pub trait FileManager: Interface {
         self.send(Data::ResumeJob((id, is_remote)));
     }
 
+    fn pause_job(&self, id: i32, paused: bool) {
+        self.send(Data::PauseJob((id, paused)));
+    }
+
     fn set_confirm_override_file(
         &self,
         id: i32,

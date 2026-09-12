@@ -4882,6 +4882,7 @@ pub enum Data {
     RemoveFile((i32, String, i32, bool)),
     CreateDir((i32, String, bool)),
     CancelJob(i32),
+    PauseJob((i32, bool)),
     RemovePortForward(i32),
     AddPortForward((i32, String, i32)),
     #[cfg(all(target_os = "windows", not(feature = "flutter")))]

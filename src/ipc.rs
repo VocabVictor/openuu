@@ -222,7 +222,12 @@ pub enum FS {
         id: i32,
         conn_id: i32,
     },
+    PauseRead {
+        id: i32,
+        paused: bool,
+    },
     SendConfirmForRead {
+        confirmation_window: u32,
         id: i32,
         file_num: i32,
         skip: bool,
@@ -482,9 +487,6 @@ pub enum Data {
     HwCodecConfig(Option<String>),
     RemoveTrustedDevices(Vec<Bytes>),
     ClearTrustedDevices,
-    #[cfg(all(target_os = "windows", feature = "flutter"))]
-    PrinterData(Vec<u8>),
-    InstallOption(Option<(String, String)>),
     #[cfg(all(
         feature = "flutter",
         not(any(target_os = "android", target_os = "ios"))
@@ -1176,23 +1178,6 @@ async fn handle(data: Data, stream: &mut Connection) {
         Data::ClearTrustedDevices => {
             Config::clear_trusted_devices();
         }
-        Data::InstallOption(opt) => match opt {
-            Some((_k, _v)) => {
-                #[cfg(target_os = "windows")]
-                if let Err(e) = crate::platform::windows::update_install_option(&_k, &_v) {
-                    log::error!(
-                        "Failed to update install option \"{}\" to \"{}\", error: {}",
-                        &_k,
-                        &_v,
-                        e
-                    );
-                }
-            }
-            None => {
-                // `None` is usually used to get values.
-                // This branch is left blank for unification and further use.
-            }
-        },
         #[cfg(target_os = "windows")]
         Data::PortForwardSessionCount(c) => match c {
             None => {
@@ -1488,7 +1473,7 @@ pub async fn start_pa() {
                             let mut buf: Vec<u8> = vec![0; AUDIO_DATA_SIZE_U8];
                             match psimple::Simple::new(
                                 None,                             // Use the default server
-                                &crate::get_app_name(),           // Our application’s name
+                                &crate::get_app_name(),           // Our application鈥檚 name
                                 pulse::stream::Direction::Record, // We want a record stream
                                 Some(&device),                    // Use the default device
                                 "record",                         // Description of our stream
@@ -2212,16 +2197,6 @@ async fn handle_wayland_screencast_restore_token(
         return Ok(Some(v));
     }
     return Ok(None);
-}
-
-#[tokio::main(flavor = "current_thread")]
-pub async fn set_install_option(k: String, v: String) -> ResultType<()> {
-    if let Ok(mut c) = connect(1000, "").await {
-        c.send(&&Data::InstallOption(Some((k, v)))).await?;
-        // do not put below before connect, because we need to check should_exit
-        c.next_timeout(1000).await.ok();
-    }
-    Ok(())
 }
 
 #[cfg(test)]

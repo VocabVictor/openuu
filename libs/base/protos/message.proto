@@ -102,6 +102,7 @@ message Features {
   bool terminal = 2;
   bool port_forward_mux = 3;
   bool quick_launch = 5;
+  bool file_transfer_pause = 4;
 }
 
 message CodecAbility {
@@ -413,10 +414,12 @@ message FileAction {
     FileTransferSendConfirmRequest send_confirm = 9;
     FileRename rename = 10;
     ReadEmptyDirs read_empty_dirs = 11;
+    FileTransferPause pause = 12;
   }
 }
 
 message FileTransferCancel { int32 id = 1; }
+message FileTransferPause { int32 id = 1; bool paused = 2; }
 
 message FileResponse {
   oneof union {
@@ -465,12 +468,13 @@ message FileTransferSendRequest {
 
   enum FileType {
     Generic = 0;
-    Printer = 1;
+    Printer = 1 [deprecated = true]; // Reserved for obsolete peers.
   }
   FileType file_type = 5;
 }
 
 message FileTransferSendConfirmRequest {
+  uint32 confirmation_window = 5;
   int32 id = 1;
   sint32 file_num = 2;
   oneof union {

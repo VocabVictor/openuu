@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'desktop_welcome_page.dart';
+import '../widgets/desktop_preview.dart';
 import '../widgets/quick_launch.dart';
 import '../widgets/device_action_bar.dart';
 
@@ -52,15 +53,7 @@ class DesktopDevicePage extends StatelessWidget {
             Container(clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xffdce2e7)), borderRadius: BorderRadius.circular(6)),
               child: Column(children: [
-                AspectRatio(aspectRatio: 2.5, child: Material(
-                  color: const Color(0xffe5eff8), child: InkWell(onTap: onConnect,
-                    child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Icons.desktop_windows_outlined, size: 52, color: Color(0xff7097bc)),
-                      const SizedBox(height: 14),
-                      Text(t('进入桌面  →', 'Enter desktop  →'), style: const TextStyle(fontSize: 20, color: Color(0xff24476b))),
-                      const SizedBox(height: 8),
-                      Text(t('此设备尚未提供桌面预览', 'Desktop preview is not available'), style: const TextStyle(fontSize: 12, color: Color(0xff697c8e))),
-                    ]))))),
+                DesktopPreviewPanel(peer: id, onConnect: onConnect),
                 DeviceActionBar(id: id, onFiles: onFiles, onWatch: onWatch,
                   onTerminal: onTerminal, onTunnel: onTunnel),
               ])),

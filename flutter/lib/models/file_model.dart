@@ -1327,10 +1327,32 @@ class JobController {
     }
   }
 
+  Future<void> pauseJob(int jobId) async {
+    final index = getJob(jobId);
+    if (index < 0) return;
+    final job = jobTable[index];
+    if (job.type != JobType.transfer || job.state != JobState.inProgress) return;
+    await bind.sessionPeerOption(sessionId: sessionId, name: 'file-transfer-pause',
+      value: jsonEncode([jobId, true]));
+    if (job.state != JobState.inProgress) return;
+    job.livePaused = true;
+    job.state = JobState.paused;
+    job.speed = 0;
+    jobTable.refresh();
+  }
+
   void resumeJob(int jobId) {
     final jobIndex = getJob(jobId);
     if (jobIndex != -1) {
       final job = jobTable[jobIndex];
+      if (job.livePaused) {
+        bind.sessionPeerOption(sessionId: sessionId, name: 'file-transfer-pause',
+          value: jsonEncode([jobId, false]));
+        job.livePaused = false;
+        job.state = JobState.inProgress;
+        jobTable.refresh();
+        return;
+      }
       bind.sessionResumeJob(
           sessionId: sessionId, actId: job.id, isRemote: job.isRemoteToLocal);
       job.state = JobState.inProgress;
@@ -1732,6 +1754,7 @@ extension JobStateDisplay on JobState {
 enum JobType { none, transfer, deleteFile, deleteDir }
 
 class JobProgress {
+  bool livePaused = false;
   JobType type = JobType.none;
   JobState state = JobState.none;
   var recvJobRes = false;

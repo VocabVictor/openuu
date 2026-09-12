@@ -1171,7 +1171,7 @@ async fn handle_fs(
                         let path = get_string(&fs::TransferJob::join(p, &file.name));
                         match is_write_need_confirmation(is_resume, &path, &digest) {
                             Ok(digest_result) => {
-                                job.set_digest(file_size, last_modified);
+                                job.set_file_digest(file_num, file_size, last_modified);
                                 match digest_result {
                                     DigestCheckResult::IsSame => {
                                         req.set_skip(true);
@@ -1235,6 +1235,11 @@ async fn handle_fs(
         // Note: This only cancels jobs in `read_jobs`. It does NOT cancel `ReadAllFiles`
         // operations, which are one-shot directory scans that complete quickly and don't
         // have persistent job tracking.
+        ipc::FS::PauseRead { id, paused } => {
+            if let Some(job) = fs::get_job(id, read_jobs) {
+                job.paused = paused;
+            }
+        }
         ipc::FS::CancelRead { id, conn_id: _ } => {
             if let Some(job) = fs::remove_job(id, read_jobs) {
                 if let Some(tx) = tx_log {
@@ -1246,15 +1251,17 @@ async fn handle_fs(
         }
         ipc::FS::SendConfirmForRead {
             id,
-            file_num: _,
+            file_num,
             skip,
             offset_blk,
+            confirmation_window,
             conn_id: _,
         } => {
             if let Some(job) = fs::get_job(id, read_jobs) {
                 let req = FileTransferSendConfirmRequest {
                     id,
-                    file_num: job.file_num(),
+                    file_num,
+                    confirmation_window,
                     union: if skip {
                         Some(file_transfer_send_confirm_request::Union::Skip(true))
                     } else {
@@ -1414,7 +1421,7 @@ async fn handle_read_jobs_tick(
     let mut finished = Vec::new();
 
     for job in jobs.iter_mut() {
-        if job.is_last_job {
+        if job.is_last_job || job.paused {
             continue;
         }
 
@@ -1432,7 +1439,9 @@ async fn handle_read_jobs_tick(
             continue;
         }
 
-        // Read a block from the file
+        // Bound bursts just like the direct sender, including small-file EOF blocks.
+        let started = std::time::Instant::now();
+        for _ in 0..16 {
         match job.read().await {
             Err(err) => {
                 if let Err(e) = tx.send(Data::FileReadError {
@@ -1449,6 +1458,7 @@ async fn handle_read_jobs_tick(
                 finished.push(job.id);
             }
             Ok(Some(block)) => {
+                let file_ended = block.data.is_empty();
                 if let Err(e) = tx.send(Data::FileBlockFromCM {
                     id: block.id,
                     file_num: block.file_num,
@@ -1457,6 +1467,18 @@ async fn handle_read_jobs_tick(
                     conn_id,
                 }) {
                     log::error!("error sending FileBlockFromCM via IPC: {}", e);
+                    break;
+                }
+                if file_ended {
+                    if let Err(err) = init_read_job_for_cm(job, tx, conn_id).await {
+                        tx.send(Data::FileReadError { id: job.id, file_num: job.file_num(),
+                            err: err.to_string(), conn_id })?;
+                        finished.push(job.id);
+                        break;
+                    }
+                }
+                if started.elapsed() < std::time::Duration::from_millis(2) {
+                    continue;
                 }
             }
             Ok(None) => {
@@ -1486,6 +1508,8 @@ async fn handle_read_jobs_tick(
                 }
                 // else: waiting for confirmation from peer
             }
+        }
+        break;
         }
         // Break to handle jobs one by one.
         break;
@@ -1529,6 +1553,12 @@ async fn init_read_job_for_cm(
             // Job done or already initialized, nothing to do
         }
     }
+    for digest in job.prefetch_digests().await? {
+        tx.send(Data::FileDigestFromCM { id: digest.id, file_num: digest.file_num,
+            last_modified: digest.last_modified, file_size: digest.file_size,
+            is_resume: digest.is_resume, conn_id })?;
+    }
+
     Ok(())
 }
 

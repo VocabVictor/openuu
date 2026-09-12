@@ -878,6 +878,7 @@ impl InvokeUiSession for FlutterHandler {
         for ref f in pi.features.iter() {
             features.insert("privacy_mode", f.privacy_mode);
             features.insert("quick_launch", f.quick_launch);
+            features.insert("file_transfer_pause", f.file_transfer_pause);
         }
         // compatible with 1.1.9
         if get_version_number(&pi.version) < get_version_number("1.2.0") {
@@ -1086,14 +1087,6 @@ impl InvokeUiSession for FlutterHandler {
 
     fn update_record_status(&self, start: bool) {
         self.push_event("record_status", &[("start", &start.to_string())], &[]);
-    }
-
-    fn printer_request(&self, id: i32, path: String) {
-        self.push_event(
-            "printer_request",
-            &[("id", json!(id)), ("path", json!(path))],
-            &[],
-        );
     }
 
     fn handle_screenshot_resp(&self, sid: String, msg: String) {

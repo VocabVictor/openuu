@@ -1,3 +1,5 @@
+import 'desktop_assistance_page.dart';
+import 'package:flutter_hbb/common/widgets/login.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
@@ -40,6 +42,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
 
   @override
   bool get wantKeepAlive => true;
+  bool _showLegacyFavorites = false;
   var systemError = '';
   StreamSubscription? _uniLinksSubscription;
   var svcStopped = false.obs;
@@ -58,6 +61,23 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (isWindows && !bind.isIncomingOnly() && !bind.isOutgoingOnly() && !_showLegacyFavorites) {
+      return _buildBlock(child: AnimatedBuilder(animation: gFFI.serverModel,
+        builder: (context, _) {
+          final model = gFFI.serverModel;
+          return DesktopAssistancePage(
+            deviceId: model.serverId.text, password: model.serverPasswd.text,
+            verification: model.approveMode == 'click' ? translate('Accept sessions via click') : translate(model.verificationMethod),
+            temporaryPassword: model.approveMode != 'click' && model.verificationMethod != kUsePermanentPassword,
+            enabled: !svcStopped.value, onEnable: (value) => start_service(value),
+            onConnect: (id) => connect(context, id),
+            onRefresh: () => bind.mainUpdateTemporaryPassword(),
+            onSecurity: () => DesktopSettingPage.switch2page(SettingsTabKey.safety),
+            onDevices: () => DesktopTabPage.showHome(),
+            onFavorites: () { gFFI.peerTabModel.setCurrentTab(1); setState(() => _showLegacyFavorites = true); },
+            onSettings: DesktopTabPage.onAddSetting, onAccount: () => loginDialog());
+        }));
+    }
     final isIncomingOnly = bind.isIncomingOnly();
     return _buildBlock(
         child: Row(
@@ -79,6 +99,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final isIncomingOnly = bind.isIncomingOnly();
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
+      if (_showLegacyFavorites)
+        TextButton.icon(onPressed: () => setState(() => _showLegacyFavorites = false),
+          icon: const Icon(Icons.arrow_back, size: 18), label: Text(translate('Back'))),
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
       if (bind.isCustomClient())
         Align(

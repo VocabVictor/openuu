@@ -667,9 +667,7 @@ impl<T: InvokeUiSession> Remote<T> {
                     log::debug!("New job {}, write to {} from remote {}", id, to, path);
                     let to = match r#type {
                         fs::JobType::Generic => fs::DataSource::FilePath(PathBuf::from(&to)),
-                        fs::JobType::Printer => {
-                            fs::DataSource::MemoryCursor(std::io::Cursor::new(Vec::new()))
-                        }
+                        fs::JobType::Printer => return true,
                     };
                     self.write_jobs.push(fs::TransferJob::new_write(
                         id,
@@ -937,6 +935,21 @@ impl<T: InvokeUiSession> Remote<T> {
             }
             Data::CancelJob(id) => {
                 self.cancel_transfer_job(id, peer).await;
+            }
+            Data::PauseJob((id, paused)) => {
+                if let Some(job) = get_job(id, &mut self.read_jobs) {
+                    job.paused = paused;
+                } else if let Some(job) = get_job(id, &mut self.write_jobs) {
+                    let mut action = FileAction::new();
+                    action.set_pause(FileTransferPause { id, paused, ..Default::default() });
+                    let mut message = Message::new();
+                    message.set_file_action(action);
+                    if let Err(err) = peer.send(&message).await {
+                        log::error!("Failed to change transfer pause state: {}", err);
+                    } else {
+                        job.paused = paused;
+                    }
+                }
             }
             Data::RemoveDir((id, path)) => {
                 let mut msg_out = Message::new();
@@ -1705,7 +1718,7 @@ impl<T: InvokeUiSession> Remote<T> {
                                         if let fs::DataSource::FilePath(p) = &job.data_source {
                                             let write_path =
                                                 get_string(&fs::TransferJob::join(p, &file.name));
-                                            job.set_digest(digest.file_size, digest.last_modified);
+                                            job.set_file_digest(digest.file_num, digest.file_size, digest.last_modified);
                                             let peer_ver = self.handler.lc.read().unwrap().version;
                                             let is_support_resume =
                                                 crate::is_support_file_transfer_resume_num(
@@ -1799,54 +1812,16 @@ impl<T: InvokeUiSession> Remote<T> {
                         Some(file_response::Union::Done(d)) => {
                             let mut err: Option<String> = None;
                             let mut job_type = fs::JobType::Generic;
-                            let mut printer_data = None;
                             if let Some(job) = fs::remove_job(d.id, &mut self.write_jobs) {
                                 job.modify_time();
                                 err = job.job_error();
                                 job_type = job.r#type;
-                                printer_data = match job.get_buf_data().await {
-                                    Ok(d) => d,
-                                    Err(e) => {
-                                        log::error!("Failed to get the printer data: {}", e);
-                                        None
-                                    }
-                                };
                             }
                             match job_type {
                                 fs::JobType::Generic => {
                                     self.handle_job_status(d.id, d.file_num, err);
                                 }
-                                fs::JobType::Printer => {
-                                    if let Some(err) = err {
-                                        log::error!("Receive print job failed, error {err}");
-                                    } else {
-                                        log::info!(
-                                            "Receive print job done, data len: {:?}",
-                                            printer_data.as_ref().map(|d| d.len()).unwrap_or(0)
-                                        );
-                                        #[cfg(target_os = "windows")]
-                                        if let Some(data) = printer_data {
-                                            let printer_name = self
-                                                .handler
-                                                .printer_names
-                                                .write()
-                                                .unwrap()
-                                                .remove(&d.id);
-                                            // Spawn a new thread to handle the print job.
-                                            // Or print job will block the ui thread.
-                                            std::thread::spawn(move || {
-                                                if let Err(e) =
-                                                    crate::platform::send_raw_data_to_printer(
-                                                        printer_name,
-                                                        data,
-                                                    )
-                                                {
-                                                    log::error!("Print job error: {}", e);
-                                                }
-                                            });
-                                        }
-                                    }
-                                }
+                                fs::JobType::Printer => {}
                             }
                         }
                         Some(file_response::Union::Error(e)) => {
@@ -1859,7 +1834,7 @@ impl<T: InvokeUiSession> Remote<T> {
                                     self.handle_job_status(e.id, e.file_num, Some(e.error));
                                 }
                                 fs::JobType::Printer => {
-                                    log::error!("Printer job error: {}", e.error);
+                                    log::debug!("Discarded obsolete transfer job {}", e.id);
                                 }
                             }
                         }
@@ -2095,34 +2070,7 @@ impl<T: InvokeUiSession> Remote<T> {
                 Some(message::Union::FileAction(action)) => match action.union {
                     Some(file_action::Union::Send(_s)) => match _s.file_type.enum_value() {
                         #[cfg(target_os = "windows")]
-                        Ok(file_transfer_send_request::FileType::Printer) => {
-                            #[cfg(feature = "flutter")]
-                            let action =
-                                LocalConfig::get_option(keys::OPTION_PRINTER_INCOMING_JOB_ACTION);
-                            #[cfg(not(feature = "flutter"))]
-                            let action = "";
-                            if action == "dismiss" {
-                                // Just ignore the incoming print job.
-                            } else {
-                                let id = fs::get_next_job_id();
-                                #[cfg(feature = "flutter")]
-                                let allow_auto_print = LocalConfig::get_bool_option(
-                                    keys::OPTION_PRINTER_ALLOW_AUTO_PRINT,
-                                );
-                                #[cfg(not(feature = "flutter"))]
-                                let allow_auto_print = false;
-                                if allow_auto_print {
-                                    let printer_name = if action == "" {
-                                        "".to_string()
-                                    } else {
-                                        LocalConfig::get_option(keys::OPTION_PRINTER_SELECTED_NAME)
-                                    };
-                                    self.handler.printer_response(id, _s.path, printer_name);
-                                } else {
-                                    self.handler.printer_request(id, _s.path);
-                                }
-                            }
-                        }
+                        Ok(file_transfer_send_request::FileType::Printer) => {}
                         _ => {}
                     },
                     Some(file_action::Union::SendConfirm(c)) => {

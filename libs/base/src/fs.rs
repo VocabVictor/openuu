@@ -27,6 +27,10 @@ use hbb_common::{
 
 static NEXT_JOB_ID: AtomicI32 = AtomicI32::new(1);
 
+#[cfg(test)]
+#[path = "fs_transfer_tests.rs"]
+mod transfer_network_tests;
+
 pub fn get_next_job_id() -> i32 {
     NEXT_JOB_ID.fetch_add(1, Ordering::SeqCst)
 }
@@ -265,6 +269,7 @@ pub fn can_enable_overwrite_detection(version: i64) -> bool {
 #[derive(Copy, Clone, Serialize, Debug, PartialEq)]
 pub enum JobType {
     Generic = 0,
+    // Reserved wire value. Remote printing is no longer supported.
     Printer = 1,
 }
 
@@ -398,6 +403,16 @@ pub struct TransferJob {
     pub show_hidden: bool,
     pub is_remote: bool,
     pub is_last_job: bool,
+    #[serde(skip_serializing)]
+    pub paused: bool,
+    #[serde(skip_serializing)]
+    confirmation_window: usize,
+    #[serde(skip_serializing)]
+    prefetched: std::collections::HashSet<i32>,
+    #[serde(skip_serializing)]
+    confirmations: std::collections::HashMap<i32, FileTransferSendConfirmRequest>,
+    #[serde(skip_serializing)]
+    file_digests: std::collections::HashMap<i32, FileDigest>,
     pub is_resume: bool,
     pub file_num: i32,
     #[serde(skip_serializing)]
@@ -630,6 +645,9 @@ impl TransferJob {
         is_remote: bool,
         enable_overwrite_detection: bool,
     ) -> ResultType<Self> {
+        if r#type == JobType::Printer {
+            bail!("Unsupported transfer type");
+        }
         log::info!("new read {}", data_source);
         let (files, total_size) = match &data_source {
             DataSource::FilePath(p) => {
@@ -655,16 +673,6 @@ impl TransferJob {
         })
     }
 
-    pub async fn get_buf_data(self) -> ResultType<Option<Vec<u8>>> {
-        match self.data_stream {
-            Some(DataStream::BufStream(mut bs)) => {
-                bs.flush().await?;
-                Ok(Some(bs.into_inner().into_inner()))
-            }
-            _ => Ok(None),
-        }
-    }
-
     #[inline]
     pub fn files(&self) -> &Vec<FileEntry> {
         &self.files
@@ -684,6 +692,12 @@ impl TransferJob {
     }
 
     #[inline]
+    pub fn set_file_digest(&mut self, file_num: i32, size: u64, modified: u64) {
+        if file_num >= self.file_num && file_num < self.file_num.saturating_add(32) {
+            self.file_digests.insert(file_num, FileDigest { size, modified });
+        }
+    }
+
     pub fn set_digest(&mut self, size: u64, modified: u64) {
         self.digest.size = size;
         self.digest.modified = modified;
@@ -785,6 +799,9 @@ impl TransferJob {
     }
 
     pub async fn write(&mut self, block: FileTransferBlock) -> ResultType<()> {
+        if self.r#type == JobType::Printer {
+            bail!("Unsupported transfer type");
+        }
         if block.id != self.id {
             bail!("Wrong id");
         }
@@ -800,10 +817,10 @@ impl TransferJob {
                         file.sync_all().await?;
                     }
                     self.file_num = block.file_num;
+                    if let Some(digest) = self.file_digests.remove(&block.file_num) { self.digest = digest; }
+                    self.file_digests.retain(|number, _| *number >= block.file_num);
                     let entry = &self.files[file_num];
-                    let (path, digest_path) = if self.r#type == JobType::Printer {
-                        (p.to_string_lossy().to_string(), None)
-                    } else {
+                    let (path, digest_path) = {
                         let path = join_validated_path(p, &entry.name)?;
                         // NOTE: We intentionally keep path-based validation + regular file open here.
                         // This still has a known TOCTOU window for symlink races, but avoids a large
@@ -918,18 +935,45 @@ impl TransferJob {
     }
 
     async fn init_data_stream(&mut self, stream: &mut hbb_common::Stream) -> ResultType<()> {
-        if self.open_data_stream().await? {
-            return Ok(());
+        if let Some((last_modified, file_size)) = self.init_data_stream_for_cm().await? {
+            let mut response = FileResponse::new();
+            response.set_digest(FileTransferDigest { id: self.id, file_num: self.file_num,
+                last_modified, file_size, is_resume: self.is_resume, ..Default::default() });
+            let mut message = Message::new(); message.set_file_response(response);
+            stream.send(&message).await?;
         }
-        if self.r#type == JobType::Generic
-            && self.enable_overwrite_detection
-            && !self.file_confirmed()
-            && !self.file_is_waiting()
-        {
-            self.send_current_digest(stream).await?;
-            self.set_file_is_waiting(true);
+        for digest in self.prefetch_digests().await? {
+            let mut response = FileResponse::new(); response.set_digest(digest);
+            let mut message = Message::new(); message.set_file_response(response);
+            stream.send(&message).await?;
         }
         Ok(())
+    }
+
+    pub async fn prefetch_digests(&mut self) -> ResultType<Vec<FileTransferDigest>> {
+        let mut result = Vec::new();
+        if self.paused || self.is_resume || !self.enable_overwrite_detection || self.confirmation_window == 0 { return Ok(result); }
+        let current = self.file_num;
+        self.prefetched.retain(|number| *number >= current);
+        self.confirmations.retain(|number, _| *number >= current);
+        let DataSource::FilePath(root) = &self.data_source else { return Ok(result); };
+        let start = self.file_num.max(0) as usize + 1;
+        for number in start..(start + self.confirmation_window).min(self.files.len()) {
+            if self.prefetched.contains(&(number as i32)) { continue; }
+            let meta = match tokio::fs::metadata(Self::join(root, &self.files[number].name)).await {
+                Ok(meta) => meta,
+                Err(_) => break, // Report source errors in normal file order.
+            };
+            if meta.len() > 64 * 1024 { break; }
+            let modified = match meta.modified().ok().and_then(|time| time.duration_since(UNIX_EPOCH).ok()) {
+                Some(time) => time.as_secs(),
+                None => break,
+            };
+            self.prefetched.insert(number as i32);
+            result.push(FileTransferDigest { id: self.id, file_num: number as i32,
+                file_size: meta.len(), last_modified: modified, ..Default::default() });
+        }
+        Ok(result)
     }
 
     /// Initialize data stream for CM (Connection Manager) scenario.
@@ -937,8 +981,14 @@ impl TransferJob {
     /// so caller can send it via IPC instead of network stream.
     /// Returns Ok(None) if job is done or already initialized.
     pub async fn init_data_stream_for_cm(&mut self) -> ResultType<Option<(u64, u64)>> {
-        if self.open_data_stream().await? {
-            return Ok(None);
+        loop {
+            if self.open_data_stream().await? { return Ok(None); }
+            if let Some(confirm) = self.confirmations.remove(&self.file_num) {
+                let previous = self.file_num;
+                self.confirm(&confirm).await;
+                if self.file_num != previous { continue; }
+            }
+            break;
         }
         // For overwrite detection, return digest info instead of sending via stream
         if self.r#type == JobType::Generic
@@ -946,8 +996,9 @@ impl TransferJob {
             && !self.file_confirmed()
             && !self.file_is_waiting()
         {
-            let digest = self.get_current_digest().await?;
             self.set_file_is_waiting(true);
+            if self.prefetched.contains(&self.file_num) { return Ok(None); }
+            let digest = self.get_current_digest().await?;
             return Ok(Some(digest));
         }
         Ok(None)
@@ -978,7 +1029,14 @@ impl TransferJob {
             DataSource::MemoryCursor(..) => "",
         };
         const BUF_SIZE: usize = 128 * 1024;
-        let mut buf: Vec<u8> = vec![0; BUF_SIZE];
+        // Small files should not allocate and zero a full transfer block.
+        // A stale size only changes the chunk size; reads still continue to EOF.
+        let buffer_size = if matches!(self.data_source, DataSource::FilePath(_)) {
+            self.files[file_num].size.min(BUF_SIZE as u64).max(4096) as usize
+        } else {
+            BUF_SIZE
+        };
+        let mut buf: Vec<u8> = vec![0; buffer_size];
         let mut compressed = false;
         let mut offset: usize = 0;
         loop {
@@ -998,7 +1056,7 @@ impl TransferJob {
                 }
                 Ok(n) => {
                     offset += n;
-                    if n == 0 || offset == BUF_SIZE {
+                    if n == 0 || offset == buffer_size {
                         break;
                     }
                 }
@@ -1183,6 +1241,12 @@ impl TransferJob {
     }
 
     pub async fn confirm(&mut self, r: &FileTransferSendConfirmRequest) -> bool {
+        if r.id != self.id || (r.file_num != self.file_num && !self.prefetched.contains(&r.file_num)) { return false; }
+        self.confirmation_window = (r.confirmation_window as usize).min(16);
+        if r.file_num > self.file_num && self.prefetched.contains(&r.file_num) {
+            self.confirmations.insert(r.file_num, r.clone());
+            return true;
+        }
         if self.file_num() != r.file_num {
             // This branch will always be hit if:
             // 1. `confirm()` is called in `ui_cm_interface.rs`
@@ -1264,7 +1328,8 @@ pub fn new_block(block: FileTransferBlock) -> Message {
 }
 
 #[inline]
-pub fn new_send_confirm(r: FileTransferSendConfirmRequest) -> Message {
+pub fn new_send_confirm(mut r: FileTransferSendConfirmRequest) -> Message {
+    r.confirmation_window = 16;
     let mut msg_out = Message::new();
     let mut action = FileAction::new();
     action.set_send_confirm(r);
@@ -1350,7 +1415,7 @@ pub fn get_job_immutable(id: i32, jobs: &[TransferJob]) -> Option<&TransferJob> 
 
 async fn init_jobs(jobs: &mut Vec<TransferJob>, stream: &mut hbb_common::Stream) -> ResultType<()> {
     for job in jobs.iter_mut() {
-        if job.is_last_job {
+        if job.is_last_job || job.paused {
             continue;
         }
         if let Err(err) = job.init_data_stream(stream).await {
@@ -1371,7 +1436,7 @@ pub async fn handle_read_jobs(
     let mut job_log = Default::default();
     let mut finished = Vec::new();
     for job in jobs.iter_mut() {
-        if job.is_last_job {
+        if job.is_last_job || job.paused {
             continue;
         }
         let started = std::time::Instant::now();
@@ -1383,10 +1448,17 @@ pub async fn handle_read_jobs(
                         .await?;
                 }
                 Ok(Some(block)) => {
-                    let has_data = !block.data.is_empty();
+                    let file_ended = block.data.is_empty();
                     stream.send(&new_block(block)).await?;
                     // Bound each burst so control messages and cancellation get a turn.
-                    if has_data && started.elapsed() < std::time::Duration::from_millis(2) {
+                    if file_ended {
+                        // Send the next digest immediately, but never bypass its confirmation.
+                        if let Err(err) = job.init_data_stream(stream).await {
+                            stream.send(&new_error(job.id(), err, job.file_num())).await?;
+                            break;
+                        }
+                    }
+                    if started.elapsed() < std::time::Duration::from_millis(2) {
                         continue;
                     }
                 }
@@ -1570,6 +1642,28 @@ mod tests {
     use protobuf::Message as _;
 
     #[test]
+    fn obsolete_print_jobs_cannot_read_files() {
+        let result = TransferJob::new_read(
+            1, JobType::Printer, String::new(),
+            DataSource::MemoryCursor(Cursor::new(vec![1, 2, 3])),
+            0, false, false, false,
+        );
+        assert!(matches!(result, Err(e) if e.to_string() == "Unsupported transfer type"));
+    }
+
+    #[tokio::test]
+    async fn obsolete_print_jobs_cannot_write_files() {
+        let dir = TestTempDir::new("openuu_obsolete_print");
+        let mut job = TransferJob::new_write(
+            1, JobType::Printer, String::new(),
+            DataSource::FilePath(dir.path.clone()), 0, false, true, false,
+        );
+        let result = job.write(FileTransferBlock { id: 1, ..Default::default() }).await;
+        assert!(matches!(result, Err(e) if e.to_string() == "Unsupported transfer type"));
+        assert!(!dir.path.exists());
+    }
+
+    #[test]
     fn adaptive_compression_recovers_after_incompressible_data() {
         let mut policy = TransferCompression::default();
         let mut seed = 123456789u32;
@@ -1627,6 +1721,158 @@ mod tests {
             while !jobs.is_empty() { handle_read_jobs(&mut jobs, &mut sender).await.unwrap(); }
             assert_eq!(receive.await.unwrap(), data);
         }).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn small_files_batch_preserves_empty_files_and_order() {
+        let dir = TestTempDir::new("openuu_small_files");
+        std::fs::create_dir_all(&dir.path).unwrap();
+        for i in 0..300 {
+            let folder = dir.join(&format!("group{}", i % 3));
+            std::fs::create_dir_all(&folder).unwrap();
+            std::fs::write(folder.join(format!("file{i}.bin")), vec![(i % 251) as u8; if i % 10 == 0 { 0 } else { 1024 }]).unwrap();
+        }
+        let job = TransferJob::new_read(7, JobType::Generic, String::new(),
+            DataSource::FilePath(dir.path.clone()), 0, false, false, false).unwrap();
+        let mut data = Vec::new();
+        for entry in job.files() { data.extend(std::fs::read(dir.path.join(&entry.name)).unwrap()); }
+        let file_count = job.files().len();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let socket = tokio::net::TcpStream::connect(addr).await.unwrap();
+        let (receiver, peer) = listener.accept().await.unwrap();
+        let mut sender = hbb_common::Stream::Tcp(hbb_common::tcp::FramedStream::from(socket, addr));
+        let receive = tokio::spawn(async move {
+            let mut receiver = hbb_common::tcp::FramedStream::from(receiver, peer);
+            let mut actual = Vec::new();
+            let mut ended = std::collections::HashSet::new();
+            loop {
+                let bytes = receiver.next().await.unwrap().unwrap();
+                let msg = Message::parse_from_bytes(&bytes).unwrap();
+                if let Some(message::Union::FileResponse(response)) = msg.union {
+                    match response.union {
+                        Some(file_response::Union::Block(block)) => {
+                            if block.data.is_empty() { assert!(ended.insert(block.file_num)); }
+                            if block.compressed { actual.extend(decompress(&block.data)); }
+                            else { actual.extend_from_slice(&block.data); }
+                        }
+                        Some(file_response::Union::Done(_)) => { assert_eq!(ended.len(), file_count); return actual; },
+                        Some(file_response::Union::Error(error)) => panic!("{:?}", error),
+                        _ => {}
+                    }
+                }
+            }
+        });
+        let mut jobs = vec![job];
+        tokio::time::timeout(std::time::Duration::from_secs(10), async {
+            let mut ticks = 0;
+            let start = std::time::Instant::now();
+            while !jobs.is_empty() {
+                handle_read_jobs(&mut jobs, &mut sender).await.unwrap();
+                ticks += 1;
+            }
+            println!("small files: {file_count}, scheduler rounds: {ticks}, elapsed: {:?}", start.elapsed());
+            assert_eq!(receive.await.unwrap(), data);
+        }).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn paused_transfer_preserves_offset_and_payload() {
+        let dir = TestTempDir::new("openuu_transfer_pause");
+        std::fs::create_dir_all(&dir.path).unwrap();
+        let data: Vec<u8> = (0..8 * 1024 * 1024 + 37).map(|i| (i % 251) as u8).collect();
+        let path = dir.join("payload.bin");
+        std::fs::write(&path, &data).unwrap();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let socket = tokio::net::TcpStream::connect(addr).await.unwrap();
+        let (receiver, peer) = listener.accept().await.unwrap();
+        let mut sender = hbb_common::Stream::Tcp(hbb_common::tcp::FramedStream::from(socket, addr));
+        let receive = tokio::spawn(async move {
+            let mut receiver = hbb_common::tcp::FramedStream::from(receiver, peer);
+            let mut actual = Vec::new();
+            loop {
+                let bytes = receiver.next().await.unwrap().unwrap();
+                let msg = Message::parse_from_bytes(&bytes).unwrap();
+                if let Some(message::Union::FileResponse(response)) = msg.union {
+                    match response.union {
+                        Some(file_response::Union::Block(block)) => {
+                            if block.compressed { actual.extend(decompress(&block.data)); }
+                            else { actual.extend_from_slice(&block.data); }
+                        }
+                        Some(file_response::Union::Done(_)) => return actual,
+                        Some(file_response::Union::Error(error)) => panic!("{:?}", error),
+                        _ => {}
+                    }
+                }
+            }
+        });
+        let job = TransferJob::new_read(7, JobType::Generic, String::new(),
+            DataSource::FilePath(path), 0, false, false, false).unwrap();
+        let mut jobs = vec![job];
+        jobs[0].paused = true;
+        handle_read_jobs(&mut jobs, &mut sender).await.unwrap();
+        assert_eq!(jobs[0].finished_size(), 0);
+        assert!(jobs[0].data_stream.is_none());
+        jobs[0].paused = false;
+        handle_read_jobs(&mut jobs, &mut sender).await.unwrap();
+        assert!(!jobs.is_empty());
+        let offset = jobs[0].finished_size();
+        assert!(offset > 0);
+        jobs[0].paused = true;
+        for _ in 0..5 { handle_read_jobs(&mut jobs, &mut sender).await.unwrap(); }
+        assert_eq!(jobs[0].finished_size(), offset);
+        assert!(jobs[0].data_stream.is_some());
+        jobs[0].paused = false;
+        tokio::time::timeout(std::time::Duration::from_secs(10), async {
+            while !jobs.is_empty() { handle_read_jobs(&mut jobs, &mut sender).await.unwrap(); }
+            assert_eq!(receive.await.unwrap(), data);
+        }).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn small_file_batch_still_requires_each_overwrite_confirmation() {
+        let dir = TestTempDir::new("openuu_small_file_confirm");
+        std::fs::create_dir_all(&dir.path).unwrap();
+        std::fs::write(dir.join("a.bin"), b"first").unwrap();
+        std::fs::write(dir.join("b.bin"), b"second").unwrap();
+        let mut job = TransferJob::new_read(77, JobType::Generic, String::new(),
+            DataSource::FilePath(dir.path.clone()), 0, false, false, true).unwrap();
+        for file_num in 0..2 {
+            assert!(job.init_data_stream_for_cm().await.unwrap().is_some());
+            assert!(job.read().await.unwrap().is_none());
+            assert!(!job.job_completed());
+            let mut confirm = FileTransferSendConfirmRequest { id: 77, file_num, ..Default::default() };
+            confirm.set_skip(false);
+            job.confirm(&confirm).await;
+            let mut actual = Vec::new();
+            loop {
+                let block = job.read().await.unwrap().unwrap();
+                if block.data.is_empty() { break; }
+                if block.compressed { actual.extend(decompress(&block.data)); }
+                else { actual.extend_from_slice(&block.data); }
+            }
+            assert_eq!(actual, std::fs::read(dir.path.join(&job.files()[file_num as usize].name)).unwrap());
+        }
+    }
+
+    #[tokio::test]
+    async fn small_file_buffer_does_not_truncate_a_growing_file() {
+        let dir = TestTempDir::new("openuu_small_file_growth");
+        std::fs::create_dir_all(&dir.path).unwrap();
+        let path = dir.join("growing.bin");
+        std::fs::write(&path, b"x").unwrap();
+        let mut job = TransferJob::new_read(78, JobType::Generic, String::new(),
+            DataSource::FilePath(path.clone()), 0, false, false, false).unwrap();
+        std::fs::write(&path, b"expanded contents").unwrap();
+        job.init_data_stream_for_cm().await.unwrap();
+        let mut actual = Vec::new();
+        loop {
+            let block = job.read().await.unwrap().unwrap();
+            if block.data.is_empty() { break; }
+            actual.extend_from_slice(&block.data);
+        }
+        assert_eq!(actual, b"expanded contents");
     }
 
     struct TestTempDir {

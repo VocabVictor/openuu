@@ -13,6 +13,8 @@ class DesktopWelcomePage extends StatelessWidget {
   final VoidCallback? onDevices;
   final Widget? content;
   final bool settingsSelected;
+  final bool assistanceSelected;
+  final bool showTitleBar;
   final Widget? header;
   final Widget? deviceItem;
   const DesktopWelcomePage(
@@ -25,6 +27,8 @@ class DesktopWelcomePage extends StatelessWidget {
       this.content,
       this.header,
       this.deviceItem,
+      this.assistanceSelected = false,
+      this.showTitleBar = true,
       this.settingsSelected = false});
 
   static const blue = Color(0xff3979ff);
@@ -36,7 +40,7 @@ class DesktopWelcomePage extends StatelessWidget {
     return Material(
       color: const Color(0xffeff4f7),
       child: Column(children: [
-        SizedBox(
+        if (showTitleBar) SizedBox(
             height: 46,
             child: Row(children: [
               Expanded(
@@ -86,10 +90,10 @@ class DesktopWelcomePage extends StatelessWidget {
                   _group(t('我的设备', 'My devices'), Icons.devices_outlined),
                   if (deviceItem != null) deviceItem!,
                   _item(t('全部设备', 'All devices'), Icons.grid_view_rounded,
-                      !settingsSelected && deviceItem == null, onDevices ?? () {}),
+                      !settingsSelected && !assistanceSelected && deviceItem == null, onDevices ?? () {}),
                   _group(t('远程协助', 'Remote assistance'), Icons.crop_free),
                   _item(t('开始协助', 'Start assistance'), Icons.screen_share,
-                      false, onAssistance),
+                      assistanceSelected, onAssistance),
                   _item(t('收藏设备', 'Favorites'), Icons.bookmark, false,
                       onFavorites),
                   const Spacer(),
