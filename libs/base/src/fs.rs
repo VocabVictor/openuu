@@ -417,6 +417,30 @@ pub struct TransferJob {
     default_overwrite_strategy: Option<bool>,
     #[serde(skip_serializing)]
     digest: FileDigest,
+    #[serde(skip_serializing)]
+    compression: TransferCompression,
+}
+
+// Reprobe periodically so mixed-content files can regain compression.
+#[derive(Debug, Default)]
+struct TransferCompression {
+    skip_blocks: u8,
+}
+
+impl TransferCompression {
+    fn encode(&mut self, data: &[u8]) -> Option<Vec<u8>> {
+        if self.skip_blocks > 0 {
+            self.skip_blocks -= 1;
+            return None;
+        }
+        let encoded = compress(data);
+        if !encoded.is_empty() && encoded.len() < data.len() - data.len() / 32 {
+            Some(encoded)
+        } else {
+            self.skip_blocks = 31;
+            None
+        }
+    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
@@ -457,7 +481,7 @@ fn get_ext(name: &str) -> &str {
 fn is_compressed_file(name: &str) -> bool {
     let compressed_exts = ["xz", "gz", "zip", "7z", "rar", "bz2", "tgz", "png", "jpg"];
     let ext = get_ext(name);
-    compressed_exts.contains(&ext)
+    compressed_exts.iter().any(|candidate| ext.eq_ignore_ascii_case(candidate))
 }
 
 pub fn validate_file_name_no_traversal(name: &str) -> ResultType<()> {
@@ -993,8 +1017,7 @@ impl TransferJob {
         } else {
             self.finished_size += offset as u64;
             if matches!(self.data_source, DataSource::FilePath(_)) && !is_compressed_file(name) {
-                let tmp = compress(&buf);
-                if tmp.len() < buf.len() {
+                if let Some(tmp) = self.compression.encode(&buf) {
                     buf = tmp;
                     compressed = true;
                 }
@@ -1351,34 +1374,43 @@ pub async fn handle_read_jobs(
         if job.is_last_job {
             continue;
         }
-        match job.read().await {
-            Err(err) => {
-                stream
-                    .send(&new_error(job.id(), err, job.file_num()))
-                    .await?;
-            }
-            Ok(Some(block)) => {
-                stream.send(&new_block(block)).await?;
-            }
-            Ok(None) => {
-                if job.job_completed() {
-                    job_log = serialize_transfer_job(job, true, false, "");
-                    finished.push(job.id());
-                    match job.job_error() {
-                        Some(err) => {
-                            job_log = serialize_transfer_job(job, false, false, &err);
-                            stream
-                                .send(&new_error(job.id(), err, job.file_num()))
-                                .await?
-                        }
-                        None => stream.send(&new_done(job.id(), job.file_num())).await?,
+        let started = std::time::Instant::now();
+        for _ in 0..16 {
+            match job.read().await {
+                Err(err) => {
+                    stream
+                        .send(&new_error(job.id(), err, job.file_num()))
+                        .await?;
+                }
+                Ok(Some(block)) => {
+                    let has_data = !block.data.is_empty();
+                    stream.send(&new_block(block)).await?;
+                    // Bound each burst so control messages and cancellation get a turn.
+                    if has_data && started.elapsed() < std::time::Duration::from_millis(2) {
+                        continue;
                     }
-                } else {
-                    // waiting confirmation.
+                }
+                Ok(None) => {
+                    if job.job_completed() {
+                        job_log = serialize_transfer_job(job, true, false, "");
+                        finished.push(job.id());
+                        match job.job_error() {
+                            Some(err) => {
+                                job_log = serialize_transfer_job(job, false, false, &err);
+                                stream
+                                    .send(&new_error(job.id(), err, job.file_num()))
+                                    .await?
+                            }
+                            None => stream.send(&new_done(job.id(), job.file_num())).await?,
+                        }
+                    } else {
+                        // waiting confirmation.
+                    }
                 }
             }
+            break;
         }
-        // Break to handle jobs one by one.
+        // Preserve sequential job ordering and overwrite confirmation.
         break;
     }
     for id in finished {
@@ -1535,6 +1567,67 @@ pub fn serialize_transfer_job(job: &TransferJob, done: bool, cancel: bool, error
 #[cfg(test)]
 mod tests {
     use super::*;
+    use protobuf::Message as _;
+
+    #[test]
+    fn adaptive_compression_recovers_after_incompressible_data() {
+        let mut policy = TransferCompression::default();
+        let mut seed = 123456789u32;
+        let noise: Vec<u8> = (0..128 * 1024).map(|_| {
+            seed ^= seed << 13;
+            seed ^= seed >> 17;
+            seed ^= seed << 5;
+            seed as u8
+        }).collect();
+        assert!(policy.encode(&noise).is_none());
+        let text = vec![b'a'; 128 * 1024];
+        for _ in 0..31 {
+            assert!(policy.encode(&text).is_none());
+        }
+        let encoded = policy.encode(&text).unwrap();
+        assert_eq!(decompress(&encoded), text);
+        assert!(is_compressed_file("archive.ZIP"));
+    }
+
+    #[tokio::test]
+    async fn batched_transfer_preserves_payload_and_completion() {
+        let dir = TestTempDir::new("openuu_transfer_batch");
+        std::fs::create_dir_all(&dir.path).unwrap();
+        let data: Vec<u8> = (0..1024 * 1024 + 37).map(|i| (i % 251) as u8).collect();
+        let path = dir.join("payload.bin");
+        std::fs::write(&path, &data).unwrap();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let socket = tokio::net::TcpStream::connect(addr).await.unwrap();
+        let (receiver, peer) = listener.accept().await.unwrap();
+        let mut sender = hbb_common::Stream::Tcp(hbb_common::tcp::FramedStream::from(socket, addr));
+        let receive = tokio::spawn(async move {
+            let mut receiver = hbb_common::tcp::FramedStream::from(receiver, peer);
+            let mut actual = Vec::new();
+            loop {
+                let bytes = receiver.next().await.unwrap().unwrap();
+                let msg = Message::parse_from_bytes(&bytes).unwrap();
+                if let Some(message::Union::FileResponse(response)) = msg.union {
+                    match response.union {
+                        Some(file_response::Union::Block(block)) => {
+                            if block.compressed { actual.extend(decompress(&block.data)); }
+                            else { actual.extend_from_slice(&block.data); }
+                        }
+                        Some(file_response::Union::Done(_)) => return actual,
+                        Some(file_response::Union::Error(error)) => panic!("{:?}", error),
+                        _ => {}
+                    }
+                }
+            }
+        });
+        let job = TransferJob::new_read(7, JobType::Generic, String::new(),
+            DataSource::FilePath(path), 0, false, false, false).unwrap();
+        let mut jobs = vec![job];
+        tokio::time::timeout(std::time::Duration::from_secs(10), async {
+            while !jobs.is_empty() { handle_read_jobs(&mut jobs, &mut sender).await.unwrap(); }
+            assert_eq!(receive.await.unwrap(), data);
+        }).await.unwrap();
+    }
 
     struct TestTempDir {
         path: PathBuf,
