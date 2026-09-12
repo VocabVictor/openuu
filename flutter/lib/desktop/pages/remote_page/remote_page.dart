@@ -30,6 +30,8 @@ import 'package:flutter_hbb/native/custom_cursor.dart'
     if (dart.library.html) 'package:flutter_hbb/web/custom_cursor.dart';
 part 'view.dart';
 part 'macos.dart';
+part 'body.dart';
+part 'widgets.dart';
 
 final SimpleWrapper<bool> _firstEnterImage = SimpleWrapper(false);
 
@@ -94,6 +96,7 @@ class _RemotePageState extends State<RemotePage>
         MultiWindowListener,
         WidgetsBindingObserver,
         TickerProviderStateMixin {
+  void _setState(VoidCallback fn) => setState(fn);
   Timer? _timer;
   String keyboardMode = "legacy";
   bool _isWindowBlur = false;
@@ -490,139 +493,6 @@ class _RemotePageState extends State<RemotePage>
     removeSharedStates(widget.id);
   }
 
-  Widget emptyOverlay() => BlockableOverlay(
-        /// the Overlay key will be set with _blockableOverlayState in BlockableOverlay
-        /// see override build() in [BlockableOverlay]
-        state: _blockableOverlayState,
-        underlying: Container(
-          color: Colors.transparent,
-        ),
-      );
-
-  Widget buildBody(BuildContext context) {
-    remoteToolbar(BuildContext context) => RemoteToolbar(
-          id: widget.id,
-          ffi: _ffi,
-          state: widget.toolbarState,
-          onEnterOrLeaveImageSetter: (id, func) {
-            _instanceIdOnEnterOrLeaveImage4Toolbar = id;
-            _onEnterOrLeaveImage4Toolbar = func;
-          },
-          onEnterOrLeaveImageCleaner: (id) {
-            // If _instanceIdOnEnterOrLeaveImage4Toolbar != id
-            // it means `_onEnterOrLeaveImage4Toolbar` is not set or it has been changed to another toolbar.
-            if (_instanceIdOnEnterOrLeaveImage4Toolbar == id) {
-              _instanceIdOnEnterOrLeaveImage4Toolbar = null;
-              _onEnterOrLeaveImage4Toolbar = null;
-            }
-          },
-          setRemoteState: setState,
-        );
-
-    bodyWidget() {
-      return Stack(
-        children: [
-          Container(
-              color: kColorCanvas,
-              child: RawKeyFocusScope(
-                  focusNode: _rawKeyFocusNode,
-                  onFocusChange: (bool imageFocused) {
-                    debugPrint(
-                        "onFocusChange(window active:${!_isWindowBlur}) $imageFocused");
-                    // See [onWindowBlur].
-                    if (isWindows) {
-                      if (_isWindowBlur) {
-                        imageFocused = false;
-                        Future.delayed(Duration.zero, () {
-                          _rawKeyFocusNode.unfocus();
-                        });
-                      }
-                      if (imageFocused) {
-                        _ffi.inputModel.enterOrLeave(true);
-                      } else {
-                        _ffi.inputModel.enterOrLeave(false);
-                      }
-                    } else if (isMacOS) {
-                      _onMacOSFocusChange();
-                    }
-                  },
-                  inputModel: _ffi.inputModel,
-                  child: getBodyForDesktop(context))),
-          Stack(
-            children: [
-              _ffi.ffiModel.pi.isSet.isTrue &&
-                      _ffi.ffiModel.waitForFirstImage.isTrue
-                  ? emptyOverlay()
-                  : () {
-                      if (!_ffi.ffiModel.isPeerAndroid) {
-                        return Offstage();
-                      } else {
-                        return Obx(() => Offstage(
-                              offstage: _ffi.dialogManager
-                                  .mobileActionsOverlayVisible.isFalse,
-                              child: Overlay(initialEntries: [
-                                makeMobileActionsOverlayEntry(
-                                  () => _ffi.dialogManager
-                                      .setMobileActionsOverlayVisible(false),
-                                  ffi: _ffi,
-                                )
-                              ]),
-                            ));
-                      }
-                    }(),
-              // Use Overlay to enable rebuild every time on menu button click.
-              // Hide toolbar when relative mouse mode is active to prevent
-              // cursor from escaping to toolbar area.
-              Obx(() => _ffi.inputModel.relativeMouseMode.value
-                  ? const Offstage()
-                  : _ffi.ffiModel.pi.isSet.isTrue
-                      ? Overlay(initialEntries: [
-                          OverlayEntry(builder: remoteToolbar)
-                        ])
-                      : remoteToolbar(context)),
-              _ffi.ffiModel.pi.isSet.isFalse ? emptyOverlay() : Offstage(),
-            ],
-          ),
-        ],
-      );
-    }
-
-    return Scaffold(
-      bottomNavigationBar: widget.viewOnly || _ffi.viewOnlySession
-          ? Container(color: const Color(0xffe8f0fa), padding: const EdgeInsets.all(6),
-              child: Text('${translate('View Mode')} · ${translate('Read-only')}',
-                  textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Color(0xff24476b))))
-          : null,
-      backgroundColor: Theme.of(context).colorScheme.background,
-      body: Obx(() {
-        final imageReady = _ffi.ffiModel.pi.isSet.isTrue &&
-            _ffi.ffiModel.waitForFirstImage.isFalse;
-        if (imageReady) {
-          // If the privacy mode(disable physical displays) is switched,
-          // we should not dismiss the dialog immediately.
-          if (DateTime.now().difference(togglePrivacyModeTime) >
-              const Duration(milliseconds: 3000)) {
-            // `dismissAll()` is to ensure that the state is clean.
-            // It's ok to call dismissAll() here.
-            _ffi.dialogManager.dismissAll();
-            // Recreate the block state to refresh the state.
-            _blockableOverlayState = BlockableOverlayState();
-            _blockableOverlayState.applyFfi(_ffi);
-          }
-          // Block the whole `bodyWidget()` when dialog shows.
-          return BlockableOverlay(
-            underlying: bodyWidget(),
-            state: _blockableOverlayState,
-          );
-        } else {
-          // `_blockableOverlayState` is not recreated here.
-          // The toolbar's block state won't work properly when reconnecting, but that's okay.
-          return bodyWidget();
-        }
-      }),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -642,63 +512,6 @@ class _RemotePageState extends State<RemotePage>
 
   @override
   bool get wantKeepAlive => true;
-}
-
-/// A widget that tracks the view size and updates CanvasModel.updateViewStyle()
-/// and InputModel.updateImageWidgetSize() only when size actually changes.
-/// This avoids scheduling post-frame callbacks on every LayoutBuilder rebuild.
-class _ViewStyleUpdater extends StatefulWidget {
-  final CanvasModel canvasModel;
-  final InputModel inputModel;
-  final Widget child;
-
-  const _ViewStyleUpdater({
-    Key? key,
-    required this.canvasModel,
-    required this.inputModel,
-    required this.child,
-  }) : super(key: key);
-
-  @override
-  State<_ViewStyleUpdater> createState() => _ViewStyleUpdaterState();
-}
-
-class _ViewStyleUpdaterState extends State<_ViewStyleUpdater> {
-  Size? _lastSize;
-  bool _callbackScheduled = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth;
-        final maxHeight = constraints.maxHeight;
-        // Guard against infinite constraints (e.g., unconstrained ancestor).
-        if (!maxWidth.isFinite || !maxHeight.isFinite) {
-          return widget.child;
-        }
-        final newSize = Size(maxWidth, maxHeight);
-        if (_lastSize != newSize) {
-          _lastSize = newSize;
-          // Schedule the update for after the current frame to avoid setState during build.
-          // Use _callbackScheduled flag to prevent accumulating multiple callbacks
-          // when size changes rapidly before any callback executes.
-          if (!_callbackScheduled) {
-            _callbackScheduled = true;
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              _callbackScheduled = false;
-              final currentSize = _lastSize;
-              if (mounted && currentSize != null) {
-                widget.canvasModel.updateViewStyle();
-                widget.inputModel.updateImageWidgetSize(currentSize);
-              }
-            });
-          }
-        }
-        return widget.child;
-      },
-    );
-  }
 }
 
 class ImagePaint extends StatefulWidget {
@@ -1002,69 +815,5 @@ class _ImagePaintState extends State<ImagePaint> {
     } else {
       return child;
     }
-  }
-}
-
-class CursorPaint extends StatelessWidget {
-  final String id;
-  final RxBool zoomCursor;
-
-  const CursorPaint({
-    Key? key,
-    required this.id,
-    required this.zoomCursor,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final m = Provider.of<CursorModel>(context);
-    final c = Provider.of<CanvasModel>(context);
-    double hotx = m.hotx;
-    double hoty = m.hoty;
-    if (m.image == null) {
-      if (preDefaultCursor.image != null) {
-        hotx = preDefaultCursor.image!.width / 2;
-        hoty = preDefaultCursor.image!.height / 2;
-      }
-    }
-
-    double cx = c.x;
-    double cy = c.y;
-    if (c.viewStyle.style == kRemoteViewStyleOriginal &&
-        c.scrollStyle == ScrollStyle.scrollbar) {
-      final rect = c.parent.target!.ffiModel.rect;
-      if (rect == null) {
-        // unreachable!
-        debugPrint('unreachable! The displays rect is null.');
-        return Container();
-      }
-      if (cx < 0) {
-        final imageWidth = rect.width * c.scale;
-        cx = -imageWidth * c.scrollX;
-      }
-      if (cy < 0) {
-        final imageHeight = rect.height * c.scale;
-        cy = -imageHeight * c.scrollY;
-      }
-    }
-
-    double x = (m.x - hotx) * c.scale + cx;
-    double y = (m.y - hoty) * c.scale + cy;
-    double scale = 1.0;
-    final isViewOriginal = c.viewStyle.style == kRemoteViewStyleOriginal;
-    if (zoomCursor.value || isViewOriginal) {
-      x = m.x - hotx + cx / c.scale;
-      y = m.y - hoty + cy / c.scale;
-      scale = c.scale;
-    }
-
-    return CustomPaint(
-      painter: ImagePainter(
-        image: m.image ?? preDefaultCursor.image,
-        x: x,
-        y: y,
-        scale: scale,
-      ),
-    );
   }
 }
