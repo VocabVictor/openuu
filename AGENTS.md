@@ -99,6 +99,7 @@ broken up.
 | `src/client/io_loop/peer_msg.rs` | single `Remote::handle_msg_from_peer` function (~750 lines) |
 | `src/server/terminal_service/proxy_open.rs` | single `TerminalServiceProxy::handle_open` function (~330 lines) |
 | `src/server/video_service/run_loop.rs` | single `run(vs: VideoService)` function (~380 lines) |
+| `src/flutter/invoke_ui.rs` | single `impl InvokeUiSession for FlutterHandler` block (~520 lines); a trait impl cannot span files |
 | `flutter/lib/common/my_theme.dart` | single `MyTheme` class of static members (~380 lines); a Dart class body cannot span files |
 | `src/flutter_ffi.rs` | flutter_rust_bridge v1 single-file codegen input (`--rust-input`); splitting needs frb v2 or changes to every build script. New exported functions added here must be one-line forwards to the owning module; no logic lives in this file. |
 
