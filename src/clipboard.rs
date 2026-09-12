@@ -524,7 +524,7 @@ impl ClipboardContext {
                 #[cfg(target_os = "macos")]
                 let is_kde_x11 = false;
                 let clear_holder_text = if is_kde_x11 {
-                    "RustDesk placeholder to clear the file clipboard"
+                    "OpenUU placeholder to clear the file clipboard"
                 } else {
                     ""
                 }

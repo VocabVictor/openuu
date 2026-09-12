@@ -1614,7 +1614,7 @@ fi
 # Agents have already been verified absent. Stop and verify any remaining GUI
 # processes as well so no process keeps the old bundle mapped across the swap.
 if ! stop_user_bundle_processes; then
-    echo "[root-update] RustDesk GUI process did not stop before bundle swap" >> {tmp_dir}/rustdesk_root_update.log
+    echo "[root-update] OpenUU GUI process did not stop before bundle swap" >> {tmp_dir}/rustdesk_root_update.log
     exit 1
 fi
 staged_bundle="{tmp_dir}/staged.app"
