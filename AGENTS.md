@@ -104,6 +104,7 @@ broken up.
 | `flutter/lib/models/ab_model/legacy_ab.dart` | single `LegacyAb` class (~390 lines) made of `BaseAb` overrides; overrides cannot move into an extension |
 | `flutter/lib/models/ab_model/ab.dart` | single `Ab` class (~520 lines) made of `BaseAb` overrides; overrides cannot move into an extension |
 | `flutter/lib/desktop/pages/file_manager_page/view_head_tools.dart` | single `headTools` method (~460 lines) |
+| `flutter/lib/desktop/pages/remote_page/remote_page_widget.dart` | `_RemotePageState` fields plus ~400 lines of `@override` lifecycle/build methods; overrides cannot move into an extension |
 | `flutter/lib/web/bridge.dart` | single `RustdeskImpl` class (~1930 lines) mirroring the generated bridge API one-to-one; callers reach it through the conditional import in `models/platform_model.dart`, which does not re-export the library, so extension members would be invisible on the web target and `flutter analyze` (native branch) cannot catch that |
 | `src/flutter_ffi.rs` | flutter_rust_bridge v1 single-file codegen input (`--rust-input`); splitting needs frb v2 or changes to every build script. New exported functions added here must be one-line forwards to the owning module; no logic lives in this file. |
 
