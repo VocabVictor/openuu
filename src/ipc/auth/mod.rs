@@ -1,6 +1,4 @@
 use crate::ipc::{Connection, ConnectionTmpl};
-#[cfg(all(windows, not(feature = "flutter")))]
-use hbb_common::sha2::{Digest, Sha256};
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 use hbb_common::{anyhow, bail, log, ResultType};
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -12,8 +10,6 @@ use hbb_common::{
 use parity_tokio_ipc::SecurityAttributes;
 #[cfg(windows)]
 use std::io;
-#[cfg(all(windows, not(feature = "flutter")))]
-use std::io::Read;
 #[cfg(target_os = "macos")]
 use std::os::unix::fs::MetadataExt;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -564,69 +560,6 @@ mod tests {
         assert!(!super::os_str_eq_ignore_ascii_case(
             Some(std::ffi::OsStr::new("RustDesk")),
             Some(std::ffi::OsStr::new("service"))
-        ));
-    }
-
-    #[cfg(all(windows, not(feature = "flutter")))]
-    struct TempDirGuard(std::path::PathBuf);
-
-    #[cfg(all(windows, not(feature = "flutter")))]
-    impl Drop for TempDirGuard {
-        fn drop(&mut self) {
-            let _ = std::fs::remove_dir_all(&self.0);
-        }
-    }
-
-    #[test]
-    #[cfg(all(windows, not(feature = "flutter")))]
-    fn test_portable_service_helper_trust_requires_content_match() {
-        let unique = format!(
-            "rustdesk-portable-helper-trust-test-{}-{}",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_nanos()
-        );
-        let base = std::env::temp_dir().join(unique);
-        std::fs::create_dir_all(&base).unwrap();
-        let _cleanup = TempDirGuard(base.clone());
-
-        let current_exe = base.join("current.exe");
-        let helper_exe = base.join("helper.exe");
-        std::fs::write(&current_exe, b"trusted-binary").unwrap();
-        std::fs::write(&helper_exe, b"tampered-binary").unwrap();
-
-        assert!(
-            !super::portable_service_helper_is_trusted(&helper_exe, &helper_exe, &current_exe),
-            "helper trust check must reject path-match-only binaries with mismatched content"
-        );
-    }
-
-    #[test]
-    #[cfg(all(windows, not(feature = "flutter")))]
-    fn test_portable_service_helper_trust_accepts_matching_content() {
-        let unique = format!(
-            "rustdesk-portable-helper-trust-match-test-{}-{}",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_nanos()
-        );
-        let base = std::env::temp_dir().join(unique);
-        std::fs::create_dir_all(&base).unwrap();
-        let _cleanup = TempDirGuard(base.clone());
-
-        let current_exe = base.join("current.exe");
-        let helper_exe = base.join("helper.exe");
-        std::fs::write(&current_exe, b"trusted-binary").unwrap();
-        std::fs::write(&helper_exe, b"trusted-binary").unwrap();
-
-        assert!(super::portable_service_helper_is_trusted(
-            &helper_exe,
-            &helper_exe,
-            &current_exe
         ));
     }
 

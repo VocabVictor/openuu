@@ -191,10 +191,6 @@ impl<T: InvokeUiSession> Session<T> {
 
     pub fn toggle_option(&self, name: String) {
         let msg = self.lc.write().unwrap().toggle_option(name.clone());
-        #[cfg(all(target_os = "windows", not(feature = "flutter")))]
-        if name == keys::OPTION_ENABLE_FILE_COPY_PASTE {
-            self.send(Data::ToggleClipboardFile);
-        }
         if let Some(msg) = msg {
             self.send(Data::Message(msg));
         }
@@ -217,11 +213,6 @@ impl<T: InvokeUiSession> Session<T> {
 
     pub fn get_toggle_option(&self, name: String) -> bool {
         self.lc.read().unwrap().get_toggle_option(&name)
-    }
-
-    #[cfg(not(feature = "flutter"))]
-    pub fn is_privacy_mode_supported(&self) -> bool {
-        self.lc.read().unwrap().is_privacy_mode_supported()
     }
 
     #[cfg(not(target_os = "ios"))]

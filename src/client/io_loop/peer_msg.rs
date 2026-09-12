@@ -72,24 +72,10 @@ impl<T: InvokeUiSession> Remote<T> {
                             }
                         }
                         self.handler.handle_peer_info(pi);
-                        #[cfg(all(target_os = "windows", not(feature = "flutter")))]
-                        self.check_clipboard_file_context();
                         if self.handler.is_default() {
                             #[cfg(feature = "flutter")]
                             #[cfg(not(target_os = "ios"))]
                             let rx = Client::try_start_clipboard(None);
-                            #[cfg(not(feature = "flutter"))]
-                            #[cfg(not(any(target_os = "android", target_os = "ios")))]
-                            let rx = Client::try_start_clipboard(Some(
-                                crate::client::ClientClipboardContext {
-                                    cfg: self.handler.get_permission_config(),
-                                    tx: self.sender.clone(),
-                                    #[cfg(feature = "unix-file-copy-paste")]
-                                    is_file_supported: crate::is_support_file_copy_paste(
-                                        &peer_version,
-                                    ),
-                                },
-                            ));
                             // To make sure current text clipboard data is updated.
                             #[cfg(not(target_os = "ios"))]
                             if let Some(mut rx) = rx {
@@ -563,21 +549,6 @@ impl<T: InvokeUiSession> Remote<T> {
                                 self.handler.cancel_msgbox("elevation-error");
                             }
                         }
-                        #[cfg(not(feature = "flutter"))]
-                        {
-                            let msgtype = "custom-uac-nocancel";
-                            let title = "Prompt";
-                            let text = "Please wait for confirmation of UAC...";
-                            let link = "";
-                            if uac && keyboard {
-                                self.handler.msgbox(msgtype, title, text, link);
-                            } else {
-                                self.handler.cancel_msgbox(&format!(
-                                    "{}-{}-{}-{}",
-                                    msgtype, title, text, link,
-                                ));
-                            }
-                        }
                     }
                     Some(misc::Union::ForegroundWindowElevated(elevated)) => {
                         let keyboard = self.handler.server_keyboard_enabled.read().unwrap().clone();
@@ -594,21 +565,6 @@ impl<T: InvokeUiSession> Remote<T> {
                                 self.handler.cancel_msgbox("on-foreground-elevated");
                                 self.handler.cancel_msgbox("wait-uac");
                                 self.handler.cancel_msgbox("elevation-error");
-                            }
-                        }
-                        #[cfg(not(feature = "flutter"))]
-                        {
-                            let msgtype = "custom-elevated-foreground-nocancel";
-                            let title = "Prompt";
-                            let text = "elevated_foreground_window_tip";
-                            let link = "";
-                            if elevated && keyboard {
-                                self.handler.msgbox(msgtype, title, text, link);
-                            } else {
-                                self.handler.cancel_msgbox(&format!(
-                                    "{}-{}-{}-{}",
-                                    msgtype, title, text, link,
-                                ));
                             }
                         }
                     }

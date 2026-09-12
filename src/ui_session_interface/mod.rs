@@ -7,10 +7,6 @@ use crate::{
     ui_interface::use_texture_render,
 };
 use async_trait::async_trait;
-#[cfg(all(target_os = "windows", not(feature = "flutter")))]
-use base::config::keys;
-#[cfg(not(feature = "flutter"))]
-use base::fs;
 use base::message_proto::*;
 use bytes::Bytes;
 use hbb_common::{

@@ -65,8 +65,6 @@ impl Client {
         std::thread::spawn(move || {
             let mut handler = ClientClipboardHandler {
                 ctx: None,
-                #[cfg(not(feature = "flutter"))]
-                client_clip_ctx: _client_clip_ctx,
             };
 
             tx_started.send(()).ok();
@@ -149,8 +147,6 @@ impl ClipboardState {
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub(super) struct ClientClipboardHandler {
     ctx: Option<crate::clipboard::ClipboardContext>,
-    #[cfg(not(feature = "flutter"))]
-    client_clip_ctx: Option<ClientClipboardContext>,
 }
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
@@ -160,13 +156,6 @@ impl ClientClipboardHandler {
         {
             CLIPBOARD_STATE.lock().unwrap().is_text_required
         }
-        #[cfg(not(feature = "flutter"))]
-        {
-            self.client_clip_ctx
-                .as_ref()
-                .map(|ctx| ctx.cfg.is_text_clipboard_required())
-                .unwrap_or(false)
-        }
     }
 
     #[cfg(feature = "unix-file-copy-paste")]
@@ -174,13 +163,6 @@ impl ClientClipboardHandler {
         #[cfg(feature = "flutter")]
         {
             CLIPBOARD_STATE.lock().unwrap().is_file_required
-        }
-        #[cfg(not(feature = "flutter"))]
-        {
-            self.client_clip_ctx
-                .as_ref()
-                .map(|ctx| ctx.cfg.is_file_clipboard_required())
-                .unwrap_or(false)
         }
     }
 
@@ -224,31 +206,4 @@ impl ClientClipboardHandler {
         crate::flutter::send_clipboard_msg(msg, _is_file);
     }
 
-    #[cfg(not(feature = "flutter"))]
-    pub(super) fn send_msg(&self, msg: Message, _is_file: bool) {
-        if let Some(ctx) = &self.client_clip_ctx {
-            #[cfg(feature = "unix-file-copy-paste")]
-            if _is_file {
-                if ctx.is_file_supported {
-                    let _ = ctx.tx.send(Data::Message(msg));
-                }
-                return;
-            }
-
-            let pi = ctx.cfg.lc.read().unwrap().peer_info.clone();
-            if let Some(pi) = pi.as_ref() {
-                if let Some(message::Union::MultiClipboards(multi_clipboards)) = &msg.union {
-                    if let Some(msg_out) = crate::clipboard::get_msg_if_not_support_multi_clip(
-                        &pi.version,
-                        &pi.platform,
-                        multi_clipboards,
-                    ) {
-                        let _ = ctx.tx.send(Data::Message(msg_out));
-                        return;
-                    }
-                }
-            }
-            let _ = ctx.tx.send(Data::Message(msg));
-        }
-    }
 }

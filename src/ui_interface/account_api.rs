@@ -29,18 +29,6 @@ pub fn get_async_http_status(url: String) -> Option<String> {
 }
 
 #[inline]
-#[cfg(not(feature = "flutter"))]
-pub fn post_request(url: String, body: String, header: String) {
-    *ASYNC_JOB_STATUS.lock().unwrap() = " ".to_owned();
-    std::thread::spawn(move || {
-        *ASYNC_JOB_STATUS.lock().unwrap() = match crate::post_request_sync(url, body, &header) {
-            Err(err) => err.to_string(),
-            Ok(text) => text,
-        };
-    });
-}
-
-#[inline]
 pub fn get_async_job_status() -> String {
     ASYNC_JOB_STATUS.lock().unwrap().clone()
 }

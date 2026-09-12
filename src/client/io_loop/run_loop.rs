@@ -210,8 +210,6 @@ impl<T: InvokeUiSession> Remote<T> {
                                 // Sciter knows no `restarting-show` and would show a dialog that
                                 // waits for a click, where the timeout this arrives ahead of is
                                 // retryable and reconnects on its own. Keep that message for it.
-                                #[cfg(not(feature = "flutter"))]
-                                self.handler.msgbox("error", "Connection Error", "Timeout", "");
                                 break;
                             }
                             let elapsed = fps_instant.elapsed().as_millis();

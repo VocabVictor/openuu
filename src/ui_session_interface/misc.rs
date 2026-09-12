@@ -32,12 +32,6 @@ impl<T: InvokeUiSession> Session<T> {
         });
     }
 
-    #[cfg(not(feature = "flutter"))]
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    pub fn is_xfce(&self) -> bool {
-        crate::platform::is_xfce()
-    }
-
     pub fn remove_port_forward(&self, port: i32) {
         let mut config = self.load_config();
         config.port_forwards = config
@@ -124,11 +118,4 @@ impl<T: InvokeUiSession> Session<T> {
         input_os_password(pass, activate, self.clone());
     }
 
-    #[cfg(not(feature = "flutter"))]
-    pub fn get_chatbox(&self) -> String {
-        #[cfg(feature = "inline")]
-        return crate::ui::inline::get_chatbox();
-        #[cfg(not(feature = "inline"))]
-        return "".to_owned();
-    }
 }

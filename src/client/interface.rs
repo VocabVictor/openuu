@@ -117,8 +117,6 @@ pub enum Data {
     PauseJob((i32, bool)),
     RemovePortForward(i32),
     AddPortForward((i32, String, i32)),
-    #[cfg(all(target_os = "windows", not(feature = "flutter")))]
-    ToggleClipboardFile,
     NewRDP,
     SetConfirmOverrideFile((i32, i32, bool, bool, bool)),
     AddJob((i32, JobType, String, String, i32, bool, bool)),

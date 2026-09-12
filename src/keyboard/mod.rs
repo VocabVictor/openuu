@@ -114,10 +114,6 @@ static mut IS_LEFT_OPTION_DOWN: bool = false;
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 fn get_keyboard_mode() -> String {
-    #[cfg(not(feature = "flutter"))]
-    if let Some(session) = CUR_SESSION.lock().unwrap().as_ref() {
-        return session.get_keyboard_mode();
-    }
     #[cfg(feature = "flutter")]
     if let Some(session) = flutter::get_cur_session() {
         return session.get_keyboard_mode();
@@ -179,10 +175,6 @@ pub fn event_to_key_events(
 }
 
 pub fn send_key_event(key_event: &KeyEvent) {
-    #[cfg(not(feature = "flutter"))]
-    if let Some(session) = CUR_SESSION.lock().unwrap().as_ref() {
-        session.send_key_event(key_event);
-    }
 
     #[cfg(feature = "flutter")]
     if let Some(session) = flutter::get_cur_session() {
@@ -191,10 +183,6 @@ pub fn send_key_event(key_event: &KeyEvent) {
 }
 
 pub fn get_peer_platform() -> String {
-    #[cfg(not(feature = "flutter"))]
-    if let Some(session) = CUR_SESSION.lock().unwrap().as_ref() {
-        return session.peer_platform();
-    }
     #[cfg(feature = "flutter")]
     if let Some(session) = flutter::get_cur_session() {
         return session.peer_platform();

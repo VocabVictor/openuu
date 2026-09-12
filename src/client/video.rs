@@ -18,11 +18,6 @@ impl VideoHandler {
         crate::flutter::get_adapter_luid()
     }
 
-    #[cfg(not(feature = "flutter"))]
-    pub fn get_adapter_luid() -> Option<i64> {
-        None
-    }
-
     /// Create a new video handler.
     pub fn new(format: CodecFormat, _display: usize) -> Self {
         let luid = Self::get_adapter_luid();

@@ -14,20 +14,6 @@ pub(super) fn windows_portable_service_ipc_allows_logon_helper_executable(
     {
         false
     }
-    #[cfg(not(feature = "flutter"))]
-    {
-        let Some((_, expected)) = crate::platform::windows::portable_service_logon_helper_paths()
-        else {
-            return false;
-        };
-        let Ok(expected) = fs::canonicalize(expected) else {
-            return false;
-        };
-        let Ok(current_exe) = current_exe_canonical_path() else {
-            return false;
-        };
-        portable_service_helper_is_trusted(_peer_exe, &expected, &current_exe)
-    }
 }
 
 #[cfg(windows)]
@@ -55,57 +41,6 @@ pub(super) fn is_allowed_windows_portable_service_peer(
     // In the portable-service path, current process is expected to run as SYSTEM,
     // and the higher-layer peer policy stays SYSTEM-only.
     matches!(client_is_system, Some(true))
-}
-
-#[cfg(all(windows, not(feature = "flutter")))]
-#[inline]
-pub(super) fn file_sha256(path: &Path) -> ResultType<[u8; 32]> {
-    let mut file = fs::File::open(path)?;
-    let mut hasher = Sha256::new();
-    let mut buffer = [0u8; 8 * 1024];
-    loop {
-        let read_bytes = file.read(&mut buffer)?;
-        if read_bytes == 0 {
-            break;
-        }
-        hasher.update(&buffer[..read_bytes]);
-    }
-    Ok(hasher.finalize().into())
-}
-
-#[cfg(all(windows, not(feature = "flutter")))]
-#[inline]
-pub(super) fn portable_service_helper_is_trusted(
-    peer_exe: &Path,
-    expected_exe: &Path,
-    current_exe: &Path,
-) -> bool {
-    if !executable_paths_match(peer_exe, expected_exe) {
-        return false;
-    }
-    let peer_hash = match file_sha256(peer_exe) {
-        Ok(hash) => hash,
-        Err(err) => {
-            log::warn!(
-                "Failed to hash peer portable helper executable '{}': {}",
-                peer_exe.display(),
-                err
-            );
-            return false;
-        }
-    };
-    let current_hash = match file_sha256(current_exe) {
-        Ok(hash) => hash,
-        Err(err) => {
-            log::warn!(
-                "Failed to hash current executable '{}' for portable helper trust check: {}",
-                current_exe.display(),
-                err
-            );
-            return false;
-        }
-    };
-    peer_hash == current_hash
 }
 
 #[cfg(windows)]

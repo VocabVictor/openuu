@@ -14,30 +14,6 @@ pub async fn handle_test_delay(t: TestDelay, peer: &mut Stream) {
     }
 }
 
-/// Whether is track pad scrolling.
-#[inline]
-#[cfg(all(target_os = "macos", not(feature = "flutter")))]
-pub(super) fn check_scroll_on_mac(mask: i32, x: i32, y: i32) -> bool {
-    // flutter version we set mask type bit to 4 when track pad scrolling.
-    if mask & 7 == crate::input::MOUSE_TYPE_TRACKPAD {
-        return true;
-    }
-    if mask & 3 != crate::input::MOUSE_TYPE_WHEEL {
-        return false;
-    }
-    let btn = mask >> 3;
-    if y == -1 {
-        btn != 0xff88 && btn != -0x780000
-    } else if y == 1 {
-        btn != 0x78 && btn != 0x780000
-    } else if x != 0 {
-        // No mouse support horizontal scrolling.
-        true
-    } else {
-        false
-    }
-}
-
 /// Send mouse data.
 ///
 /// # Arguments
@@ -82,13 +58,6 @@ pub fn send_mouse(
     }
     if command {
         mouse_event.modifiers.push(ControlKey::Meta.into());
-    }
-    #[cfg(all(target_os = "macos", not(feature = "flutter")))]
-    if check_scroll_on_mac(mask, x, y) {
-        let factor = 3;
-        mouse_event.mask = crate::input::MOUSE_TYPE_TRACKPAD;
-        mouse_event.x *= factor;
-        mouse_event.y *= factor;
     }
     interface.swap_modifier_mouse(&mut mouse_event);
     msg_out.set_mouse_event(mouse_event);

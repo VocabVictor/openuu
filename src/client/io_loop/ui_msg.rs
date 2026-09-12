@@ -12,10 +12,6 @@ impl<T: InvokeUiSession> Remote<T> {
                     .handle_login_from_ui(os_username, os_password, password, remember, peer)
                     .await;
             }
-            #[cfg(all(target_os = "windows", not(feature = "flutter")))]
-            Data::ToggleClipboardFile => {
-                self.check_clipboard_file_context();
-            }
             Data::Message(msg) => {
                 match &msg.union {
                     Some(message::Union::Misc(misc)) => match misc.union {

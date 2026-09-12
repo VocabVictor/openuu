@@ -12,11 +12,6 @@ impl<T: InvokeUiSession> Session<T> {
         }
     }
 
-    #[cfg(not(feature = "flutter"))]
-    pub fn refresh_video(&self, _display: i32) {
-        self.send(Data::Message(LoginConfigHandler::refresh()));
-    }
-
     pub fn toggle_virtual_display(&self, index: i32, on: bool) {
         let mut misc = Misc::new();
         misc.set_toggle_virtual_display(ToggleVirtualDisplay {
@@ -80,25 +75,6 @@ impl<T: InvokeUiSession> Session<T> {
 
     pub fn get_remember(&self) -> bool {
         self.lc.read().unwrap().remember
-    }
-
-    #[cfg(not(feature = "flutter"))]
-    pub fn set_write_override(
-        &mut self,
-        job_id: i32,
-        file_num: i32,
-        is_override: bool,
-        remember: bool,
-        is_upload: bool,
-    ) -> bool {
-        self.send(Data::SetConfirmOverrideFile((
-            job_id,
-            file_num,
-            is_override,
-            remember,
-            is_upload,
-        )));
-        true
     }
 
     pub fn alternative_codecs(&self) -> (bool, bool, bool, bool) {

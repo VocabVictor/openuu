@@ -39,9 +39,6 @@ use crate::{
 #[cfg(feature = "unix-file-copy-paste")]
 use crate::{clipboard::check_clipboard_files, clipboard_file::unix_file_clip};
 pub use file_trait::FileManager;
-#[cfg(not(feature = "flutter"))]
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use hbb_common::tokio::sync::mpsc::UnboundedSender;
 use hbb_common::{
     allow_err,
     anyhow::{anyhow, Context},
@@ -87,9 +84,6 @@ use scrap::{
 use crate::clipboard::CLIPBOARD_INTERVAL;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use crate::clipboard::{check_clipboard, ClipboardSide};
-#[cfg(not(feature = "flutter"))]
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use crate::ui_session_interface::SessionPermissionConfig;
 
 pub use super::lang::*;
 
@@ -133,15 +127,6 @@ pub const AUDIO_BUFFER_MS: usize = 3000;
 #[cfg(feature = "flutter")]
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub(crate) struct ClientClipboardContext;
-
-#[cfg(not(feature = "flutter"))]
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-pub(crate) struct ClientClipboardContext {
-    pub cfg: SessionPermissionConfig,
-    pub tx: UnboundedSender<Data>,
-    #[cfg(feature = "unix-file-copy-paste")]
-    pub is_file_supported: bool,
-}
 
 /// Client of the remote desktop.
 pub struct Client;

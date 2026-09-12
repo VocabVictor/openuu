@@ -55,11 +55,6 @@ pub fn get_license() -> String {
         #[cfg(feature = "flutter")]
         return format!("Key: {}\nHost: {}\nAPI: {}", lic.key, lic.host, lic.api);
         // default license format is html formed (sciter)
-        #[cfg(not(feature = "flutter"))]
-        return format!(
-            "<br /> Key: {} <br /> Host: {} API: {}",
-            lic.key, lic.host, lic.api
-        );
     }
     Default::default()
 }

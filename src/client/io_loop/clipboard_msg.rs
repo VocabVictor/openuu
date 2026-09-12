@@ -56,12 +56,6 @@ impl<T: InvokeUiSession> Remote<T> {
 }
 
 impl<T: InvokeUiSession> Remote<T> {
-    #[cfg(all(target_os = "windows", not(feature = "flutter")))]
-    pub(super) fn check_clipboard_file_context(&self) {
-        let enabled = *self.handler.server_file_transfer_enabled.read().unwrap()
-            && self.handler.lc.read().unwrap().enable_file_copy_paste.v;
-        ContextSend::enable(enabled);
-    }
 
     #[cfg(any(target_os = "windows", feature = "unix-file-copy-paste"))]
     pub(super) async fn handle_cliprdr_msg(&mut self, clip: base::message_proto::Cliprdr, _peer: &mut Stream) {
