@@ -16,7 +16,12 @@
     <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
     <PackageReference Include="WixToolset.Util.wixext" Version="4.0.5" />
   </ItemGroup>
-  <ItemGroup>
+  <!-- CustomActionsDll: build CustomActions.vcxproj separately (e.g. with VS2019 MSBuild, which cannot host
+       this SDK-style project) and point at the resulting dll; the ProjectReference is skipped then. -->
+  <PropertyGroup Condition="'$(CustomActionsDll)' != ''">
+    <DefineConstants>$(DefineConstants);CustomActions.TargetDir=$([System.IO.Path]::GetDirectoryName($(CustomActionsDll)))\;CustomActions.TargetName=$([System.IO.Path]::GetFileNameWithoutExtension($(CustomActionsDll)))</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(CustomActionsDll)' == ''">
     <ProjectReference Include="..\CustomActions\CustomActions.vcxproj" />
   </ItemGroup>
 </Project>

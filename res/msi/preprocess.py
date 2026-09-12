@@ -27,15 +27,15 @@ g_arpsystemcomponent = {
     },
     "Contact": {
         "msi": "ARPCONTACT",
-        "v": "https://github.com/rustdesk/rustdesk",
+        "v": "https://github.com/VocabVictor/openuu",
     },
     "HelpLink": {
         "msi": "ARPHELPLINK",
-        "v": "https://github.com/rustdesk/rustdesk/issues/",
+        "v": "https://github.com/VocabVictor/openuu/issues/",
     },
     "ReadMe": {
         "msi": "ARPREADME",
-        "v": "https://github.com/rustdesk/rustdesk",
+        "v": "https://github.com/VocabVictor/openuu",
     },
 }
 
@@ -48,7 +48,7 @@ def make_parser():
         "-d",
         "--dist-dir",
         type=str,
-        default="../../rustdesk",
+        default="../../openuu",
         help="The dist directory to install.",
     )
     parser.add_argument(
@@ -81,7 +81,7 @@ def make_parser():
         help='Connection type, e.g. "incoming", "outgoing". Default is empty, means incoming-outgoing',
     )
     parser.add_argument(
-        "--app-name", type=str, default="RustDesk", help="The app name."
+        "--app-name", type=str, default="OpenUU", help="The app name."
     )
     parser.add_argument(
         "-v", "--version", type=str, default="", help="The app version."
@@ -93,7 +93,7 @@ def make_parser():
         "-m",
         "--manufacturer",
         type=str,
-        default="Purslane Tech Pte. Ltd.",
+        default="OpenUU",
         help="The app manufacturer.",
     )
     return parser
@@ -101,7 +101,7 @@ def make_parser():
 
 # Files a custom client replaces. Kept in their own cabinet by --template so that
 # rebranding rebuilds a few hundred KB instead of recompressing the whole payload.
-# The app executable is handled separately: it has its own component in RustDesk.wxs.
+# The app executable is handled separately: it has its own component in OpenUU.wxs.
 #
 # A template has to ship a placeholder for each of these so there is a File row to
 # patch, but the branding assets are optional for a customer and a stock build has
@@ -197,7 +197,7 @@ def insert_components_between_tags(lines, index_start, app_name, dist_dir, templ
 
 def gen_auto_component(app_name, dist_dir, template=False):
     return gen_content_between_tags(
-        "Package/Components/RustDesk.wxs",
+        "Package/Components/OpenUU.wxs",
         "<!--$AutoComonentStart$-->",
         "<!--$AutoComponentEnd$-->",
         lambda lines, index_start: insert_components_between_tags(
@@ -225,7 +225,7 @@ def gen_media2():
 
 def put_app_exe_on_media2():
     """The app executable has its own component, so it is moved by name."""
-    target = Path(sys.argv[0]).parent.joinpath("Package/Components/RustDesk.wxs")
+    target = Path(sys.argv[0]).parent.joinpath("Package/Components/OpenUU.wxs")
     with open(target, "r", encoding="utf-8") as f:
         content = f.read()
     old = '<File Id="App.exe" Name="$(var.Product).exe" KeyPath="yes" Checksum="yes">'
@@ -276,7 +276,7 @@ def replace_app_name_in_langs(app_name):
         with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
         for i, line in enumerate(lines):
-            lines[i] = line.replace("RustDesk", app_name)
+            lines[i] = line.replace("OpenUU", app_name)
         with open(file_path, "w", encoding="utf-8") as f:
             f.writelines(lines)
 
@@ -498,14 +498,12 @@ def init_global_vars(dist_dir, app_name, args):
 
 
 def update_license_file(app_name):
-    if app_name == "RustDesk":
+    if app_name == "OpenUU":
         return
     license_file = Path(sys.argv[0]).parent.joinpath("Package/License.rtf")
     with open(license_file, "r", encoding="utf-8") as f:
         license_content = f.read()
-    license_content = license_content.replace("website rustdesk.com and other ", "")
-    license_content = license_content.replace("RustDesk", app_name)
-    license_content = re.sub(r"Purslane(?: Tech Pte\.)? Ltd", app_name, license_content, flags=re.IGNORECASE)
+    license_content = license_content.replace("OpenUU", app_name)
     with open(license_file, "w", encoding="utf-8") as f:
         f.write(license_content)
 
@@ -544,7 +542,7 @@ if __name__ == "__main__":
     if not gen_pre_vars(args, dist_dir):
         sys.exit(-1)
 
-    if app_name != "RustDesk":
+    if app_name != "OpenUU":
         replace_component_guids_in_wxs()
 
     if not gen_upgrade_info():
