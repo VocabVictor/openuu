@@ -12,11 +12,8 @@ pub async fn require_login() -> ResultType<()> {
         bail!("Sign in to OpenUU before using remote connections");
     }
     let parsed = reqwest::Url::parse(&url)?;
-    if parsed.scheme() != "https"
-        && !(parsed.scheme() == "http"
-            && matches!(parsed.host_str(), Some("127.0.0.1" | "localhost" | "::1")))
-    {
-        bail!("OpenUU account server requires HTTPS");
+    if !matches!(parsed.scheme(), "http" | "https") || parsed.host_str().is_none() {
+        bail!("Configure an HTTP or HTTPS OpenUU account server");
     }
     static CACHE: tokio::sync::Mutex<Option<(String, String, Instant)>> =
         tokio::sync::Mutex::const_new(None);

@@ -198,9 +198,8 @@ class UserModel {
   static String accountServer() {
     final url = bind.mainGetOptionSync(key: 'api-server').trim();
     final uri = Uri.tryParse(url);
-    if (uri == null || !(uri.scheme == 'https' ||
-        (uri.scheme == 'http' && ['127.0.0.1', 'localhost', '::1'].contains(uri.host)))) {
-      throw RequestException(0, 'Configure an HTTPS OpenUU account server in Network settings');
+    if (uri == null || uri.host.isEmpty || !['http', 'https'].contains(uri.scheme)) {
+      throw RequestException(0, 'Configure an HTTP or HTTPS OpenUU account server in Network settings');
     }
     return url.replaceFirst(RegExp(r'/+$'), '');
   }
