@@ -29,6 +29,13 @@ use std::{
     },
 };
 
+mod plugin;
+pub use plugin::*;
+mod clipboard;
+pub use clipboard::*;
+#[cfg(target_os = "windows")]
+use plugin::load_plugin_in_app_path;
+
 /// tag "main" for [Desktop Main Page] and [Mobile (Client and Server)] (the mobile don't need multiple windows, only one global event stream is needed)
 /// tag "cm" only for [Desktop CM Page]
 pub(crate) const APP_TYPE_MAIN: &str = "main";
@@ -68,140 +75,6 @@ lazy_static::lazy_static! {
 #[cfg(target_os = "windows")]
 lazy_static::lazy_static! {
     pub static ref TEXTURE_GPU_RENDERER_PLUGIN: Result<Library, LibError> = load_plugin_in_app_path("flutter_gpu_texture_renderer_plugin.dll");
-}
-
-// Move this function into `src/platform/windows.rs` if there're more calls to load plugins.
-// Load dll with full path.
-#[cfg(target_os = "windows")]
-fn load_plugin_in_app_path(dll_name: &str) -> Result<Library, LibError> {
-    match std::env::current_exe() {
-        Ok(exe_file) => {
-            if let Some(cur_dir) = exe_file.parent() {
-                let full_path = cur_dir.join(dll_name);
-                if !full_path.exists() {
-                    Err(LibError::OpeningLibraryError(IoError::new(
-                        IoErrorKind::NotFound,
-                        format!("{} not found", dll_name),
-                    )))
-                } else {
-                    Library::open(full_path)
-                }
-            } else {
-                Err(LibError::OpeningLibraryError(IoError::new(
-                    IoErrorKind::Other,
-                    format!(
-                        "Invalid exe parent for {}",
-                        exe_file.to_string_lossy().as_ref()
-                    ),
-                )))
-            }
-        }
-        Err(e) => Err(LibError::OpeningLibraryError(e)),
-    }
-}
-
-/// FFI for rustdesk core's main entry.
-/// Return true if the app should continue running with UI(possibly Flutter), false if the app should exit.
-#[cfg(not(windows))]
-#[no_mangle]
-pub extern "C" fn rustdesk_core_main() -> bool {
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    if crate::core_main::core_main().is_some() {
-        return true;
-    } else {
-        #[cfg(target_os = "macos")]
-        std::process::exit(0);
-    }
-    #[cfg(not(target_os = "macos"))]
-    false
-}
-
-#[cfg(target_os = "macos")]
-#[no_mangle]
-pub extern "C" fn handle_applicationShouldOpenUntitledFile() {
-    crate::platform::macos::handle_application_should_open_untitled_file();
-}
-
-#[cfg(windows)]
-#[no_mangle]
-pub extern "C" fn rustdesk_core_main_args(args_len: *mut c_int) -> *mut *mut c_char {
-    unsafe { std::ptr::write(args_len, 0) };
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    {
-        if let Some(args) = crate::core_main::core_main() {
-            return rust_args_to_c_args(args, args_len);
-        }
-        return std::ptr::null_mut() as _;
-    }
-    #[cfg(any(target_os = "android", target_os = "ios"))]
-    return std::ptr::null_mut() as _;
-}
-
-#[cfg(windows)]
-#[no_mangle]
-pub extern "C" fn rustdesk_is_disable_installation() -> c_int {
-    hbb_common::config::is_disable_installation() as c_int
-}
-
-// https://gist.github.com/iskakaushik/1c5b8aa75c77479c33c4320913eebef6
-#[cfg(windows)]
-fn rust_args_to_c_args(args: Vec<String>, outlen: *mut c_int) -> *mut *mut c_char {
-    let mut v = vec![];
-
-    // Let's fill a vector with null-terminated strings
-    for s in args {
-        match CString::new(s) {
-            Ok(s) => v.push(s),
-            Err(_) => return std::ptr::null_mut() as _,
-        }
-    }
-
-    // Turning each null-terminated string into a pointer.
-    // `into_raw` takes ownershop, gives us the pointer and does NOT drop the data.
-    let mut out = v.into_iter().map(|s| s.into_raw()).collect::<Vec<_>>();
-
-    // Make sure we're not wasting space.
-    out.shrink_to_fit();
-    debug_assert!(out.len() == out.capacity());
-
-    // Get the pointer to our vector.
-    let len = out.len();
-    let ptr = out.as_mut_ptr();
-    std::mem::forget(out);
-
-    // Let's write back the length the caller can expect
-    unsafe { std::ptr::write(outlen, len as c_int) };
-
-    // Finally return the data
-    ptr
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn free_c_args(ptr: *mut *mut c_char, len: c_int) {
-    let len = len as usize;
-
-    // Get back our vector.
-    // Previously we shrank to fit, so capacity == length.
-    let v = Vec::from_raw_parts(ptr, len, len);
-
-    // Now drop one string at a time.
-    for elem in v {
-        let s = CString::from_raw(elem);
-        std::mem::drop(s);
-    }
-
-    // Afterwards the vector will be dropped and thus freed.
-}
-
-#[cfg(windows)]
-#[no_mangle]
-pub unsafe extern "C" fn get_rustdesk_app_name(buffer: *mut u16, length: i32) -> i32 {
-    let name = crate::platform::wide_string(&crate::get_app_name());
-    if length > name.len() as i32 {
-        std::ptr::copy_nonoverlapping(name.as_ptr(), buffer, name.len());
-        return 0;
-    }
-    -1
 }
 
 #[derive(Default)]
@@ -1397,74 +1270,6 @@ pub fn session_start_(
 fn try_send_close_event(event_stream: &Option<StreamSink<EventToUI>>) {
     if let Some(stream) = &event_stream {
         stream.add(EventToUI::Event("close".to_owned()));
-    }
-}
-
-#[cfg(not(target_os = "ios"))]
-pub fn update_text_clipboard_required() {
-    let is_required = sessions::get_sessions()
-        .iter()
-        .any(|s| s.is_default() && s.is_text_clipboard_required());
-    #[cfg(target_os = "android")]
-    let _ = scrap::android::ffi::call_clipboard_manager_enable_client_clipboard(is_required);
-    Client::set_is_text_clipboard_required(is_required);
-}
-
-#[cfg(feature = "unix-file-copy-paste")]
-pub fn update_file_clipboard_required() {
-    let is_required = sessions::get_sessions()
-        .iter()
-        .any(|s| s.is_default() && s.is_file_clipboard_required());
-    Client::set_is_file_clipboard_required(is_required);
-}
-
-#[cfg(not(target_os = "ios"))]
-pub fn send_clipboard_msg(msg: Message, _is_file: bool) {
-    send_clipboard_msg_impl(msg, _is_file, None);
-}
-
-// `except_session_id` is the session the content came from, to avoid sending it back.
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-pub fn send_clipboard_msg_to_other_sessions(msg: Message, except_session_id: u64) {
-    send_clipboard_msg_impl(msg, false, Some(except_session_id));
-}
-
-#[cfg(not(target_os = "ios"))]
-fn send_clipboard_msg_impl(msg: Message, _is_file: bool, except_session_id: Option<u64>) {
-    for s in sessions::get_sessions() {
-        if !s.is_default() {
-            continue;
-        }
-        if let Some(except_session_id) = except_session_id {
-            if s.lc.read().unwrap().session_id == except_session_id {
-                continue;
-            }
-        }
-        #[cfg(feature = "unix-file-copy-paste")]
-        if _is_file {
-            if crate::is_support_file_copy_paste_num(s.lc.read().unwrap().version)
-                && s.is_file_clipboard_required()
-            {
-                s.send(Data::Message(msg.clone()));
-            }
-            continue;
-        }
-        if s.is_text_clipboard_required() {
-            // Check if the client supports multi clipboards
-            if let Some(message::Union::MultiClipboards(multi_clipboards)) = &msg.union {
-                let version = s.ui_handler.peer_info.read().unwrap().version.clone();
-                let platform = s.ui_handler.peer_info.read().unwrap().platform.clone();
-                if let Some(msg_out) = crate::clipboard::get_msg_if_not_support_multi_clip(
-                    &version,
-                    &platform,
-                    multi_clipboards,
-                ) {
-                    s.send(Data::Message(msg_out));
-                    continue;
-                }
-            }
-            s.send(Data::Message(msg.clone()));
-        }
     }
 }
 
