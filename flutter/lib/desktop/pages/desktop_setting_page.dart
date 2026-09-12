@@ -2520,13 +2520,6 @@ class _AboutState extends State<_About> {
                         icon: const Icon(Icons.open_in_new, size: 20),
                         onPressed: () =>
                             launchUrlString('https://github.com/VocabVictor/openuu'))),
-                _settingRow(
-                    context,
-                    'Privacy Statement',
-                    IconButton(
-                        icon: const Icon(Icons.open_in_new, size: 20),
-                        onPressed: () => launchUrlString(
-                            'https://rustdesk.com/privacy.html'))),
                 Padding(
                     padding: const EdgeInsets.all(20),
                     child: SelectableText(
@@ -2560,14 +2553,6 @@ class _AboutState extends State<_About> {
               SelectionArea(
                   child: Text('${translate('ID')}: $myId')
                       .marginSymmetric(vertical: 4.0)),
-              InkWell(
-                  onTap: () {
-                    launchUrlString('https://rustdesk.com/privacy.html');
-                  },
-                  child: Text(
-                    translate('Privacy Statement'),
-                    style: linkStyle,
-                  ).marginSymmetric(vertical: 4.0)),
               InkWell(
                   onTap: () {
                     launchUrlString('https://github.com/VocabVictor/openuu');
