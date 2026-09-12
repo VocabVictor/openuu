@@ -20,6 +20,7 @@ import '../common.dart';
 import '../common/widgets/overlay.dart';
 import '../main.dart';
 import 'model.dart';
+import 'package:flutter_hbb/models/server_model.dart';
 
 class MessageKey {
   final String peerId;

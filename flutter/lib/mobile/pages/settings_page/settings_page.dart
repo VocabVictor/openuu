@@ -19,6 +19,7 @@ import '../../widgets/deploy_dialog.dart';
 import '../../widgets/dialog.dart';
 import '../home_page.dart';
 import '../scan_page.dart';
+import 'package:flutter_hbb/models/server_model.dart';
 part 'dialogs.dart';
 part 'display_page.dart';
 part 'trusted_devices.dart';
