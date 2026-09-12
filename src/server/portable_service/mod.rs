@@ -83,108 +83,14 @@ pub mod server {
     pub use run::*;
     mod capture;
     use capture::*;
+    mod ipc_client;
+    use ipc_client::*;
 
     lazy_static::lazy_static! {
         static ref EXIT: Arc<Mutex<bool>> = Default::default();
         static ref FORCE_EXIT_ARMED: AtomicBool = AtomicBool::new(false);
     }
 
-    #[tokio::main(flavor = "current_thread")]
-    async fn run_ipc_client(ipc_token: String) {
-        use DataPortableService::*;
-
-        let postfix = IPC_SUFFIX;
-
-        match ipc::connect(1000, postfix).await {
-            Ok(mut stream) => {
-                if let Err(err) =
-                    ipc::portable_service_ipc_handshake_as_client(&mut stream, &ipc_token).await
-                {
-                    log::error!("portable service ipc handshake failed: {}", err);
-                    *EXIT.lock().unwrap() = true;
-                    return;
-                }
-                let mut timer =
-                    crate::rustdesk_interval(tokio::time::interval(Duration::from_secs(1)));
-                let mut nack = 0;
-                loop {
-                    if *EXIT.lock().unwrap() {
-                        log::info!("Portable service EXIT signaled, closing ipc client loop");
-                        stream
-                            .send(&Data::DataPortableService(WillClose))
-                            .await
-                            .ok();
-                        break;
-                    }
-
-                    tokio::select! {
-                        res = stream.next() => {
-                            match res {
-                                Err(err) => {
-                                    log::error!(
-                                        "ipc{} connection closed: {}",
-                                        postfix,
-                                        err
-                                    );
-                                    break;
-                                }
-                                Ok(Some(Data::DataPortableService(data))) => match data {
-                                    Ping => {
-                                        allow_err!(
-                                            stream
-                                                .send(&Data::DataPortableService(Pong))
-                                                .await
-                                        );
-                                    }
-                                    Pong => {
-                                        nack = 0;
-                                    }
-                                    ConnCount(Some(n)) => {
-                                        if n == 0 {
-                                            log::info!("Connection count equals 0, exit");
-                                            stream.send(&Data::DataPortableService(WillClose)).await.ok();
-                                            break;
-                                        }
-                                    }
-                                    Mouse((v, conn, username, argb, simulate, show_cursor)) => {
-                                        if let Ok(evt) = MouseEvent::parse_from_bytes(&v) {
-                                            crate::input_service::handle_mouse_(&evt, conn, username, argb, simulate, show_cursor);
-                                        }
-                                    }
-                                    Pointer((v, conn)) => {
-                                        if let Ok(evt) = PointerDeviceEvent::parse_from_bytes(&v) {
-                                            crate::input_service::handle_pointer_(&evt, conn);
-                                        }
-                                    }
-                                    Key(v) => {
-                                        if let Ok(evt) = KeyEvent::parse_from_bytes(&v) {
-                                            crate::input_service::handle_key_(&evt);
-                                        }
-                                    }
-                                    _ => {}
-                                },
-                                _ => {}
-                            }
-                        }
-                        _ = timer.tick() => {
-                            nack+=1;
-                            if nack > MAX_NACK {
-                                log::info!("max ping nack, exit");
-                                break;
-                            }
-                            stream.send(&Data::DataPortableService(Ping)).await.ok();
-                            stream.send(&Data::DataPortableService(ConnCount(None))).await.ok();
-                        }
-                    }
-                }
-            }
-            Err(e) => {
-                log::error!("Failed to connect portable service ipc: {:?}", e);
-            }
-        }
-
-        *EXIT.lock().unwrap() = true;
-    }
 }
 
 // functions called in main process.
@@ -194,6 +100,9 @@ pub mod client {
     use base::message_proto::PointerDeviceEvent;
     use hbb_common::anyhow::Context;
     use scrap::PixelBuffer;
+
+    mod runtime_state;
+    use runtime_state::*;
 
     lazy_static::lazy_static! {
         static ref RUNNING: Arc<Mutex<bool>> = Default::default();
@@ -209,150 +118,6 @@ pub mod client {
     pub enum StartPara {
         Direct,
         Logon(String, String),
-    }
-
-    fn has_running_portable_service_process() -> bool {
-        let app_exe = format!("{}.exe", crate::get_app_name().to_lowercase());
-        !crate::platform::get_pids_of_process_with_first_arg(&app_exe, "--portable-service")
-            .is_empty()
-    }
-
-    #[inline]
-    fn next_portable_service_shmem_name() -> String {
-        format!(
-            "{}_{}_{:08x}",
-            crate::portable_service::SHMEM_NAME,
-            std::process::id(),
-            hbb_common::rand::random::<u32>()
-        )
-    }
-
-    #[inline]
-    fn set_runtime_ipc_token(token: String) {
-        *IPC_RUNTIME_TOKEN.lock().unwrap() = Some(token);
-    }
-
-    #[inline]
-    fn schedule_remove_runtime_shmem_flink_retry(name: String) {
-        std::thread::spawn(move || {
-            const MAX_RETRY: usize = 20;
-            const RETRY_INTERVAL: Duration = Duration::from_millis(200);
-            for _ in 0..MAX_RETRY {
-                std::thread::sleep(RETRY_INTERVAL);
-                if remove_shared_memory_flink_once(&name, false, "Client cleanup") {
-                    return;
-                }
-            }
-            log::warn!(
-                "Failed to remove portable service shared-memory flink artifact '{}' after retry",
-                name
-            );
-        });
-    }
-
-    #[inline]
-    fn clear_runtime_shmem_state() {
-        let mut runtime_token = IPC_RUNTIME_TOKEN.lock().unwrap();
-        let mut shmem_lock = SHMEM.lock().unwrap();
-        if let Some(shmem) = shmem_lock.as_mut() {
-            clear_ipc_token_in_shmem(shmem);
-        }
-        *shmem_lock = None;
-        let runtime_name = SHMEM_RUNTIME_NAME.lock().unwrap().take();
-        *runtime_token = None;
-        drop(runtime_token);
-        drop(shmem_lock);
-        if let Some(name) = runtime_name.as_deref() {
-            if !remove_shared_memory_flink_once(name, true, "Client cleanup") {
-                schedule_remove_runtime_shmem_flink_retry(name.to_owned());
-            }
-        }
-    }
-
-    #[inline]
-    fn consume_runtime_ipc_token_if_match(candidate: &str) -> (bool, Option<String>) {
-        let mut token = IPC_RUNTIME_TOKEN.lock().unwrap();
-        if !token
-            .as_deref()
-            .is_some_and(|expected| ipc::constant_time_ipc_token_eq(expected, candidate))
-        {
-            return (false, None);
-        }
-        let mut shmem_lock = SHMEM.lock().unwrap();
-        let matched_shmem_name = SHMEM_RUNTIME_NAME.lock().unwrap().clone();
-        *token = None;
-        if let Some(shmem) = shmem_lock.as_mut() {
-            clear_ipc_token_in_shmem(shmem);
-        }
-        (true, matched_shmem_name)
-    }
-
-    #[inline]
-    fn restore_runtime_ipc_token_after_failed_handshake(
-        token: &str,
-        expected_shmem_name: Option<&str>,
-    ) {
-        let mut runtime_token = IPC_RUNTIME_TOKEN.lock().unwrap();
-        if let Some(current) = runtime_token.as_deref() {
-            if current != token {
-                log::debug!(
-                    "Skip restoring portable service ipc token after handshake failure: runtime token has changed to a newer value"
-                );
-                return;
-            }
-        }
-        let mut shmem_lock = SHMEM.lock().unwrap();
-        let current_shmem_name = SHMEM_RUNTIME_NAME.lock().unwrap().clone();
-        if current_shmem_name.as_deref() != expected_shmem_name {
-            if runtime_token.as_deref() == Some(token) {
-                *runtime_token = None;
-            }
-            log::debug!(
-                "Skip restoring portable service ipc token after handshake failure: shared-memory instance has changed"
-            );
-            return;
-        }
-        let shmem_write_error = if let Some(shmem) = shmem_lock.as_mut() {
-            write_ipc_token_to_shmem(shmem, token)
-                .err()
-                .map(|err| err.to_string())
-        } else {
-            Some("shared memory unavailable".to_owned())
-        };
-        if let Some(err) = shmem_write_error {
-            if runtime_token.as_deref() == Some(token) {
-                *runtime_token = None;
-            }
-            log::warn!(
-                "Failed to restore portable service ipc token after handshake failure: {}",
-                err
-            );
-            return;
-        }
-        *runtime_token = Some(token.to_owned());
-    }
-
-    #[inline]
-    fn schedule_starting_timeout_reset(launch_token: u64) {
-        std::thread::spawn(move || {
-            std::thread::sleep(PORTABLE_SERVICE_STARTUP_TIMEOUT);
-            let should_reset = {
-                // Guard against stale watchdogs from previous launches:
-                // only the watchdog that matches the latest STARTING_TOKEN may reset STARTING.
-                let current_token = STARTING_TOKEN.load(Ordering::SeqCst);
-                // Keep lock guards in explicit short scopes to make it obvious
-                // there is no nested lock ordering (and to avoid Copilot false positives).
-                let starting = { *STARTING.lock().unwrap() };
-                let running = { *RUNNING.lock().unwrap() };
-                current_token == launch_token && starting && !running
-            };
-            if should_reset {
-                log::warn!(
-                    "Portable service startup timeout before IPC ready, reset STARTING state"
-                );
-                *STARTING.lock().unwrap() = false;
-            }
-        });
     }
 
     // Launch flow summary:
