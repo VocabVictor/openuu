@@ -135,6 +135,7 @@ pub async fn create_relay_connection(
     secure: bool,
     ipv4: bool,
     meta: ConnectionMeta,
+    peer_ticket: String,
 ) {
     if let Err(err) = create_relay_connection_(
         server,
@@ -144,6 +145,7 @@ pub async fn create_relay_connection(
         secure,
         ipv4,
         meta,
+        peer_ticket,
     )
     .await
     {
@@ -164,6 +166,7 @@ async fn create_relay_connection_(
     secure: bool,
     ipv4: bool,
     meta: ConnectionMeta,
+    peer_ticket: String,
 ) -> ResultType<()> {
     let mut stream = socket_client::connect_tcp(
         socket_client::ipv4_to_ipv6(crate::check_port(relay_server, RELAY_PORT), ipv4),
@@ -172,9 +175,8 @@ async fn create_relay_connection_(
     .await?;
     let mut msg_out = RendezvousMessage::new();
     let licence_key = crate::get_key(true).await;
-    crate::account::require_login().await?;
     msg_out.set_request_relay(RequestRelay {
-        token: crate::account::relay_ticket(&uuid).await?,
+        token: relay_token(peer_ticket, &uuid).await?,
         licence_key,
         uuid,
         ..Default::default()
@@ -182,4 +184,33 @@ async fn create_relay_connection_(
     stream.send(&msg_out).await?;
     create_tcp_connection(server, stream, peer_addr, secure, meta).await?;
     Ok(())
+}
+
+/// The ticket this side presents to hbbr. A new hbbs forwards one inside RequestRelay so an
+/// unattended peer needs no account (docs/relay-ticket-peer.md in openuu-server); an old hbbs
+/// leaves it empty and the peer fetches its own ticket with its login, as before.
+async fn relay_token(peer_ticket: String, uuid: &str) -> ResultType<String> {
+    if !peer_ticket.is_empty() {
+        return Ok(peer_ticket);
+    }
+    crate::account::require_login().await?;
+    crate::account::relay_ticket(uuid).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::relay_token;
+
+    #[hbb_common::tokio::test]
+    async fn forwarded_ticket_is_used_as_is() {
+        let ticket = "f".repeat(64);
+        assert_eq!(relay_token(ticket.clone(), "uuid-1").await.unwrap(), ticket);
+    }
+
+    #[hbb_common::tokio::test]
+    async fn empty_ticket_falls_back_to_this_peer_login() {
+        // No account is configured in the test environment, so the fallback is the login check.
+        let err = relay_token(String::new(), "uuid-1").await.unwrap_err();
+        assert!(err.to_string().contains("Sign in"), "{err}");
+    }
 }

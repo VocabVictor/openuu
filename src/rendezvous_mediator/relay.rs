@@ -23,6 +23,7 @@ impl RendezvousMediator {
             false,
             Default::default(),
             String::new(),
+            rr.token,
             meta,
         )
         .await
@@ -38,6 +39,7 @@ impl RendezvousMediator {
         initiate: bool,
         socket_addr_v6: bytes::Bytes,
         webrtc_sdp_answer: String,
+        peer_ticket: String,
         meta: ConnectionMeta,
     ) -> ResultType<()> {
         let peer_addr = AddrMangle::decode(&socket_addr);
@@ -74,6 +76,7 @@ impl RendezvousMediator {
             secure,
             is_ipv4(&self.addr),
             meta,
+            peer_ticket,
         )
         .await;
         Ok(())
@@ -123,6 +126,7 @@ impl RendezvousMediator {
             true,
             true,
             socket_addr_v6,
+            String::new(),
             String::new(),
             meta,
         )
