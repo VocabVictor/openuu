@@ -91,6 +91,7 @@ broken up.
 | `src/client/io_loop/ui_msg.rs` | single `Remote::handle_msg_from_ui` function (~470 lines) |
 | `src/client/io_loop/peer_msg.rs` | single `Remote::handle_msg_from_peer` function (~750 lines) |
 | `flutter/lib/common/my_theme.dart` | single `MyTheme` class of static members (~380 lines); a Dart class body cannot span files |
+| `src/flutter_ffi.rs` | flutter_rust_bridge v1 single-file codegen input (`--rust-input`); splitting needs frb v2 or changes to every build script. New exported functions added here must be one-line forwards to the owning module; no logic lives in this file. |
 
 ## Rust Rules
 
