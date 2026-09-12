@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension CanvasModelPan on CanvasModel {
   panX(double dx) {
@@ -7,7 +6,7 @@ extension CanvasModelPan on CanvasModel {
     if (isMobile) {
       isMobileCanvasChanged = true;
     }
-    notifyListeners();
+    _notify();
   }
 
   resetOffset() {
@@ -16,7 +15,7 @@ extension CanvasModelPan on CanvasModel {
     } else {
       _resetCanvasOffset(getDisplayWidth(), getDisplayHeight());
     }
-    notifyListeners();
+    _notify();
   }
 
   panY(double dy) {
@@ -24,7 +23,7 @@ extension CanvasModelPan on CanvasModel {
     if (isMobile) {
       isMobileCanvasChanged = true;
     }
-    notifyListeners();
+    _notify();
   }
 
   // mobile only
@@ -46,7 +45,7 @@ extension CanvasModelPan on CanvasModel {
     if (isMobile) {
       isMobileCanvasChanged = true;
     }
-    notifyListeners();
+    _notify();
   }
 
   // For reset canvas to the last view style
@@ -58,7 +57,7 @@ extension CanvasModelPan on CanvasModel {
     }
     _resetCanvasOffset(getDisplayWidth(), getDisplayHeight());
     bind.sessionSetViewStyle(sessionId: sessionId, value: _lastViewStyle.style);
-    notifyListeners();
+    _notify();
   }
 
   clear() {
@@ -95,7 +94,7 @@ extension CanvasModelPan on CanvasModel {
         Timer(Duration(milliseconds: 100), () async {
       updateSize();
       _resetCanvasOffset(getDisplayWidth(), getDisplayHeight());
-      notifyListeners();
+      _notify();
     });
   }
 
@@ -120,7 +119,7 @@ extension CanvasModelPan on CanvasModel {
       _scale = targetScale;
       _offsetBeforeMobileSoftKeyboard = null;
       _scaleBeforeMobileSoftKeyboard = null;
-      notifyListeners();
+      _notify();
     });
   }
 

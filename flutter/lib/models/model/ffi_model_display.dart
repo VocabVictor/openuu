@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension FfiModelDisplay on FfiModel {
   _handleUseTextureRender(
@@ -142,7 +141,7 @@ extension FfiModelDisplay on FfiModel {
     if (!_pi.isSupportMultiUiSession || _pi.currentDisplay == display) {
       handleResolutions(peerId, evt['resolutions']);
     }
-    notifyListeners();
+    _notify();
   }
 
   cancelMsgBox(Map<String, dynamic> evt, SessionID sessionId) {

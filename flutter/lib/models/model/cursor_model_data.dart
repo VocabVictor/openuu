@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension CursorModelData on CursorModel {
   updateCursorData(Map<String, dynamic> evt) async {
@@ -71,10 +70,10 @@ extension CursorModelData on CursorModel {
       _hoty = tmp.item3;
       try {
         // may throw exception, because the listener maybe already dispose
-        notifyListeners();
+        _notify();
       } catch (e) {
         debugPrint(
-            'WARNING: updateCursorId $_id, without notifyListeners(). $e');
+            'WARNING: updateCursorId $_id, without _notify(). $e');
       }
       return true;
     } else {
@@ -85,7 +84,7 @@ extension CursorModelData on CursorModel {
   updateCursorId(Map<String, dynamic> evt) {
     if (!_updateCurData()) {
       debugPrint(
-          'WARNING: updateCursorId $_id, cache is ${_cache == null ? "null" : "not null"}. without notifyListeners()');
+          'WARNING: updateCursorId $_id, cache is ${_cache == null ? "null" : "not null"}. without _notify()');
     }
   }
 
@@ -102,7 +101,7 @@ extension CursorModelData on CursorModel {
     } catch (e) {
       //
     }
-    notifyListeners();
+    _notify();
   }
 
   updateDisplayOrigin(double x, double y, {updateCursorPos = true}) {
@@ -114,7 +113,7 @@ extension CursorModelData on CursorModel {
       parent.target?.inputModel.moveMouse(x, y);
     }
     parent.target?.canvasModel.resetOffset();
-    notifyListeners();
+    _notify();
   }
 
   updateDisplayOriginWithCursor(
@@ -124,7 +123,7 @@ extension CursorModelData on CursorModel {
     _x = xCursor;
     _y = yCursor;
     parent.target?.inputModel.moveMouse(x, y);
-    notifyListeners();
+    _notify();
   }
 
   clear() {

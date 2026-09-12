@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension FfiModelState on FfiModel {
   Rect? globalDisplaysRect() => _getDisplaysRect(_pi.displays, true);
@@ -35,7 +34,7 @@ extension FfiModelState on FfiModel {
   toggleTouchMode() {
     if (!isPeerAndroid) {
       _touchMode = !_touchMode;
-      notifyListeners();
+      _notify();
     }
   }
 
@@ -64,7 +63,7 @@ extension FfiModelState on FfiModel {
     }
 
     debugPrint('updatePermission: $_permissions');
-    notifyListeners();
+    _notify();
   }
 
   bool get keyboard => _permissions['keyboard'] != false;

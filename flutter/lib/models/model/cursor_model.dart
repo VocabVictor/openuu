@@ -1,6 +1,7 @@
 part of 'model.dart';
 
 class CursorModel with ChangeNotifier {
+  void _notify() => notifyListeners();
   ui.Image? _image;
   final _images = <String, Tuple3<ui.Image, double, double>>{};
   CursorData? _cache;

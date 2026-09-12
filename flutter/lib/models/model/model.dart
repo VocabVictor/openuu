@@ -135,6 +135,7 @@ class CachedPeerData {
 }
 
 class FfiModel with ChangeNotifier {
+  void _notify() => notifyListeners();
   CachedPeerData cachedPeerData = CachedPeerData();
   PeerInfo _pi = PeerInfo();
   int? lastUserDisplay;

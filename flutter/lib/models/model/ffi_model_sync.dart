@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension FfiModelSync on FfiModel {
   /// Handle the peer info synchronization event based on [evt].
@@ -52,7 +51,7 @@ extension FfiModelSync on FfiModel {
     }
     parent.target!.canvasModel
         .tryUpdateScrollStyle(Duration(milliseconds: 300), null);
-    notifyListeners();
+    _notify();
   }
 
   handlePlatformAdditions(
@@ -106,7 +105,7 @@ extension FfiModelSync on FfiModel {
         value: Int32List.fromList([_pi.currentDisplay]),
       );
     }
-    notifyListeners();
+    _notify();
   }
 
   // Directly switch to the new display without waiting for the response.
@@ -124,7 +123,7 @@ extension FfiModelSync on FfiModel {
 
   updateBlockInputState(Map<String, dynamic> evt, String peerId) {
     _inputBlocked = evt['input_state'] == 'on';
-    notifyListeners();
+    _notify();
     try {
       BlockInputState.find(peerId).value = evt['input_state'] == 'on';
     } catch (e) {
@@ -134,7 +133,7 @@ extension FfiModelSync on FfiModel {
 
   updatePrivacyMode(
       Map<String, dynamic> evt, SessionID sessionId, String peerId) async {
-    notifyListeners();
+    _notify();
     try {
       final isOn = bind.sessionGetToggleOptionSync(
           sessionId: sessionId, arg: 'privacy-mode');
@@ -170,14 +169,14 @@ extension FfiModelSync on FfiModel {
     }
     if (_viewOnly != value) {
       _viewOnly = value;
-      notifyListeners();
+      _notify();
     }
   }
 
   void setShowMyCursor(bool value) {
     if (_showMyCursor != value) {
       _showMyCursor = value;
-      notifyListeners();
+      _notify();
     }
   }
 }

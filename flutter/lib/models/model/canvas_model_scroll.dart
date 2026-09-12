@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension CanvasModelScroll on CanvasModel {
   void activateLocalCursor() {
@@ -56,7 +55,7 @@ extension CanvasModelScroll on CanvasModel {
     _x += dxOffset;
     _y += dyOffset;
     if (dxOffset != 0 || dyOffset != 0) {
-      notifyListeners();
+      _notify();
     }
   }
 
@@ -180,6 +179,6 @@ extension CanvasModelScroll on CanvasModel {
     setScrollPercent(scrollPixelPercent.x, scrollPixelPercent.y);
     pushScrollPositionToUI(scrollPixel.x, scrollPixel.y);
 
-    notifyListeners();
+    _notify();
   }
 }

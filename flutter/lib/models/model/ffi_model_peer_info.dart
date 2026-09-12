@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension FfiModelPeerInfo on FfiModel {
   /// Handle the peer info event based on [evt].
@@ -161,7 +160,7 @@ extension FfiModelPeerInfo on FfiModel {
       await parent.target?.inputModel.updateKeyboardMode();
     }
 
-    notifyListeners();
+    _notify();
 
     if (!isCache) {
       tryUseAllMyDisplaysForTheRemoteSession(peerId);

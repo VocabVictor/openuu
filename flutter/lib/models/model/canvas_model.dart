@@ -1,6 +1,7 @@
 part of 'model.dart';
 
 class CanvasModel with ChangeNotifier {
+  void _notify() => notifyListeners();
   // image offset of canvas
   double _x = 0;
   // image offset of canvas

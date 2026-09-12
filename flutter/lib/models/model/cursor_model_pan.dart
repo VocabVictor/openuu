@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension CursorModelPan on CursorModel {
   updatePan(Offset delta, Offset localPosition, bool touchMode) async {
@@ -94,7 +93,7 @@ extension CursorModelPan on CursorModel {
     }
 
     parent.target?.inputModel.moveMouse(_x, _y);
-    notifyListeners();
+    _notify();
   }
 
   bool _isInCurrentWindow(double x, double y) {
@@ -164,7 +163,7 @@ extension CursorModelPan on CursorModel {
       _y = movement.dy;
       await parent.target?.inputModel.moveMouse(_x, _y);
     }
-    notifyListeners();
+    _notify();
   }
 
   disposeImages() {

@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension CursorModelRect on CursorModel {
   // remote physical display coordinate
@@ -107,7 +106,7 @@ extension CursorModelPosition on CursorModel {
     }
     _x = newPos.dx;
     _y = newPos.dy;
-    notifyListeners();
+    _notify();
     return true;
   }
 
@@ -115,7 +114,7 @@ extension CursorModelPosition on CursorModel {
     final newPos = _getNewPos(x, y, adjust);
     _x = newPos.dx;
     _y = newPos.dy;
-    notifyListeners();
+    _notify();
   }
 
   reset() {
@@ -123,6 +122,6 @@ extension CursorModelPosition on CursorModel {
     _y = _displayOriginY;
     parent.target?.inputModel.moveMouse(_x, _y);
     parent.target?.canvasModel.reset();
-    notifyListeners();
+    _notify();
   }
 }

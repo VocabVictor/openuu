@@ -1,5 +1,4 @@
 part of 'model.dart';
-// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 extension CanvasModelLayout on CanvasModel {
   Size getSize() {
@@ -104,7 +103,7 @@ extension CanvasModelLayout on CanvasModel {
       _imageOverflow.value = overflow;
     }
     if (notify) {
-      notifyListeners();
+      _notify();
     }
     if (!isMobile && refreshMousePos) {
       parent.target?.inputModel.refreshMousePos();
@@ -144,7 +143,7 @@ extension CanvasModelLayout on CanvasModel {
       _resetScroll();
     }
 
-    notifyListeners();
+    _notify();
   }
 
   Future<void> initializeEdgeScrollEdgeThickness() async {
@@ -158,13 +157,13 @@ extension CanvasModelLayout on CanvasModel {
 
   void updateEdgeScrollEdgeThickness(int newThickness) {
     _edgeScrollEdgeThickness = newThickness;
-    notifyListeners();
+    _notify();
   }
 
   void update(double x, double y, double scale) {
     _x = x;
     _y = y;
     _scale = scale;
-    notifyListeners();
+    _notify();
   }
 }
