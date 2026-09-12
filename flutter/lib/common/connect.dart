@@ -23,6 +23,7 @@ import '../models/platform_model.dart';
 import 'ffi_options.dart';
 import 'globals.dart';
 import 'windows_misc.dart';
+import 'package:flutter_hbb/models/chat_model.dart';
 
 closeConnection({String? id}) {
   if (isAndroid || isIOS) {
