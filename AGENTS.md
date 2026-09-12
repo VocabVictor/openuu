@@ -117,12 +117,24 @@ broken up.
 | `src/server/connection/on_message.rs` | single `Connection::on_message` function (~1200 lines) |
 | `src/flutter_ffi.rs` | flutter_rust_bridge v1 single-file codegen input (`--rust-input`); splitting needs frb v2 or changes to every build script. New exported functions added here must be one-line forwards to the owning module; no logic lives in this file. |
 
-### Deferred: needs Linux/macOS CI
+### Linux check (mandatory for `cfg(linux)` / `cfg(unix)` changes)
 
-Files that only compile on Linux or macOS cannot be verified on the Windows
-build machines, and an unverified mechanical move is a blind edit. They stay
-as they are until a `cargo check` workflow for those targets exists; do not
-split them before then:
+The Windows build machines cannot see items gated on Linux or Unix, and the
+first run of `.github/workflows/linux-check.yml` found seven split-induced
+errors that had already landed on master. So: any commit that touches a
+file containing `cfg(target_os = "linux")` / `cfg(unix)` items (or a module
+only compiled there) is pushed to the `ci/linux-check` branch first and lands
+on master only after that workflow is green; the workflow also runs on every
+push to master as a backstop. Purely Windows files are not held to it. Quote
+the run URL in the commit body or the landing report.
+
+### Deferred: needs macOS CI
+
+Files that only compile on macOS cannot be verified anywhere yet: OpenUU
+ships Windows builds only, and no macOS runner is planned until a macOS
+target exists. Linux-only files below are no longer deferred; they are split
+under the Linux check rule above. macOS-only files stay as they are; do not
+split them before a check exists:
 
 * `src/server/uinput.rs`, `src/server/wayland.rs`, `src/server/rdp_input.rs`,
   `src/server/drm_capturer.rs`
