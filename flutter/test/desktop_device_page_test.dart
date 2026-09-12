@@ -17,7 +17,7 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.tap(find.text('Enter desktop  →'));
       expect(connections, 1);
-      final viewOnly = tester.widget<TextButton>(find.ancestor(of: find.text('View only'), matching: find.byWidgetPredicate((w) => w is TextButton)).first);
+      final viewOnly = tester.widget<TextButton>(find.descendant(of: find.byTooltip('View only'), matching: find.byType(TextButton)).first);
       expect(viewOnly.onPressed, isNotNull);
       viewOnly.onPressed!();
       expect(connections, 2);

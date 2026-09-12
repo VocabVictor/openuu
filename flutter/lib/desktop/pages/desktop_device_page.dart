@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'desktop_welcome_page.dart';
+import '../widgets/device_action_bar.dart';
 
 /// Device details use the existing peer connection actions supplied by the caller.
 class DesktopDevicePage extends StatelessWidget {
@@ -58,12 +59,8 @@ class DesktopDevicePage extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(t('此设备尚未提供桌面预览', 'Desktop preview is not available'), style: const TextStyle(fontSize: 12, color: Color(0xff697c8e))),
                     ]))))),
-                Padding(padding: const EdgeInsets.all(8), child: Wrap(alignment: WrapAlignment.center, spacing: 12, runSpacing: 4, children: [
-                  _action(t('文件传输', 'Files'), Icons.folder_open, onFiles),
-                  _action(t('观看模式', 'View only'), Icons.ondemand_video, onWatch),
-                  _action(t('终端', 'Terminal'), Icons.terminal, onTerminal),
-                  _action(t('端口映射', 'Port forwarding'), Icons.settings_ethernet, onTunnel),
-                ])),
+                DeviceActionBar(id: id, onFiles: onFiles, onWatch: onWatch,
+                  onTerminal: onTerminal, onTunnel: onTunnel),
               ])),
             const SizedBox(height: 22),
             Text(t('快速启动', 'Quick launch'), style: const TextStyle(fontSize: 16)),
@@ -77,7 +74,4 @@ class DesktopDevicePage extends StatelessWidget {
     );
   }
 
-  Widget _action(String label, IconData icon, VoidCallback? onPressed) =>
-    TextButton.icon(onPressed: onPressed, icon: Icon(icon, size: 18), label: Text(label),
-      style: TextButton.styleFrom(foregroundColor: const Color(0xff243747), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14)));
 }
