@@ -1,3 +1,4 @@
+import 'package:flutter_hbb/common/widgets/brand_icon.dart';
 import 'desktop_welcome_page.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -2616,8 +2617,7 @@ class _AboutState extends State<_About> {
                 _settingRow(
                     context,
                     'OpenUU',
-                    const Icon(Icons.all_inclusive,
-                        color: DesktopWelcomePage.blue),
+                    const BrandIcon(),
                     description: 'Remote desktop'),
                 info('Version', version),
                 info('Build Date', buildDate),

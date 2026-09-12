@@ -1,3 +1,4 @@
+import 'package:flutter_hbb/common/widgets/brand_icon.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -975,8 +976,7 @@ Future<bool?> _openLoginDialog() async {
     final dialog = CustomAlertDialog(
       title: isWindows
           ? Row(children: [
-              const Icon(Icons.all_inclusive,
-                  color: Color(0xff3978ff), size: 28),
+              const BrandIcon(size: 28),
               const SizedBox(width: 12),
               const Expanded(
                   child: Text('OpenUU',

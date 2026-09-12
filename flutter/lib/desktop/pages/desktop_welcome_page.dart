@@ -1,3 +1,4 @@
+import 'package:flutter_hbb/common/widgets/brand_icon.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
@@ -48,8 +49,7 @@ class DesktopWelcomePage extends StatelessWidget {
                       child: const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 24),
                           child: Row(children: [
-                            Icon(Icons.all_inclusive_rounded,
-                                color: blue, size: 20),
+                            BrandIcon(size: 20),
                             SizedBox(width: 12),
                             Text('OpenUU',
                                 style: TextStyle(
