@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 
 import '../../../common.dart';
 import '../address_book.dart';
+import 'package:flutter_hbb/models/ab_model.dart';
 
 void editAbTagDialog(
     List<dynamic> currentTags, Function(List<dynamic>) onSubmit) {

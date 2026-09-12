@@ -29,6 +29,7 @@ import 'mobile/pages/home_page.dart';
 import 'mobile/pages/server_page.dart';
 import 'mobile/widgets/deploy_dialog.dart';
 import 'models/platform_model.dart';
+import 'package:flutter_hbb/models/ab_model.dart';
 
 /// Basic window and launch properties.
 int? kWindowId;
