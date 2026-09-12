@@ -127,6 +127,10 @@ split them before then:
 * `libs/clipboard/src/platform/unix/`, `libs/enigo/src/linux/`,
   `libs/enigo/src/macos/`
 
+The legacy Sciter UI (`src/ui.rs`, `src/ui/`) is also left alone: OpenUU ships
+the Flutter UI only, and the Sciter UI, its feature flag and the related Cargo
+defaults are scheduled for wholesale removal as a separate behaviour change.
+
 ## Rust Rules
 
 * Avoid `unwrap()` / `expect()` in production code.
