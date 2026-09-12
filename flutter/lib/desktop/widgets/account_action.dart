@@ -5,6 +5,7 @@ import 'package:flutter_hbb/consts.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_welcome_page.dart';
 import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
 import 'package:get/get.dart';
+import 'package:flutter_hbb/models/user_model.dart';
 
 /// Account entry for the main title bar: a sign-in icon when signed out, the
 /// user's name with a sign-out menu when signed in.

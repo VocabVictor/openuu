@@ -11,6 +11,7 @@ import '../models/platform_model.dart';
 import 'ffi_options.dart';
 import 'globals.dart';
 import 'widgets_misc.dart';
+import 'package:flutter_hbb/models/user_model.dart';
 
 class ServerConfig {
   late String idServer;

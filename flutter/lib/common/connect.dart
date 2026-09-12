@@ -24,6 +24,7 @@ import 'ffi_options.dart';
 import 'globals.dart';
 import 'windows_misc.dart';
 import 'package:flutter_hbb/models/chat_model.dart';
+import 'package:flutter_hbb/models/user_model.dart';
 
 closeConnection({String? id}) {
   if (isAndroid || isIOS) {
