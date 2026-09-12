@@ -496,6 +496,66 @@ LExit:
 }
 
 void TryCreateStartServiceByShell(LPWSTR svcName, LPWSTR svcBinary, LPWSTR szSvcDisplayName);
+
+// The in-app installer seeds the SYSTEM-side config by running a temporary
+// service with `--import-config <user config>` before creating the real one;
+// without it the service starts with a fresh ID and no ID/API server or key.
+void TryImportConfigByTempService(LPCWSTR svcName, LPCWSTR svcBinary, LPCWSTR configPath)
+{
+    HRESULT hr = S_OK;
+    wchar_t szTempName[500] = { 0 };
+    wchar_t szExe[500] = { 0 };
+    wchar_t szBin[1200] = { 0 };
+    SERVICE_STATUS_PROCESS svcStatus;
+    LPCWSTR exeEnd = NULL;
+    size_t exeLen = 0;
+
+    if (configPath == NULL || configPath[0] == L'\0') {
+        return;
+    }
+    if (!PathFileExistsW(configPath)) {
+        WcaLog(LOGMSG_STANDARD, "No user config to import: %ls", configPath);
+        return;
+    }
+    // svcBinary is `"<exe>" --service`; reuse the quoted exe path.
+    if (svcBinary[0] != L'"' || (exeEnd = wcschr(svcBinary + 1, L'"')) == NULL) {
+        WcaLog(LOGMSG_STANDARD, "Cannot find exe in service binary: %ls", svcBinary);
+        return;
+    }
+    exeLen = exeEnd - (svcBinary + 1);
+    if (exeLen >= sizeof(szExe) / sizeof(szExe[0])) {
+        WcaLog(LOGMSG_STANDARD, "Service exe path too long: %ls", svcBinary);
+        return;
+    }
+    wcsncpy_s(szExe, svcBinary + 1, exeLen);
+    hr = StringCchPrintfW(szTempName, sizeof(szTempName) / sizeof(szTempName[0]), L"%lsConfigImport", svcName);
+    if (FAILED(hr)) {
+        return;
+    }
+    hr = StringCchPrintfW(szBin, sizeof(szBin) / sizeof(szBin[0]), L"\"%ls\" --import-config \"%ls\"", szExe, configPath);
+    if (FAILED(hr)) {
+        WcaLog(LOGMSG_STANDARD, "Failed to compose import-config command");
+        return;
+    }
+    WcaLog(LOGMSG_STANDARD, "Import user config: %ls", szBin);
+    // A stale temp service from an interrupted install would block CreateService.
+    MyDeleteServiceW(szTempName);
+    if (!MyCreateServiceW(szTempName, szTempName, szBin)) {
+        WcaLog(LOGMSG_STANDARD, "Failed to create import service: %ls", szTempName);
+        return;
+    }
+    // `--import-config` exits without reporting to the SCM, so the start
+    // request fails once the process has finished; that is the expected outcome.
+    MyStartServiceW(szTempName);
+    for (int k = 0; k < 20; ++k) {
+        if (!QueryServiceStatusExW(szTempName, &svcStatus) || svcStatus.dwCurrentState == SERVICE_STOPPED) {
+            break;
+        }
+        Sleep(500);
+    }
+    MyDeleteServiceW(szTempName);
+}
+
 UINT __stdcall CreateStartService(__in MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -506,6 +566,7 @@ UINT __stdcall CreateStartService(__in MSIHANDLE hInstall)
     LPWSTR pwzData = NULL;
     LPWSTR svcName = NULL;
     LPWSTR svcBinary = NULL;
+    LPWSTR configPath = NULL;
     wchar_t szSvcDisplayName[500] = { 0 };
     DWORD cchSvcDisplayName = sizeof(szSvcDisplayName) / sizeof(szSvcDisplayName[0]);
 
@@ -529,9 +590,16 @@ UINT __stdcall CreateStartService(__in MSIHANDLE hInstall)
     }
     svcBinary[0] = L'\0';
     svcBinary += 1;
+    // `|` cannot occur in a Windows path, unlike `;`.
+    configPath = wcschr(svcBinary, L'|');
+    if (configPath != NULL) {
+        configPath[0] = L'\0';
+        configPath += 1;
+    }
 
     hr = StringCchPrintfW(szSvcDisplayName, cchSvcDisplayName, L"%ls Service", svcName);
     ExitOnFailure(hr, "Failed to compose a resource identifier string");
+    TryImportConfigByTempService(svcName, svcBinary, configPath);
     if (MyCreateServiceW(svcName, szSvcDisplayName, svcBinary)) {
         WcaLog(LOGMSG_STANDARD, "Service \"%ls\" is created.", svcName);
         if (MyStartServiceW(svcName)) {
