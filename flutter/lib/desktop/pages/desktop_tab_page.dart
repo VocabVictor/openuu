@@ -4,6 +4,7 @@ import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/consts.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_home_page.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_setting_page.dart';
+import 'package:flutter_hbb/desktop/widgets/account_action.dart';
 import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
 import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
@@ -117,14 +118,48 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
             backgroundColor: Theme.of(context).colorScheme.background,
             body: DesktopTab(
               controller: tabController,
+              pageViewBuilder: (pageView) => Obx(() {
+                final signedIn = gFFI.userModel.isLogin;
+                final homeSelected =
+                    tabController.state.value.selectedTabInfo.key ==
+                        kTabLabelHomePage;
+                final showWelcome = isWindows &&
+                    !bind.isIncomingOnly() &&
+                    !signedIn &&
+                    homeSelected;
+                final showDevices = isWindows &&
+                    !bind.isIncomingOnly() &&
+                    signedIn &&
+                    homeSelected &&
+                    !_showAssistance;
+                return Stack(children: [
+                  // Keep the existing home mounted: it owns remote-window event handlers.
+                  Offstage(
+                      offstage: showWelcome || showDevices, child: pageView),
+                  if (showDevices) const DesktopDevicesPage(),
+                  if (showWelcome)
+                    DesktopWelcomePage(
+                      onLogin: () {
+                        loginDialog();
+                      },
+                      onAssistance: () => loginDialog(),
+                      onFavorites: () {
+                        if (!gFFI.userModel.isLogin) {
+                          loginDialog();
+                          return;
+                        }
+                        gFFI.peerTabModel.setCurrentTab(1);
+                        setState(() => _showAssistance = true);
+                      },
+                      onSettings: bind.isDisableSettings()
+                          ? null
+                          : () => DesktopTabPage.onAddSetting(),
+                    ),
+                ]);
+              }),
               tail: Row(mainAxisSize: MainAxisSize.min, children: [
                 if (isWindows && !bind.isIncomingOnly())
-                  ActionIcon(
-                    message: 'Login',
-                    icon: Icons.person_outline,
-                    onTap: () => loginDialog(),
-                    isClose: false,
-                  ),
+                  const AccountAction(),
                 Offstage(
                   offstage: bind.isIncomingOnly() || bind.isDisableSettings(),
                   child: ActionIcon(
@@ -136,40 +171,7 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
                 ),
               ]),
             )));
-    final content = Obx(() {
-      final signedIn = gFFI.userModel.isLogin;
-      final homeSelected =
-          tabController.state.value.selectedTabInfo.key == kTabLabelHomePage;
-      final showWelcome = isWindows &&
-          !bind.isIncomingOnly() &&
-          !signedIn &&
-          homeSelected;
-      final showDevices = isWindows && !bind.isIncomingOnly() && signedIn && homeSelected && !_showAssistance;
-      return Stack(children: [
-        // Keep the existing home mounted: it owns remote-window event handlers.
-        Offstage(
-            offstage: showWelcome || showDevices,
-            child: Column(children: [
-              Expanded(child: tabWidget),
-            ])),
-        if (showDevices) const DesktopDevicesPage(),
-        if (showWelcome)
-          DesktopWelcomePage(
-            onLogin: () {
-              loginDialog();
-            },
-            onAssistance: () => loginDialog(),
-            onFavorites: () {
-              if (!gFFI.userModel.isLogin) { loginDialog(); return; }
-              gFFI.peerTabModel.setCurrentTab(1);
-              setState(() => _showAssistance = true);
-            },
-            onSettings: bind.isDisableSettings()
-                ? null
-                : () => DesktopTabPage.onAddSetting(),
-          ),
-      ]);
-    });
+    final content = tabWidget;
     return isMacOS || kUseCompatibleUiMode
         ? content
         : Obx(

@@ -1,7 +1,5 @@
-import 'package:flutter_hbb/common/widgets/brand_icon.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
 
 /// OpenUU's signed-out landing page. Authentication and navigation stay in the
 /// existing desktop shell; this widget only owns the presentation.
@@ -14,7 +12,6 @@ class DesktopWelcomePage extends StatelessWidget {
   final Widget? content;
   final bool settingsSelected;
   final bool assistanceSelected;
-  final bool showTitleBar;
   final Widget? header;
   final Widget? deviceItem;
   const DesktopWelcomePage(
@@ -28,7 +25,6 @@ class DesktopWelcomePage extends StatelessWidget {
       this.header,
       this.deviceItem,
       this.assistanceSelected = false,
-      this.showTitleBar = true,
       this.settingsSelected = false});
 
   static const blue = Color(0xff3979ff);
@@ -40,45 +36,6 @@ class DesktopWelcomePage extends StatelessWidget {
     return Material(
       color: const Color(0xffeff4f7),
       child: Column(children: [
-        if (showTitleBar) SizedBox(
-            height: 46,
-            child: Row(children: [
-              Expanded(
-                  child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onPanStart: (_) => windowManager.startDragging(),
-                      onDoubleTap: () async {
-                        if (await windowManager.isMaximized()) {
-                          await windowManager.unmaximize();
-                        } else {
-                          await windowManager.maximize();
-                        }
-                      },
-                      child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 24),
-                          child: Row(children: [
-                            BrandIcon(size: 20),
-                            SizedBox(width: 12),
-                            Text('OpenUU',
-                                style: TextStyle(
-                                    fontFamily: 'Microsoft YaHei',
-                                    fontFamilyFallback: [
-                                      'Segoe UI',
-                                      'Noto Sans CJK SC'
-                                    ],
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xff172333)))
-                          ])))),
-              _titleBarButton(t('登录', 'Sign in'), Icons.person_outline, onLogin),
-              if (onSettings != null)
-                _titleBarButton(t('设置', 'Settings'), Icons.menu, onSettings!),
-              _titleBarButton(t('最小化', 'Minimize'), Icons.remove,
-                  () => windowManager.minimize()),
-              _titleBarButton(t('关闭', 'Close'), Icons.close,
-                  () => windowManager.close()),
-              const SizedBox(width: 10),
-            ])),
         Expanded(child: LayoutBuilder(builder: (context, constraints) {
           // Constraints are logical pixels; Flutter applies the monitor DPI once.
           final sidebarWidth = (constraints.maxWidth * .24).clamp(200.0, 300.0);
@@ -137,33 +94,6 @@ class DesktopWelcomePage extends StatelessWidget {
           ]);
         })),
       ]),
-    );
-  }
-
-  Widget _titleBarButton(String tooltip, IconData icon, VoidCallback onTap) {
-    const shape = RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4)));
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      child: Tooltip(
-        message: tooltip,
-        child: SizedBox.square(
-          dimension: 36,
-          child: Material(
-            color: Colors.transparent,
-            shape: shape,
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              customBorder: shape,
-              hoverColor: const Color(0x14000000),
-              focusColor: const Color(0x14000000),
-              highlightColor: const Color(0x1f000000),
-              onTap: onTap,
-              child: Center(child: Icon(icon, size: 16)),
-            ),
-          ),
-        ),
-      ),
     );
   }
 

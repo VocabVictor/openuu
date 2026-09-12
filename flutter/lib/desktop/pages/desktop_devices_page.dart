@@ -18,6 +18,7 @@ class DesktopDevicesPage extends StatefulWidget {
 
 class _DesktopDevicesPageState extends State<DesktopDevicesPage> {
   String _localId = '';
+  Peer? _opened;
   final _listener = 'DesktopDevicesPage';
 
   @override
@@ -48,12 +49,13 @@ class _DesktopDevicesPageState extends State<DesktopDevicesPage> {
     super.dispose();
   }
 
-  void _open(Peer peer) {
-    final navigator = Navigator.of(context);
-    void leave(VoidCallback action) { navigator.pop(); action(); }
-    navigator.push(MaterialPageRoute<void>(builder: (_) => DesktopDevicePage(
+  void _open(Peer peer) => setState(() => _opened = peer);
+
+  Widget _devicePage(Peer peer) {
+    void leave(VoidCallback action) { setState(() => _opened = null); action(); }
+    return DesktopDevicePage(
       name: deviceName(peer), id: peer.id, online: peer.online,
-      onBack: () => navigator.pop(), onLogin: () => loginDialog(),
+      onBack: () => setState(() => _opened = null), onLogin: () => loginDialog(),
       onSettings: () => leave(() => DesktopTabPage.onAddSetting()),
       onAssistance: () => leave(() => DesktopTabPage.showHome(assistance: true)),
       onFavorites: () => leave(() { gFFI.peerTabModel.setCurrentTab(1); DesktopTabPage.showHome(assistance: true); }),
@@ -63,11 +65,13 @@ class _DesktopDevicesPageState extends State<DesktopDevicesPage> {
       onTerminal: () => connectInPeerTab(context, peer, PeerTabIndex.recent, isTerminal: true),
       onTunnel: () => connectInPeerTab(context, peer, PeerTabIndex.recent, isTcpTunneling: true),
       onQuickLaunch: (app) => connectInPeerTab(context, peer, PeerTabIndex.recent, quickLaunch: app),
-    )));
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final opened = _opened;
+    if (opened != null) return _devicePage(opened);
     final byId = <String, Peer>{};
     for (final peer in [
       ...gFFI.abModel.allPeers(), ...gFFI.groupModel.peers,

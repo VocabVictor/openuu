@@ -65,7 +65,6 @@ class _DesktopAssistancePageState extends State<DesktopAssistancePage> {
         borderSide: const BorderSide(color: Color(0xffdce2e7)));
     return DesktopWelcomePage(
         assistanceSelected: true,
-        showTitleBar: false,
         onLogin: widget.onAccount,
         onDevices: widget.onDevices,
         onAssistance: () {},
