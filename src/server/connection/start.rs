@@ -619,11 +619,6 @@ impl Connection {
                     }
                 }
                 _ = second_timer.tick() => {
-                    if conn.authorized && crate::account::require_login().await.is_err() {
-                        conn.send_close_reason_no_retry("OpenUU login expired").await;
-                        conn.on_close("OpenUU login expired", true).await;
-                        break;
-                    }
                     #[cfg(windows)]
                     conn.portable_check();
                     raii::AuthedConnID::check_wake_lock_on_setting_changed();

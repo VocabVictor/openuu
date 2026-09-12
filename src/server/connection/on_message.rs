@@ -21,10 +21,6 @@ impl Connection {
         }
         // After handling CloseReason messages, proceed to process other message types
         if let Some(message::Union::LoginRequest(lr)) = msg.union {
-            if crate::account::require_login().await.is_err() {
-                self.send_login_error("OpenUU login required on the controlled device").await;
-                return false;
-            }
             if !self.check_login_scope(&lr).await {
                 return false;
             }
