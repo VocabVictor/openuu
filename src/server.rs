@@ -340,7 +340,9 @@ async fn create_relay_connection_(
     .await?;
     let mut msg_out = RendezvousMessage::new();
     let licence_key = crate::get_key(true).await;
+    crate::account::require_login().await?;
     msg_out.set_request_relay(RequestRelay {
+        token: crate::account::relay_ticket(&uuid).await?,
         licence_key,
         uuid,
         ..Default::default()

@@ -713,8 +713,12 @@ mod tunnel {
         state: watch::Sender<TunnelState>,
         mut lifetime: watch::Receiver<()>,
     ) {
+        let mut account_timer = tokio::time::interval(std::time::Duration::from_secs(1));
         let err = loop {
             tokio::select! {
+                _ = account_timer.tick() => {
+                    if crate::account::require_login().await.is_err() { break "OpenUU login expired".to_owned(); }
+                }
                 Some(msg) = control_rx.recv() => {
                     if let Err(e) = stream.send(&msg).await {
                         break format!("send failed: {}", e);

@@ -21,6 +21,7 @@ class DesktopTabPage extends StatefulWidget {
   State<DesktopTabPage> createState() => _DesktopTabPageState();
 
   static void showHome({bool assistance = false}) {
+    if (assistance && !gFFI.userModel.isLogin) { loginDialog(); return; }
     final page = Get.find<_DesktopTabPageState>();
     page.showHome(assistance);
   }
@@ -128,8 +129,7 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
       final showWelcome = isWindows &&
           !bind.isIncomingOnly() &&
           !signedIn &&
-          homeSelected &&
-          !_showAssistance;
+          homeSelected;
       return Stack(children: [
         // Keep the existing home mounted: it owns remote-window event handlers.
         Offstage(
@@ -151,8 +151,9 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
             onLogin: () {
               loginDialog();
             },
-            onAssistance: () => setState(() => _showAssistance = true),
+            onAssistance: () => loginDialog(),
             onFavorites: () {
+              if (!gFFI.userModel.isLogin) { loginDialog(); return; }
               gFFI.peerTabModel.setCurrentTab(1);
               setState(() => _showAssistance = true);
             },

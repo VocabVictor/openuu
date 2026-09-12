@@ -786,6 +786,7 @@ Future<bool?> _openLoginDialog() async {
             if (storeIfAccessToken) {
               await bind.mainSetLocalOption(
                   key: 'access_token', value: resp.access_token!);
+              await bind.mainSetOption(key: 'openuu-account-token', value: resp.access_token!);
               await bind.mainSetLocalOption(
                   key: 'user_info', value: jsonEncode(resp.user ?? {}));
             }
@@ -926,7 +927,7 @@ Future<bool?> _openLoginDialog() async {
                           gFFI.userModel.getLoginResponseFromAuthBody(authBody);
                     } catch (e) {
                       debugPrint(
-                          'Failed to parse oidc login body: "$authBody"');
+                          'Failed to parse account login response');
                     }
                     close(true);
 

@@ -1046,6 +1046,11 @@ impl Connection {
                     }
                 }
                 _ = second_timer.tick() => {
+                    if conn.authorized && crate::account::require_login().await.is_err() {
+                        conn.send_close_reason_no_retry("OpenUU login expired").await;
+                        conn.on_close("OpenUU login expired", true).await;
+                        break;
+                    }
                     #[cfg(windows)]
                     conn.portable_check();
                     raii::AuthedConnID::check_wake_lock_on_setting_changed();
@@ -2758,6 +2763,10 @@ impl Connection {
         }
         // After handling CloseReason messages, proceed to process other message types
         if let Some(message::Union::LoginRequest(lr)) = msg.union {
+            if crate::account::require_login().await.is_err() {
+                self.send_login_error("OpenUU login required on the controlled device").await;
+                return false;
+            }
             if !self.check_login_scope(&lr).await {
                 return false;
             }

@@ -81,6 +81,7 @@ pub async fn listen(
     remote_host: String,
     remote_port: i32,
 ) -> ResultType<()> {
+    crate::account::require_login().await?;
     let listener = tcp::new_listener(format!("127.0.0.1:{}", port), true).await?;
     let addr = listener.local_addr()?;
     log::info!("listening on port {:?}", addr);
@@ -563,8 +564,10 @@ async fn run_forward(forward: Framed<TcpStream, BytesCodec>, stream: Stream) -> 
     log::info!("new port forwarding connection started");
     let mut forward = forward;
     let mut stream = stream;
+    let mut account_timer = hbb_common::tokio::time::interval(std::time::Duration::from_secs(1));
     loop {
         tokio::select! {
+            _ = account_timer.tick() => { crate::account::require_login().await?; },
             res = forward.next() => {
                 if let Some(Ok(bytes)) = res {
                     allow_err!(stream.send_bytes(bytes.into()).await);

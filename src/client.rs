@@ -373,6 +373,9 @@ impl Client {
         ),
         (i32, String),
     )> {
+        crate::account::require_login().await?;
+        let account_token = crate::account::session_token();
+        let token = account_token.as_str();
         debug_assert!(peer == interface.get_id());
         interface.update_direct(None);
         interface.update_received(false);
@@ -1787,6 +1790,7 @@ impl Client {
         .with_context(|| "Failed to connect to relay server")?;
         let mut msg_out = RendezvousMessage::new();
         msg_out.set_request_relay(RequestRelay {
+            token: crate::account::relay_ticket(&uuid).await?,
             licence_key: key.to_owned(),
             id: peer.to_owned(),
             uuid,

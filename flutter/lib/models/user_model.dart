@@ -23,7 +23,8 @@ class UserModel {
   // True when networkError carries a server-reported error rather than a
   // connectivity failure; netWorkErrorWidget hides the network tip then.
   final RxBool networkErrorFromServer = false.obs;
-  bool get isLogin => userName.isNotEmpty;
+  final RxBool sessionVerified = false.obs;
+  bool get isLogin => sessionVerified.value && userName.isNotEmpty;
   String get displayNameOrUserName =>
       displayName.value.trim().isEmpty ? userName.value : displayName.value;
   String get accountLabelWithHandle {
@@ -51,6 +52,7 @@ class UserModel {
   }
 
   void refreshCurrentUser() async {
+    sessionVerified.value = false;
     if (bind.isDisableAccount()) return;
     networkError.value = '';
     networkErrorFromServer.value = false;
@@ -60,7 +62,8 @@ class UserModel {
       return;
     }
     _updateLocalUserInfo();
-    final url = await bind.mainGetApiServer();
+    final String url;
+    try { url = accountServer(); } catch (e) { networkError.value = e.toString(); return; }
     final body = {
       'id': await bind.mainGetMyId(),
       'uuid': await bind.mainGetUuid()
@@ -136,6 +139,8 @@ class UserModel {
   }
 
   Future<void> reset({bool resetOther = false}) async {
+    sessionVerified.value = false;
+    await bind.mainSetOption(key: 'openuu-account-token', value: '');
     await bind.mainSetLocalOption(key: 'access_token', value: '');
     await bind.mainSetLocalOption(key: 'user_info', value: '');
     if (resetOther) {
@@ -148,6 +153,7 @@ class UserModel {
   }
 
   _parseAndUpdateUser(UserPayload user) {
+    sessionVerified.value = user.status == UserStatus.kNormal;
     userName.value = user.name;
     displayName.value = user.displayName;
     avatar.value = user.avatar;
@@ -170,7 +176,7 @@ class UserModel {
   Future<void> logOut({String? apiServer}) async {
     final tag = gFFI.dialogManager.showLoading(translate('Waiting'));
     try {
-      final url = apiServer ?? await bind.mainGetApiServer();
+      final url = apiServer ?? accountServer();
       final authHeaders = getHttpHeaders();
       authHeaders['Content-Type'] = "application/json";
       await http
@@ -189,9 +195,33 @@ class UserModel {
     }
   }
 
+  static String accountServer() {
+    final url = bind.mainGetOptionSync(key: 'api-server').trim();
+    final uri = Uri.tryParse(url);
+    if (uri == null || !(uri.scheme == 'https' ||
+        (uri.scheme == 'http' && ['127.0.0.1', 'localhost', '::1'].contains(uri.host)))) {
+      throw RequestException(0, 'Configure an HTTPS OpenUU account server in Network settings');
+    }
+    return url.replaceFirst(RegExp(r'/+$'), '');
+  }
+
+  Future<bool> validateSession() async {
+    final token = bind.mainGetLocalOption(key: 'access_token');
+    if (token.isEmpty) { sessionVerified.value = false; return false; }
+    try {
+      final response = await http.post(Uri.parse('${accountServer()}/api/currentUser'),
+        headers: {'Authorization': 'Bearer $token'}).timeout(const Duration(seconds: 5));
+      if (response.statusCode != 200) { sessionVerified.value = false; return false; }
+      if (bind.mainGetLocalOption(key: 'access_token') != token) { sessionVerified.value = false; return false; }
+      final user = UserPayload.fromJson(jsonDecode(response.body));
+      _parseAndUpdateUser(user);
+      return isLogin;
+    } catch (_) { sessionVerified.value = false; return false; }
+  }
+
   /// throw [RequestException]
   Future<LoginResponse> login(LoginRequest loginRequest) async {
-    final url = await bind.mainGetApiServer();
+    final url = accountServer();
     final resp = await http.post(Uri.parse('$url/api/login'),
         body: jsonEncode(loginRequest.toJson()));
 
@@ -238,7 +268,7 @@ class UserModel {
   /// data. Returns an empty list when no API server is configured or a
   /// successful response contains no third-party login options.
   static Future<List<dynamic>> queryOidcLoginOptions() async {
-    final url = await bind.mainGetApiServer();
+    final url = accountServer();
     if (url.trim().isEmpty) return [];
     final resp = await http.get(Uri.parse('$url/api/login-options'));
     const successStatusCodeStart = 200;

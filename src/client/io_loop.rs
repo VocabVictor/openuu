@@ -320,6 +320,10 @@ impl<T: InvokeUiSession> Remote<T> {
                             }
                         }
                         _ = status_timer.tick() => {
+                            if crate::account::require_login().await.is_err() {
+                                self.handler.on_establish_connection_error("OpenUU login expired".to_owned());
+                                break;
+                            }
                             if self.handler.is_restarting_remote_device()
                                 && last_recv_time.elapsed() >= RESTART_REMOTE_DEVICE_NO_DATA_TIMEOUT
                             {
