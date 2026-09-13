@@ -41,6 +41,13 @@ workspace member. `base::config::keys` re-exports the handful of keys
   The permission board is the worked example: a granted permission is a
   filled tile and a withheld one an outlined tile, so the state survives with
   the colour removed.
+* **Unselected is dimmer, not a different hue. The hue is what marks
+  selected.** A tab strip carried a pale blue for its unselected icons, which
+  measured 1.70:1 on the light bar and 1.43:1 on the dark one, against the 3:1
+  an icon needs — it was barely visible, and nobody had reported it because it
+  had always been that way. Worse, in dark the unselected icon was brighter
+  than the selected one, which does not merely weaken the signal, it reverses
+  it: the reader concludes the wrong tab is active.
 * **A disabled control must not look like a negative one.** "You may not
   change this" and "this is off" are different facts and need different
   renderings; dim the control to show it is locked, rather than giving it the
@@ -758,6 +765,20 @@ moment of the claim.** The reading is always cheaper than the correction.
 * Avoid comments unless they explain a non-obvious reason, constraint, or workaround.
 * Never restate what the code does; prefer clearer code instead.
 * If the code is self-explanatory, add no comment.
+
+### A refactor may not lower a number that was already passing
+
+Refactoring means the behaviour is unchanged, and a measured value is part of
+the behaviour. When a swap would move a contrast ratio, a timing, or a memory
+figure from above its threshold to below it, the swap is not a refactor: it is
+a change with a side effect, and it has to be argued as one.
+
+The case that produced this: a tab strip's unselected label was `#707070`,
+4.95:1 on a light bar. `muted` reads as the right member by name — the label
+is muted — but it measures 3.25:1 there, under what text needs.
+`textSecondary` (7.10:1) carries the same meaning and does not spend the
+margin. **The semantically obvious member is not automatically the correct
+one; measure before swapping.**
 
 ### Be minimally invasive
 

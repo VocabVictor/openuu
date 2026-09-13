@@ -28,6 +28,17 @@ fi
 #
 # Lines indented by four or more spaces are skipped: that is a quoted command
 # or error message, where aligned columns are normal.
+#
+# Known false positives, kept so the rate can be watched rather than guessed
+# at. A rule that fires wrongly often enough gets ignored wholesale, and the
+# only way to see that coming is to write each one down:
+#
+#   2026-09-14, `refactor(tabbar): one appearance mechanism instead of two`.
+#   A mapping table aligned with runs of spaces, nothing eaten. Fixed by
+#   indenting the table by four, which is what the message below says.
+#
+# The rule stays: the costs are not symmetric. A false positive costs one
+# reflow; a miss costs a commit message that is permanently missing a word.
 body=$(grep -v '^#' "$1")
 hits=$(printf '%s\n' "$body" | grep -nE '(^ [^ ]|[^ ] +$|[^ ]  +[^ ])' | grep -vE '^[0-9]+:( {4,}|	)')
 if [ -n "$hits" ]; then
