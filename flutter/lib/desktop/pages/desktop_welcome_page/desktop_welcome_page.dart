@@ -14,6 +14,7 @@ class DesktopWelcomePage extends StatelessWidget {
   final Widget? content;
   final bool settingsSelected;
   final bool assistanceSelected;
+  final bool favoritesSelected;
   final Widget? header;
   final Widget? deviceItem;
   const DesktopWelcomePage(
@@ -27,6 +28,7 @@ class DesktopWelcomePage extends StatelessWidget {
       this.header,
       this.deviceItem,
       this.assistanceSelected = false,
+      this.favoritesSelected = false,
       this.settingsSelected = false});
 
   static const blue = Color(0xff3979ff);
@@ -48,13 +50,19 @@ class DesktopWelcomePage extends StatelessWidget {
                 child: Column(children: [
                   _group(t('我的设备', 'My devices'), Icons.devices_outlined),
                   if (deviceItem != null) deviceItem!,
-                  _item(t('全部设备', 'All devices'), Icons.grid_view_rounded,
-                      !settingsSelected && !assistanceSelected && deviceItem == null, onDevices ?? () {}),
+                  _item(
+                      t('全部设备', 'All devices'),
+                      Icons.grid_view_rounded,
+                      !settingsSelected &&
+                          !assistanceSelected &&
+                          !favoritesSelected &&
+                          deviceItem == null,
+                      onDevices ?? () {}),
+                  _item(t('收藏设备', 'Favorites'), Icons.bookmark,
+                      favoritesSelected, onFavorites),
                   _group(t('远程协助', 'Remote assistance'), Icons.crop_free),
                   _item(t('开始协助', 'Start assistance'), Icons.screen_share,
                       assistanceSelected, onAssistance),
-                  _item(t('收藏设备', 'Favorites'), Icons.bookmark, false,
-                      onFavorites),
                   const Spacer(),
                   const Divider(height: 1),
                   if (onSettings != null)
@@ -81,7 +89,9 @@ class DesktopWelcomePage extends StatelessWidget {
                               child: header ?? Text(
                                   settingsSelected
                                       ? t('设置', 'Settings')
-                                      : t('全部设备', 'All devices'),
+                                      : favoritesSelected
+                                          ? t('收藏设备', 'Favorites')
+                                          : t('全部设备', 'All devices'),
                                   style: const TextStyle(
                                       fontFamily: 'Microsoft YaHei',
                                       fontFamilyFallback: [
