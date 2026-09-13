@@ -498,6 +498,18 @@ batch if you need finer. **Keep a batch to one kind of change** -- docs in one,
 Flutter styling in another, scripts in a third: a red on a single-kind batch
 says who should look at it from the subject line alone.
 
+**Bisect names the first commit that fails, which is not always the commit
+that is wrong.** The same day, a signature change and an older commit that
+left two call sites behind were each complete on their own; only the pair
+failed to compile, and bisect points at whichever landed second. Read the seam
+between the two, not just the commit it names.
+
+**A green tip means that tree builds, and nothing more.** It does not say the
+tree looks right -- that needs eyes on a screenshot -- and it says nothing
+about the commits behind it, because CI only ever checks the tip. "The first
+commit that was actually verified" must not be read as "everything up to here
+was verified".
+
 ### Say which step you actually reached
 
 **"It compiles" has to name the step.** `flutter analyze` is not a build,
