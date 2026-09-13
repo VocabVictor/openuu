@@ -16,7 +16,14 @@ pub fn check_software_update() {
 /// reached `do_check_software_update` directly and sent the fingerprint
 /// anyway. See the endpoint audit in docs/third-party-endpoints.md.
 pub fn may_check_upstream_version() -> bool {
-    !is_custom_client()
+    may_check_upstream_version_for(&get_app_name())
+}
+
+/// Takes the name so the rule can be tested without the process-global
+/// `APP_NAME`, which production sets to this product's name during start-up
+/// (`load_custom_client`) and a unit test therefore never sees.
+fn may_check_upstream_version_for(app_name: &str) -> bool {
+    app_name == "RustDesk"
 }
 
 // No need to check `danger_accept_invalid_cert` for now.

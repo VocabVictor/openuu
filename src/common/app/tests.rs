@@ -62,21 +62,19 @@ use super::*;
     /// server, so a rebranded build must not send it however the check was
     /// started. The manual path used to reach `do_check_software_update`
     /// directly and bypass the guard that only `check_software_update` held.
+    ///
+    /// This asserts the rule rather than calling the checker: with the
+    /// process-global app name left at its default a unit test would look
+    /// like upstream's own build and send the request for real.
     #[test]
     fn a_rebranded_build_does_not_ask_upstream() {
-        assert_ne!(get_app_name(), "RustDesk", "this fork is rebranded");
-        assert!(is_custom_client());
         assert!(
-            !may_check_upstream_version(),
+            !may_check_upstream_version_for("OpenUU"),
             "a rebranded build must not query upstream's version endpoint"
         );
-
-        // the manual path goes through the same gate, so it makes no request
-        // and leaves no update on offer
-        *SOFTWARE_UPDATE_URL.lock().unwrap() = "stale".to_string();
-        do_check_software_update().expect("the gate is not an error path");
         assert!(
-            SOFTWARE_UPDATE_URL.lock().unwrap().is_empty(),
-            "a skipped check must not leave an update URL behind"
+            may_check_upstream_version_for("RustDesk"),
+            "upstream's own build may still ask its own server"
         );
     }
+}
