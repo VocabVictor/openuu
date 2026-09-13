@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hbb/common.dart';
+import 'package:flutter_hbb/desktop/widgets/ui_palette.dart';
 import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
 import 'package:get/get.dart';
 
@@ -118,6 +119,8 @@ class SessionStatusBar extends StatelessWidget {
                 ))));
 
   Widget _bar(BuildContext context) => Obx(() {
+        final ui = UiColor.of(context);
+        final type = UiType.of(context);
         final phase = controller.phase.value;
         return KeyedSubtree(
           key: const ValueKey('bar'),
@@ -125,44 +128,45 @@ class SessionStatusBar extends StatelessWidget {
             height: UiSession.statusBarHeight,
             padding: const EdgeInsets.symmetric(
                 horizontal: UiSession.statusBarPaddingX),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(bottom: BorderSide(color: UiColor.border)),
+            decoration: BoxDecoration(
+              color: ui.surface,
+              border: Border(bottom: BorderSide(color: ui.border)),
             ),
             child: Row(children: [
               Container(
                 width: UiSpace.statusDotSize,
                 height: UiSpace.statusDotSize,
                 decoration: BoxDecoration(
-                    color: _dotColor(phase), shape: BoxShape.circle),
+                    color: _dotColor(ui, phase), shape: BoxShape.circle),
               ),
               const SizedBox(width: UiSpace.statusDotGap),
               Text(_caption(phase),
-                  style: UiType.caption.copyWith(color: UiColor.textSecondary)),
+                  style: type.caption.copyWith(color: ui.textSecondary)),
               if (controller.readOnly.isTrue) ...[
                 const SizedBox(width: UiSpace.s2),
-                _tag(translate('Read-only')),
+                _tag(ui, type, translate('Read-only')),
               ],
               const Spacer(),
               if (phase == SessionPhase.disconnected) ...[
-                _button(translate('Reconnect now'), onReconnect),
+                _button(ui, type, translate('Reconnect now'), onReconnect),
                 const SizedBox(width: UiSpace.s2),
-                _button(translate('Disconnect'), onDisconnect, danger: true),
+                _button(ui, type, translate('Disconnect'), onDisconnect,
+                    danger: true),
               ],
             ]),
           ),
         );
       });
 
-  Color _dotColor(SessionPhase phase) {
+  Color _dotColor(UiPalette ui, SessionPhase phase) {
     switch (phase) {
       case SessionPhase.connected:
-        return UiColor.success;
+        return ui.success;
       case SessionPhase.disconnected:
-        return UiColor.danger;
+        return ui.danger;
       case SessionPhase.connecting:
       case SessionPhase.waitingAccept:
-        return UiColor.warning;
+        return ui.warning;
     }
   }
 
@@ -182,34 +186,36 @@ class SessionStatusBar extends StatelessWidget {
     }
   }
 
-  Widget _tag(String text) => Container(
+  Widget _tag(UiPalette ui, UiTypeset type, String text) => Container(
       height: UiSpace.tagHeight,
       padding: const EdgeInsets.symmetric(horizontal: UiSpace.tagPaddingX),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-          color: UiColor.primaryTint,
+          color: ui.primaryTint,
           borderRadius: BorderRadius.circular(UiSpace.tagRadius)),
-      child: Text(text, style: UiType.tag));
+      child: Text(text, style: type.tag));
 
   /// A 24-high inline button: secondary, or danger for disconnect. Both are
   /// the same size with a real border, so the safe choice is never harder to
   /// hit than the one that gives up the session.
-  Widget _button(String label, VoidCallback? onPressed,
+  Widget _button(UiPalette ui, UiTypeset type, String label,
+          VoidCallback? onPressed,
           {bool danger = false}) =>
       SizedBox(
           height: UiSession.statusBarButtonHeight,
           child: OutlinedButton(
               style: OutlinedButton.styleFrom(
-                  foregroundColor: danger ? UiColor.danger : UiColor.text,
-                  backgroundColor: Colors.white,
+                  foregroundColor: danger ? ui.danger : ui.text,
+                  backgroundColor: ui.surface,
                   side: BorderSide(
-                      color: danger ? UiColor.dangerBorder : UiColor.inputBorder),
+                      color: danger ? ui.dangerBorder : ui.inputBorder),
                   padding: const EdgeInsets.symmetric(horizontal: UiSpace.s2),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(UiSpace.tagRadius)),
-                  textStyle: UiType.caption.copyWith(fontWeight: FontWeight.w500)),
+                  textStyle:
+                      type.caption.copyWith(fontWeight: FontWeight.w500)),
               onPressed: onPressed,
               child: Text(label)));
 }
