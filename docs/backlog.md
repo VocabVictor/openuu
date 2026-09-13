@@ -339,3 +339,17 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   theme system entirely. **A feature that three different states share cannot
   sort them**, and it read as a sound criterion because in the first batch
   every hit happened to be the first case.
+
+* **Nothing runs the Rust tests on Linux.** `Linux check` type-checks them
+  (`cargo check --lib --tests --features flutter`) but never executes them, and
+  the build machine runs them on Windows. The workflow that would have covered
+  this, `ci.yml`, was deleted on 2026-09-14: it had been red since the flutter
+  feature became a default, because it built with default features and had no
+  step to generate `src/bridge_generated.rs`. Deferred deliberately -- CI
+  minutes are not free and the queue had just been cleared -- and recorded so
+  the gap is a decision rather than an oversight. **What is missing: one step
+  in `linux-check.yml`**, where the bridge artifact already exists, rather than
+  a third Linux pipeline with its own bridge generation and vcpkg install. The
+  gap it closes is narrow: a test whose result differs between Linux and
+  Windows, which for this codebase means anything touching paths, permissions
+  or the Unix-only modules.
