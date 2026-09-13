@@ -52,7 +52,24 @@ below roughly 1.2 Mbps of real capacity. The controller stays at its floor and k
 serving, so nothing collapses, but the first half minute on such a link is worse than it
 was.
 
-Worth fixing separately, in the startup rather than the table: the controller has no
-capacity estimate before the first probes come back, and the fix is to drain below the
-steady-state target once the queue is known to be large, not to configure a bitrate no
-screen needs.
+Fixed separately, in the startup rather than the table: see the next entry.
+
+## 2026-09-13: draining a backlog
+
+The 0.3x row above was the controller being first blind and then powerless. Blind,
+because replies drive the bitrate and a deep queue is exactly when they stop arriving:
+a stalled probe moved the frame rate but never the bitrate. Powerless, because the
+steady-state floor is a rate the link can just carry, and such a rate never wins back
+seconds of queue already in front of it.
+
+A viewer now enters a drain on evidence of a deep queue and stays in it until the queue
+has gone, asking for one step to under what the link carries, with `BR_MIN_DRAIN` as the
+floor and no cooldown. On the same scenario the backlog peaks at 20 s instead of 33 s,
+is gone by 31 s instead of never, and the bitrate returns to five times its low with the
+frame rate back at the limit. The cost is a few seconds of deliberately poor picture
+while it drains, which is the trade the whole entry is about: a thin link can have low
+latency or a sharp picture in that moment, not both.
+
+Not addressed: the first three to six seconds, where nothing is known about the link and
+the stream goes out at the preset. Shortening that needs evidence sooner than the first
+probe round trip.
