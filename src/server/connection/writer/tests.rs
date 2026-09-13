@@ -1,6 +1,6 @@
 use super::*;
 use base::message_proto::{video_frame, Misc, SwitchDisplay, VideoFrame};
-use hbb_common::{protobuf::Message as _, tcp::FramedStream, Stream};
+use hbb_common::{tcp::FramedStream, Stream};
 
 const MS: std::time::Duration = std::time::Duration::from_millis(1);
 

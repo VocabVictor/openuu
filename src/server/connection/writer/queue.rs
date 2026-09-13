@@ -55,10 +55,6 @@ impl Queues {
         self.control.pop_front().or_else(|| self.video.pop_front())
     }
 
-    pub(super) fn is_empty(&self) -> bool {
-        self.control.is_empty() && self.video.is_empty()
-    }
-
     pub(super) fn video_len(&self) -> usize {
         self.video.len()
     }
