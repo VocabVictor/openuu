@@ -15,4 +15,4 @@
 
 ## 许可证与来源
 
-参见 [LICENSE](../LICENSE) 和 [第三方声明](../THIRD_PARTY_NOTICES.md)。
+参见 [LICENCE](../LICENCE) 和 [第三方声明](../THIRD_PARTY_NOTICES.md)。

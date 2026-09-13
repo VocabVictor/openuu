@@ -188,6 +188,14 @@ do not automate the interaction.
 * Use `spawn_blocking` or dedicated threads for blocking work.
 * Do not use `std::thread::sleep()` in async code.
 
+## Documentation and test data
+
+* Documents, commit messages and test fixtures must not contain real IP
+  addresses, host names, account names, cloud instance ids or device ids.
+  Use placeholders: documentation address ranges (192.0.2.0/24, 198.51.100.0/24,
+  203.0.113.0/24), made-up names (`alice`, `<user>`, `<vm>`) and ids such as
+  `123456789`. The repository is published; see `docs/publish-readiness.md`.
+
 ## Editing Hygiene
 
 * Change only what is required.

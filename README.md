@@ -27,4 +27,4 @@ A UI-only build using a prebuilt core does not rebuild native services.
 
 ## License and attribution
 
-See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+See [LICENCE](LICENCE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
