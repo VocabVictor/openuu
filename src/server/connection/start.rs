@@ -292,63 +292,7 @@ impl Connection {
                     }
                 },
                 Some((instant, value)) = rx.recv() => {
-                    let latency = instant.elapsed().as_millis() as i64;
-                    #[allow(unused_mut)]
-                    let mut msg = value;
-
-                    if latency > 1000 {
-                        match &msg.union {
-                            Some(message::Union::AudioFrame(_)) => {
-                                // log::info!("audio frame latency {}", instant.elapsed().as_secs_f32());
-                                continue;
-                            }
-                            _ => {}
-                        }
-                    }
-                    match &msg.union {
-                        Some(message::Union::Misc(m)) => {
-                            match &m.union {
-                                Some(misc::Union::StopService(_)) => {
-                                    conn.send_close_reason_no_retry("").await;
-                                    conn.on_close("stop service", false).await;
-                                    break;
-                                }
-                                _ => {},
-                            }
-                        }
-                        Some(message::Union::PeerInfo(_pi)) => {
-                            conn.refresh_video_display(None);
-                            #[cfg(target_os = "macos")]
-                            conn.retina.set_displays(&_pi.displays);
-                        }
-                        Some(message::Union::CursorPosition(pos)) => {
-                            #[cfg(not(any(target_os = "android", target_os = "ios")))]
-                            {
-                                if conn.follow_remote_cursor {
-                                    conn.handle_cursor_switch_display(pos.clone()).await;
-                                }
-                            }
-                            #[cfg(target_os = "macos")]
-                            if let Some(new_msg) = conn.retina.on_cursor_pos(&pos, conn.display_idx) {
-                                msg = Arc::new(new_msg);
-                            }
-                        }
-                        Some(message::Union::MultiClipboards(_multi_clipboards)) => {
-                            #[cfg(not(target_os = "ios"))]
-                            if let Some(msg_out) = crate::clipboard::get_msg_if_not_support_multi_clip(&conn.lr.version, &conn.lr.my_platform, _multi_clipboards) {
-                                if let Err(err) = conn.stream.send(&msg_out).await {
-                                    conn.on_close(&err.to_string(), false).await;
-                                    break;
-                                }
-                                continue;
-                            }
-                        }
-                        _ => {}
-                    }
-
-                    let msg: &Message = &msg;
-                    if let Err(err) = conn.stream.send(msg).await {
-                        conn.on_close(&err.to_string(), false).await;
+                    if !conn.send_queued(instant, value).await {
                         break;
                     }
                 },
@@ -358,55 +302,13 @@ impl Connection {
                     }
                 }
                 _ = second_timer.tick() => {
-                    #[cfg(windows)]
-                    conn.portable_check();
-                    raii::AuthedConnID::check_wake_lock_on_setting_changed();
-                    if let Some((instant, minute)) = conn.auto_disconnect_timer.as_ref() {
-                        if instant.elapsed().as_secs() > minute * 60 {
-                            conn.send_close_reason_no_retry("Connection failed due to inactivity").await;
-                            conn.on_close("auto disconnect", true).await;
-                            break;
-                        }
-                    }
-                    if video_service::qos_diag_verbose() && conn.video_send_count > 0 {
-                        // Joined with `qos_trace` on `t`: a probe that waits behind a
-                        // blocked write is not a slow network.
-                        log::debug!(
-                            "qos_send t={} id={id} frames={} send_max={} send_sum={} queued={}",
-                            hbb_common::get_time(),
-                            conn.video_send_count,
-                            conn.video_send_max_ms,
-                            conn.video_send_sum_ms,
-                            rx_video.len()
-                        );
-                        conn.video_send_max_ms = 0;
-                        conn.video_send_sum_ms = 0;
-                        conn.video_send_count = 0;
-                    }
-                    conn.file_remove_log_control.on_timer().drain(..).map(|x| conn.send_to_cm(x)).count();
-                    #[cfg(feature = "hwcodec")]
-                    conn.update_supported_encoding();
-                }
-                _ = test_delay_timer.tick() => {
-                    if last_recv_time.elapsed() >= SEC30 {
-                        conn.on_close("Timeout", true).await;
+                    if !conn.on_second_tick(rx_video.len()).await {
                         break;
                     }
-                    // The control end will jump out of the loop after receiving LoginResponse and will not reply to the TestDelay
-                    if conn.last_test_delay.is_none() && !(conn.port_forward_socket.is_some() && conn.authorized) {
-                        conn.last_test_delay = Some(Instant::now());
-                        let mut msg_out = Message::new();
-                        msg_out.set_test_delay(TestDelay{
-                            last_delay: conn.network_delay,
-                            target_bitrate: video_service::VIDEO_QOS.lock().unwrap().bitrate(),
-                            ..Default::default()
-                        });
-                        conn.send(msg_out.into()).await;
-                    }
-                    if conn.is_authed_remote_conn() || conn.view_camera {
-                        if let Some(last_test_delay) = conn.last_test_delay {
-                            video_service::VIDEO_QOS.lock().unwrap().user_delay_response_elapsed(id, last_test_delay.elapsed().as_millis());
-                        }
+                }
+                _ = test_delay_timer.tick() => {
+                    if !conn.on_test_delay_tick(last_recv_time).await {
+                        break;
                     }
                 }
                 clip_file = rx_clip.recv() => match clip_file {
