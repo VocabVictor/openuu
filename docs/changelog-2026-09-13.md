@@ -365,6 +365,34 @@ Measurements and their limits are in `docs/perf-baseline-2026-09-13.md`
 
 ## Infrastructure
 
+* **Android builds again, and the APK is proven to carry the Rust core.**
+  Nothing had built it since the Android CI was dropped in the move to
+  Windows-only pipelines: Gradle never compiles the Rust side, so an APK would
+  have shipped without `librustdesk.so` and died on `System.loadLibrary` at
+  startup. `android-build.yml` (revived from the dormant job in
+  `playground.yml`) stages the library itself and then asserts with `unzip -l`
+  that it is inside the package -- without that assertion the first green run
+  would have meant only "a package was produced".
+
+  Three runs, each a different real problem, none of them a repeat.
+  **Round one died compiling the Rust core and exposed two defects in code
+  that had never been compiled for the platform**: a `Vec` whose element type
+  was only ever inferred from the three desktop `cfg` blocks, and a call to a
+  `message()` method `DeployResult` has never had (`07a0dc2c3`, `aea6320f2`).
+  Round two got past Rust and died packaging: `org.gradle.jvmargs=-Xmx1024M`
+  left R8 minify, the release signing validation and the lint pass all
+  throwing `Java heap space` on a 16 GB runner (`c0f2e791a`). Round three was
+  green: a 28.6 MB APK containing `librustdesk.so` (36 MB) and
+  `libc++_shared.so` (1.8 MB), sizes matching what was staged.
+
+  This is the same shape as the Dart tests above: **two verifications that had
+  never run at all**, one over code that was never compiled, one over tests
+  that were never executed. The workflow now triggers on pushes touching the
+  Android paths rather than on a timer; the gap (android `cfg` items scattered
+  across a dozen directories under `src/`) is recorded in the workflow itself.
+  CI proves the package is complete, not that it runs -- nobody has installed
+  it on a device yet.
+
 * **Both repositories are public.** History was rewritten twice with
   `git filter-repo`: first to replace real hosts, keys, account names and
   cloud ids with placeholders, then to strip AI attribution trailers from
