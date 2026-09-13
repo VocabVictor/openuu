@@ -81,8 +81,10 @@ Everything below needs it. One swap, not one per item.
 
 ### 6. DXGI desktop surface mapping — e9 runs it, f0 reads it, 10 min
 
-* **Needs**: the new bundle (grep `libopenuu.dll` for `cannot be mapped` to confirm
-  `9bdbca7e4` is in it). Three sessions of about 20 s each, then the peer log.
+* **Needs**: the new bundle. e9 has already grepped the built `libopenuu.dll` for
+  `cannot be mapped` and `copying it instead` and found both, so `9bdbca7e4` is in the
+  bundle that is waiting; install it and run. Three sessions of about 20 s each, then the
+  peer log.
 * **Background**: this peer logged `dxgi error, fall back to gdi` with
   `Kind(InvalidData)` 28 times, every one of them within 0.08–0.55 s of a session
   starting, which means it spent whole sessions on GDI's full-frame compare and copy. The
@@ -107,10 +109,12 @@ Everything below needs it. One swap, not one per item.
 
 ### 8. Hole punching, before and after — e9, 20 min
 
-* **Needs**: whether the peer needs a new bundle depends on where the change lands. If the
-  default is only read on the controller, this rides on the controller bundle and can be
-  taken at any point after item 3; if the peer reads it too, fold the build into item 3
-  rather than swapping twice.
+* **Needs**: the controller bundle only, so this can run at any point once item 3 is done
+  and does not constrain the order. All three switches are read on the controller side
+  (`src/client/start.rs`, `transport.rs`, `webrtc_bridge.rs`); the peer cannot read them
+  because they live in `LocalConfig`, which the user-interface process writes and never
+  synchronises over the inter-process channel. The answering path says so in a comment of
+  its own rather than reading them.
 * **Run**: sessions with the defaults as they ship, then with the change, reading the
   controller log for `Hole Punched` and `used to establish`.
 * **Decides**: whether "default on, fall back when the probe fails" reaches direct where
