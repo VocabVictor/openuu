@@ -79,7 +79,12 @@ class UiDialog extends StatelessWidget {
     final cancel = onClose;
     return CustomAlertDialog(
       titlePadding: EdgeInsets.zero,
-      contentBoxConstraints: BoxConstraints(minWidth: width, maxWidth: width),
+      // A fixed width only on the desktop shell. On a phone the dialog has
+      // about 280dp to live in once the Material inset and the content
+      // padding are taken off, so demanding 352 would overflow the screen;
+      // there the width is an upper bound and the dialog shrinks to fit.
+      contentBoxConstraints: BoxConstraints(
+          minWidth: isDesktop ? width : 0, maxWidth: width),
       onSubmit: primary,
       onCancel: cancel,
       content: Column(
