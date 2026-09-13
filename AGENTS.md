@@ -438,6 +438,24 @@ service status, configuration file content and service log checks. When a
 screen has to be judged by eye, produce one screenshot for the user and stop;
 do not automate the interaction.
 
+### A dependency change lands with its lock file
+
+`check.ps1` and `check-server.ps1` pass `--locked`, so cargo refuses to update
+`Cargo.lock` on the build machine. Add a dependency to a manifest and the
+check fails immediately, naming the lock file, until the updated lock is
+committed with it.
+
+Without the flag cargo updated the lock file quietly in a worktree that is
+reset before every run, so the update was thrown away and the local check went
+green on a state that could not exist anywhere else. That is how `3664a0f9f`
+put `async-trait` in `libs/base/Cargo.toml` and left every Linux CI run dead
+before it compiled anything. **A tool doing more than you asked, without
+saying so, reads as a pass.**
+
+Verified by fixture: a commit adding a dependency without its lock file passed
+the unpatched script and failed the patched one with
+`the lock file ... needs to be updated but --locked was passed`.
+
 ### Whoever pushes master reads that push's CI result
 
 `linux-check.yml` runs the Linux compile check and the full widget suite on
