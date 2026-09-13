@@ -67,9 +67,8 @@ Nothing to measure beyond connection set-up until the peer has a session.
 absolute glass-to-glass delay. Peer B is CPU bound: 1080p software AV1 on two
 vCPUs caps the pipeline at about 10 fps, with nothing queued on the send side.
 
-Peer B sessions still go through the relay: the punch succeeds
-(`is_local: true`) and an inbound rule exists, but the peer never logs
-`Server listening on` after `PunchHoleSent`; under investigation.
+Peer B sessions go through the relay for a network-topology reason, not a
+code one; see section 7.
 
 ## 5. UDP NAT test (after server 19bcbd0)
 
@@ -90,11 +89,28 @@ time=21 ms, packets_sent=2, success=true`, and the punch mode became
   the laptop holds the IPC name, so the portable instance cannot re-probe.
   To be re-measured on a controller without that conflict.
 
-## 7. Open
+## 7. Mediator punch fix (server fb362d3bf) and why peer B stays on the relay
+
+The fix "an offer this side cannot answer still gets the TCP punch" was
+verified on the reachable peer A: the new bundle establishes in ~1.4 ms over
+UDP+TCP punch with no relay fallback, so it carries no direct-connect
+regression.
+
+Peer B never connects directly, and this is the environment, not the code: it
+sits on the Hyper-V internal switch subnet (198.51.100.0/24 placeholder for
+172.31.x) behind the host gateway, while the controller is on the physical LAN
+(192.0.2.0/24). hbbs sees the two share a public IP, takes the intranet path
+and hands the peer's internal address to the controller, but that address is
+not routable from the physical LAN (ping and TCP probe both fail), so the
+1 s direct attempt times out and the relay takes over. Disabling the peer's
+firewall entirely did not change this. A direct session to peer B is
+impossible until it shares an L2 segment with the controller.
+
+## 8. Open
 
 * `codec-preference=vp9` written to the user defaults file did not reach the
   peer (`used preference: Auto`); find the path that sends it, then measure
   P0-4 (VP8/VP9 on peer B).
-* Relay versus direct on the same peer with a moving screen, once peer B
-  connects directly.
-* Peer A with a console session (fps, bitrate, QoS trace, e2e).
+* Peer A given a console session (GPU + a moving screen) for the hardware
+  encoder measurements: fps, target versus actual bitrate, QoS trace, e2e,
+  and the P0-e framerate-lock before/after under a bandwidth cap.
