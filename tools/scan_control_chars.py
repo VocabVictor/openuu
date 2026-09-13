@@ -8,12 +8,19 @@ Only a byte-level look finds it, which is what this script is for.
 
     python tools/scan_control_chars.py            # the whole repository
     python tools/scan_control_chars.py docs        # one directory
+    python tools/scan_control_chars.py new-check.ps1   # one file, tracked or not
+
+A named file is read directly, so a build-machine script can be checked before
+it is copied over. A directory that matches no tracked file is an error, not a
+pass: a scan that silently reports "clean" for input it never opened is worse
+than no scan.
 
 Exit code 1 when something is found, so it can gate a commit or a script
 install. Three control characters are legitimate in text and are allowed: tab,
 line feed and carriage return.
 """
 
+import os
 import subprocess
 import sys
 
@@ -42,6 +49,18 @@ def tracked_files(root, prefix):
         path = name.decode("utf-8", "replace")
         if path.endswith(SUFFIXES):
             yield path
+
+
+def paths_to_read(root, prefix):
+    """A named file wins over the git listing; anything else must match."""
+    if prefix and os.path.isfile(prefix):
+        return [prefix]
+    found = list(tracked_files(root, prefix))
+    if prefix and not found:
+        raise SystemExit(
+            "nothing to scan: '%s' is neither a file nor a tracked path with a "
+            "text suffix. Refusing to report a clean scan of nothing." % prefix)
+    return found
 
 
 def offending_bytes(data):
@@ -83,7 +102,7 @@ def locate(data, offset):
 
 def scan(root, prefix):
     findings = []
-    for path in tracked_files(root, prefix):
+    for path in paths_to_read(root, prefix):
         full = root + "/" + path if root != "." else path
         try:
             with open(full, "rb") as handle:
@@ -102,9 +121,10 @@ def scan(root, prefix):
 def main(argv):
     root = "."
     prefix = argv[1] if len(argv) > 1 else ""
+    scanned = paths_to_read(root, prefix)
     findings = scan(root, prefix)
     if not findings:
-        print("no control characters in tracked text files")
+        print("no control characters in %d file(s)" % len(scanned))
         return 0
     for path, line_number, byte, line in findings:
         print("%s:%d: byte 0x%02X" % (path, line_number, byte))
