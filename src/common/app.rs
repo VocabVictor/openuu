@@ -250,31 +250,3 @@ pub fn is_valid_untrusted_peer_id(id: &str) -> bool {
 
 #[cfg(test)]
 mod tests;
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// The version request carries a device fingerprint and goes to upstream's
-    /// server, so a rebranded build must not send it however the check was
-    /// started. The manual path used to reach `do_check_software_update`
-    /// directly and bypass the guard that only `check_software_update` held.
-    #[test]
-    fn a_rebranded_build_does_not_ask_upstream() {
-        assert_ne!(get_app_name(), "RustDesk", "this fork is rebranded");
-        assert!(is_custom_client());
-        assert!(
-            !may_check_upstream_version(),
-            "a rebranded build must not query upstream's version endpoint"
-        );
-
-        // the manual path goes through the same gate, so it makes no request
-        // and leaves no update on offer
-        *SOFTWARE_UPDATE_URL.lock().unwrap() = "stale".to_string();
-        do_check_software_update().expect("the gate is not an error path");
-        assert!(
-            SOFTWARE_UPDATE_URL.lock().unwrap().is_empty(),
-            "a skipped check must not leave an update URL behind"
-        );
-    }
-}
