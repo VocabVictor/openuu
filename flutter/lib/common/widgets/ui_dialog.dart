@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hbb/common.dart';
+import 'package:flutter_hbb/desktop/widgets/ui_palette.dart';
 import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
 
 /// One button of a [UiDialog]'s action row.
@@ -68,6 +69,8 @@ class UiDialog extends StatelessWidget {
   /// The dialog as a [CustomAlertDialog], for `dialogManager.show`, whose
   /// builder has to return that type.
   CustomAlertDialog alert(BuildContext context) {
+    final ui = UiColor.of(context);
+    final type = UiType.of(context);
     final primary = actions.isNotEmpty && actions.last.isPrimary
         ? actions.last.onPressed
         : null;
@@ -91,7 +94,7 @@ class UiDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _titleRow(),
+          _titleRow(ui, type),
           const SizedBox(height: UiSpace.s2),
           body,
           if (actions.isNotEmpty) ...[
@@ -105,7 +108,9 @@ class UiDialog extends StatelessWidget {
               overflowAlignment: OverflowBarAlignment.end,
               spacing: UiSpace.s2,
               overflowSpacing: UiSpace.s2,
-              children: [for (final action in actions) uiDialogButton(action)],
+              children: [
+                for (final action in actions) uiDialogButton(ui, type, action)
+              ],
             ),
           ],
         ],
@@ -113,22 +118,22 @@ class UiDialog extends StatelessWidget {
     );
   }
 
-  Widget _titleRow() => SizedBox(
+  Widget _titleRow(UiPalette ui, UiTypeset type) => SizedBox(
       height: UiSpace.dialogTitleHeight,
       child: Row(children: [
-        Expanded(child: Text(title, style: UiType.sectionTitle)),
+        Expanded(child: Text(title, style: type.sectionTitle)),
         if (onClose != null)
           IconButton(
               iconSize: 16,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-              icon: const Icon(Icons.close, color: UiColor.muted),
+              icon: Icon(Icons.close, color: ui.muted),
               onPressed: onClose),
       ]));
 }
 
 /// A 32-high dialog button in the primary / secondary / danger style.
-Widget uiDialogButton(UiDialogAction action) {
+Widget uiDialogButton(UiPalette ui, UiTypeset type, UiDialogAction action) {
   final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(UiSpace.buttonRadius));
   final Widget button;
@@ -136,38 +141,38 @@ Widget uiDialogButton(UiDialogAction action) {
     case UiDialogActionKind.primary:
       button = ElevatedButton(
           style: ElevatedButton.styleFrom(
-              backgroundColor: UiColor.primary,
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: UiColor.primaryDisabled,
-              disabledForegroundColor: Colors.white,
+              backgroundColor: ui.primary,
+              foregroundColor: ui.onPrimary,
+              disabledBackgroundColor: ui.primaryDisabled,
+              disabledForegroundColor: ui.onPrimary,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: UiSpace.s4),
               shape: shape,
-              textStyle: UiType.button),
+              textStyle: type.button),
           onPressed: action.onPressed,
           child: Text(translate(action.label)));
       break;
     case UiDialogActionKind.secondary:
       button = OutlinedButton(
           style: OutlinedButton.styleFrom(
-              foregroundColor: UiColor.text,
-              backgroundColor: Colors.white,
-              side: const BorderSide(color: UiColor.inputBorder),
+              foregroundColor: ui.text,
+              backgroundColor: ui.surface,
+              side: BorderSide(color: ui.inputBorder),
               padding: const EdgeInsets.symmetric(horizontal: UiSpace.s3),
               shape: shape,
-              textStyle: UiType.button),
+              textStyle: type.button),
           onPressed: action.onPressed,
           child: Text(translate(action.label)));
       break;
     case UiDialogActionKind.danger:
       button = OutlinedButton(
           style: OutlinedButton.styleFrom(
-              foregroundColor: UiColor.danger,
-              backgroundColor: Colors.white,
-              side: const BorderSide(color: UiColor.dangerBorder),
+              foregroundColor: ui.danger,
+              backgroundColor: ui.surface,
+              side: BorderSide(color: ui.dangerBorder),
               padding: const EdgeInsets.symmetric(horizontal: UiSpace.s3),
               shape: shape,
-              textStyle: UiType.button),
+              textStyle: type.button),
           onPressed: action.onPressed,
           child: Text(translate(action.label)));
       break;
