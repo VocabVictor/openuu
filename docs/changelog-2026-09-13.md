@@ -207,6 +207,14 @@ resolves; the hashes here are the current ones.
   never the subsystem that offers it. What made them hard to see is that each
   one answers a real failure, and answers it far too widely; none of them
   looks wrong at the line where it is written.
+* A fourth defect was reported alongside them and turned out not to be one:
+  the empty `EncodingUpdate::Check` arm, which recomputes the negotiated codec
+  from the config and therefore could never bring hardware encoding back. It
+  reads as a defect only while something upstream is emptying the config; with
+  that fixed, recomputing from an intact config is exactly its job. The
+  symptom was left alone and the cause was fixed, and the re-probe that would
+  have been added to `Check` instead would have spawned a probe process
+  whenever an encoder had a bad minute.
 * A cached hardware-codec probe from an earlier boot was still trusted, so
   every VRAM decode context named an adapter that no longer existed and D3D
   decoding fell back to the CPU path with `Failed to get decode context`; the
