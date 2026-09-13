@@ -624,6 +624,35 @@ that run and hands out the repairs if it is red.** One person pushes, so the
 responsibility has exactly one owner; a notification would only move the
 unread result somewhere else.
 
+A check that is permanently red is worse than no check, because it teaches
+everyone that red is the background colour. Two questions sort out what to do
+with one, and they have to be asked in this order:
+
+* **When was it last green?**
+* **What happened after that?**
+
+If the answer is "some change made it impossible to be green" -- a feature
+became a default, a generated file was added to `.gitignore`, a runner
+retired -- the check is **no longer applicable**: delete it. Repairing it would
+add a capability rather than restore one, which is a different decision with a
+different price, taken on purpose if at all.
+
+If it cannot be answered, or the check was green and then red intermittently,
+it is a **fault**: repair it.
+
+Both look like a red cross on the page, and the treatments are opposite, which
+is why guessing between them is expensive. The worked case: the `CI` workflow
+was red 53 times against 2 greens, both greens dated before the commit that
+made the flutter feature a default. Default features pull in
+`src/bridge_generated.rs`, which is generated and gitignored, and that workflow
+had no step to generate it. So it had not failed -- it had stopped applying,
+and it was deleted on 2026-09-14. Nobody had noticed, because two other
+workflows sit beside it and are green.
+
+When deleting, look for the signposts the deleted thing left behind: a comment
+in `windows-build.yml` pointed at `ci.yml` for an explanation. **A pointer to
+something deleted is harder to find than the thing itself.**
+
 ### Running the desktop widget tests
 
 The whole suite is one command on the build machine, and it has two
