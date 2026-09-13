@@ -111,7 +111,7 @@ pub(super) fn core_main_invoke_new_connection(mut args: std::env::Args) -> Optio
 }
 
 #[cfg(all(target_os = "linux", feature = "flutter"))]
-fn try_send_by_dbus(uni_links: String) -> Option<Vec<String>> {
+pub(super) fn try_send_by_dbus(uni_links: String) -> Option<Vec<String>> {
     use crate::dbus::invoke_new_connection;
 
     match invoke_new_connection(uni_links) {
@@ -138,7 +138,7 @@ pub(super) fn is_root() -> bool {
 }
 
 #[cfg(any(target_os = "linux", target_os = "macos", test))]
-fn is_user_main_ipc_scope_cli_command(args: &[String]) -> bool {
+pub(super) fn is_user_main_ipc_scope_cli_command(args: &[String]) -> bool {
     matches!(
         args.first().map(String::as_str),
         Some("--password")

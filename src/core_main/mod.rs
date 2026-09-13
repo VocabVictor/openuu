@@ -179,7 +179,7 @@ pub fn core_main() -> Option<Vec<String>> {
     // linux uni (url) go here.
     #[cfg(all(target_os = "linux", feature = "flutter"))]
     if args.len() > 0 && args[0].starts_with(&crate::get_uri_prefix()) {
-        return try_send_by_dbus(args[0].clone());
+        return helpers::try_send_by_dbus(args[0].clone());
     }
 
     #[cfg(windows)]
@@ -219,7 +219,7 @@ pub fn core_main() -> Option<Vec<String>> {
         // routing to empty-postfix main IPC only.
         let _user_main_ipc_scope = if crate::platform::is_installed()
             && is_root()
-            && is_user_main_ipc_scope_cli_command(&args)
+            && helpers::is_user_main_ipc_scope_cli_command(&args)
         {
             Some(crate::ipc::UserMainIpcScope::new())
         } else {
