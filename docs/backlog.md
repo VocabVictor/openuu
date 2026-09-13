@@ -274,20 +274,18 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   `common/config_import.dart` for mobile and in
   `desktop_setting_page/network_provision.dart` for the desktop, over the same
   pair of FFI calls.
-* **The remote toolbar recovers a button's meaning from its colour.**
-  `_ToolbarTheme.iconColor` takes the background colour and compares it
-  against the active and danger tints to decide whether the icon is primary,
-  danger or secondary text. Since `d03513f5d` it compares against the
-  resolved palette, so it holds in both themes — but it is still a reverse
-  lookup, and it breaks silently the moment two states share a tint. The fix
-  is to pass the state (`normal` / `active` / `danger`) and derive the colour
-  from it. **What is missing: one signature change across six part files** of
-  `flutter/lib/desktop/widgets/remote_toolbar/` — `chat_voice_menu.dart`,
-  `display_menu.dart`, `draggable_show_hide.dart`, `icon_buttons.dart`,
-  `monitor_menu.dart`, `small_menus.dart`. No environment, no device and no
-  CI capacity is needed; it was left out of the palette commit because
-  changing what a call site says is a different kind of change from changing
-  what a colour resolves to.
+* ~~**The remote toolbar recovers a button's meaning from its colour.**~~
+  **Done, `1788fc264`** (session 51, on 0f's assignment). The state is passed
+  now and the background is derived from the same state, so the icon and the
+  fill cannot disagree. It took four members rather than the three this entry
+  named: the recording toggle and a waiting voice call both wear the danger
+  tint yet neither ends the session, so calling them destructive would have
+  made the member's own comment false.
+
+  Attribution note: no session could identify the author from `git log`,
+  because every session commits under the same identity. It was settled by
+  asking who the work had been assigned to. **Assignment, not the commit
+  record, is what attributes a change here.**
 
 * **One literal colour is waiting for the shell, not for a token.** The device
   page paints the current device's row in the left rail with `0xffe2e8ec`,
