@@ -41,7 +41,7 @@ class DesktopWelcomePage extends StatelessWidget {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
     String t(String cn, String en) => zh ? cn : en;
     return Material(
-      color: const Color(0xffeff4f7),
+      color: UiColor.of(context).panelBg,
       child: Column(children: [
         Expanded(child: LayoutBuilder(builder: (context, constraints) {
           return Row(children: [
@@ -76,8 +76,8 @@ class DesktopWelcomePage extends StatelessWidget {
             Expanded(
                 child: Container(
                     decoration: BoxDecoration(
-                        color: const Color(0xfff8fbfd),
-                        border: Border.all(color: const Color(0xffdfe5e9)),
+                        color: UiColor.of(context).surface,
+                        border: Border.all(color: UiColor.of(context).border),
                         borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(14))),
                     child: Column(
@@ -175,7 +175,9 @@ class DesktopWelcomePage extends StatelessWidget {
               horizontal: UiSpace.sidebarPaddingX,
               vertical: UiSpace.sidebarItemGap / 2),
           child: Material(
-              color: selected ? const Color(0xffe1e8ec) : Colors.transparent,
+              color: selected
+                  ? UiColor.of(context).primaryTint
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(UiSpace.sidebarRadius),
               child: InkWell(
                   onTap: onTap,
