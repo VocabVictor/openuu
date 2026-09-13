@@ -85,21 +85,27 @@ class ToolbarState {
 }
 
 class _ToolbarTheme {
-  // Button backgrounds. The bar is a white (dark: #22262c) outlined strip; a
+  // Button backgrounds. The bar is a surface-coloured outlined strip; a
   // button only paints a background on hover, when it is in an active state
   // (pinned, recording, call, mobile actions) or when it is the close/danger
-  // button. Names are kept so the menu items read as before.
+  // button. Names are kept so the menu items read as before. Everything but
+  // the transparent default resolves from the palette, so the dark theme is
+  // one lookup away rather than a second set of literals.
   static const Color blueColor = Colors.transparent;
-  static const Color hoverBlueColor = UiColor.settingsRowHover;
-  static const Color activeColor = UiColor.primaryTint;
-  static const Color hoverActiveColor = Color(0xffdce8ff);
+  static Color hoverBlueColor(BuildContext context) =>
+      UiColor.of(context).settingsRowHover;
+  static Color activeColor(BuildContext context) =>
+      UiColor.of(context).primaryTint;
+  static Color hoverActiveColor(BuildContext context) =>
+      UiColor.of(context).primaryTintHover;
 
   // The three close affordances of a session window deliberately hover
   // differently, by how much the click costs: a tab close drops one tab and
   // uses a plain 6% black, while closing from the toolbar or the window ends
   // the session and earns this danger tint. Do not "unify" them.
-  static const Color redColor = Color(0xfffff0ef);
-  static const Color hoverRedColor = Color(0xffffe1df);
+  static Color redColor(BuildContext context) => UiColor.of(context).dangerTint;
+  static Color hoverRedColor(BuildContext context) =>
+      UiColor.of(context).dangerTintHover;
   // kMinInteractiveDimension
   static const double height = 20.0;
   static const double dividerHeight = 12.0;
@@ -113,21 +119,21 @@ class _ToolbarTheme {
   static const double elevation = 0;
 
   /// Icon tint for a button background: primary on the active tint, danger on
-  /// the red tint, secondary text otherwise.
-  static Color iconColor(Color background, {bool dark = false}) {
-    if (background == activeColor || background == hoverActiveColor) {
-      return UiColor.primary;
+  /// the red tint, secondary text otherwise. Recovering the meaning from the
+  /// colour is a reverse lookup and should become an explicit enum; comparing
+  /// against the resolved palette at least makes it hold in both themes.
+  static Color iconColor(BuildContext context, Color background) {
+    final pal = UiColor.of(context);
+    if (background == pal.primaryTint || background == pal.primaryTintHover) {
+      return pal.primary;
     }
-    if (background == redColor || background == hoverRedColor) {
-      return UiColor.danger;
+    if (background == pal.dangerTint || background == pal.dangerTintHover) {
+      return pal.danger;
     }
-    return dark ? const Color(0xffc9cdd4) : UiColor.textSecondary;
+    return pal.textSecondary;
   }
 
-  static Color barColor(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xff22262c)
-          : Colors.white;
+  static Color barColor(BuildContext context) => UiColor.of(context).surface;
 
   static BoxDecoration barDecoration(BuildContext context) => BoxDecoration(
         color: barColor(context),
@@ -153,14 +159,10 @@ class _ToolbarTheme {
   static const double menuElevation = 4;
 
   static Color borderColor(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? (MyTheme.color(context).border3 ?? MyTheme.border)
-          : UiColor.border;
+      UiColor.of(context).border;
 
   static Color? dividerColor(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? MyTheme.color(context).divider
-          : UiColor.settingsDivider;
+      UiColor.of(context).settingsDivider;
 
   static MenuStyle defaultMenuStyle(BuildContext context) => MenuStyle(
         backgroundColor: WidgetStatePropertyAll(barColor(context)),

@@ -71,7 +71,7 @@ class _MonitorMenu extends StatelessWidget {
         ffi: ffi,
         width: width.value,
         color: _ToolbarTheme.blueColor,
-        hoverColor: _ToolbarTheme.hoverBlueColor,
+        hoverColor: _ToolbarTheme.hoverBlueColor(context),
         menuStyle: MenuStyle(
             padding:
                 MaterialStatePropertyAll(EdgeInsets.symmetric(horizontal: 6))),
@@ -141,11 +141,11 @@ class _MonitorMenu extends StatelessWidget {
             vMargin: isMulti ? null : 12,
             topLevel: false,
             color: i == display.value
-                ? _ToolbarTheme.activeColor
+                ? _ToolbarTheme.activeColor(context)
                 : _ToolbarTheme.blueColor,
             hoverColor: i == display.value
-                ? _ToolbarTheme.hoverActiveColor
-                : _ToolbarTheme.hoverBlueColor,
+                ? _ToolbarTheme.hoverActiveColor(context)
+                : _ToolbarTheme.hoverBlueColor(context),
             width: isAllMonitors ? width.value : null,
             icon: isAllMonitors
                 ? monitorsIcon

@@ -107,7 +107,7 @@ class _DisplayMenuState extends State<_DisplayMenu> {
       svg: "assets/display.svg",
       ffi: widget.ffi,
       color: _ToolbarTheme.blueColor,
-      hoverColor: _ToolbarTheme.hoverBlueColor,
+      hoverColor: _ToolbarTheme.hoverBlueColor(context),
       menuChildrenGetter: menuChildrenGetter,
     );
   }

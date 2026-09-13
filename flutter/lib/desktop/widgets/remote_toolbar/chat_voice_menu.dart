@@ -25,7 +25,7 @@ class _ChatMenuState extends State<_ChatMenu> {
         svg: 'assets/chat.svg',
         ffi: widget.ffi,
         color: _ToolbarTheme.blueColor,
-        hoverColor: _ToolbarTheme.hoverBlueColor,
+        hoverColor: _ToolbarTheme.hoverBlueColor(context),
         menuChildrenGetter: (_) => [textChat(), voiceCall()]);
   }
 
@@ -36,7 +36,7 @@ class _ChatMenuState extends State<_ChatMenu> {
       key: chatButtonKey,
       onPressed: _textChatOnPressed,
       color: _ToolbarTheme.blueColor,
-      hoverColor: _ToolbarTheme.hoverBlueColor,
+      hoverColor: _ToolbarTheme.hoverBlueColor(context),
     );
   }
 
@@ -127,8 +127,8 @@ class _VoiceCallMenu extends StatelessWidget {
             return _IconSubmenuButton(
               tooltip: 'Voice call',
               svg: 'assets/voice_call.svg',
-              color: _ToolbarTheme.activeColor,
-              hoverColor: _ToolbarTheme.hoverActiveColor,
+              color: _ToolbarTheme.activeColor(context),
+              hoverColor: _ToolbarTheme.hoverActiveColor(context),
               menuChildrenGetter: menuChildrenGetter,
               ffi: ffi,
             );
@@ -144,8 +144,8 @@ class _VoiceCallMenu extends StatelessWidget {
       assetName: "assets/call_wait.svg",
       tooltip: "Waiting",
       onPressed: () => bind.sessionCloseVoiceCall(sessionId: ffi.sessionId),
-      color: _ToolbarTheme.redColor,
-      hoverColor: _ToolbarTheme.hoverRedColor,
+      color: _ToolbarTheme.redColor(context),
+      hoverColor: _ToolbarTheme.hoverRedColor(context),
     );
   }
 }

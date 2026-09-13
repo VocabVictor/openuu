@@ -35,14 +35,13 @@ class _IconMenuButtonState extends State<_IconMenuButton> {
   @override
   Widget build(BuildContext context) {
     assert(widget.assetName != null || widget.icon != null);
-    final dark = Theme.of(context).brightness == Brightness.dark;
     final background = hover ? widget.hoverColor : widget.color;
     final icon = widget.icon ??
         Center(
           child: SvgPicture.asset(
             widget.assetName!,
             colorFilter: ColorFilter.mode(
-                _ToolbarTheme.iconColor(background, dark: dark),
+                _ToolbarTheme.iconColor(context, background),
                 BlendMode.srcIn),
             width: _ToolbarTheme.iconSize,
             height: _ToolbarTheme.iconSize,
@@ -126,14 +125,13 @@ class _IconSubmenuButtonState extends State<_IconSubmenuButton> {
   @override
   Widget build(BuildContext context) {
     assert(widget.svg != null || widget.icon != null);
-    final dark = Theme.of(context).brightness == Brightness.dark;
     final background = hover ? widget.hoverColor : widget.color;
     final icon = widget.icon ??
         Center(
           child: SvgPicture.asset(
             widget.svg!,
             colorFilter: ColorFilter.mode(
-                _ToolbarTheme.iconColor(background, dark: dark),
+                _ToolbarTheme.iconColor(context, background),
                 BlendMode.srcIn),
             width: _ToolbarTheme.iconSize,
             height: _ToolbarTheme.iconSize,

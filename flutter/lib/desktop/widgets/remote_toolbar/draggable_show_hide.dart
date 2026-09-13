@@ -92,9 +92,7 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
         child: Icon(
           widget.isHorizontal ? Icons.drag_indicator : Icons.drag_handle,
           size: UiSession.toolbarHandleIconSize,
-          color: Theme.of(context).brightness == Brightness.dark
-              ? MyTheme.color(context).drag_indicator
-              : UiColor.faint,
+          color: UiColor.of(context).faint,
         ),
         feedback: widget,
         onDragStarted: () {
@@ -119,18 +117,18 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     final ButtonStyle buttonStyle = ButtonStyle(
       minimumSize: MaterialStateProperty.all(const Size(0, 0)),
       padding: MaterialStateProperty.all(EdgeInsets.zero),
       foregroundColor: WidgetStatePropertyAll(
-          _ToolbarTheme.iconColor(_ToolbarTheme.blueColor, dark: dark)),
+          _ToolbarTheme.iconColor(context, _ToolbarTheme.blueColor)),
     );
     final isFullscreen = stateGlobal.fullscreen;
     const double iconSize = UiSession.toolbarHandleIconSize;
 
     buttonWrapper(VoidCallback? onPressed, Widget child,
-        {Color hoverColor = _ToolbarTheme.hoverBlueColor}) {
+        {Color? hoverColor}) {
+      hoverColor ??= _ToolbarTheme.hoverBlueColor(context);
       final bgColor = buttonStyle.backgroundColor?.resolve({});
       return TextButton(
         onPressed: onPressed,
