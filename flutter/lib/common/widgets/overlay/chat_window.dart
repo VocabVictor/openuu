@@ -10,6 +10,13 @@ part of 'overlay.dart';
 /// 0x66 is what withOpacity(0.4) resolved to, so the colour is unchanged.
 const Color _remoteChromeFill = Color(0x660071FF);
 
+/// The icons on that bar. Not `onPrimary`: `onPrimary` promises legibility on
+/// a solid fill of ours, and this bar is 40% transparent over an unknown
+/// picture, so no palette member can promise anything about it. White is the
+/// honest answer for the same reason the bar's own colour is fixed -- both are
+/// chosen against the peer's screen, which our appearance does not describe.
+const Color _onRemoteChrome = Colors.white;
+
 class DraggableChatWindow extends StatelessWidget {
   const DraggableChatWindow(
       {Key? key,
@@ -81,8 +88,8 @@ class DraggableChatWindow extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Text(
                 translate("Chat"),
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: UiColor.of(context).onPrimary,
                     fontFamily: 'WorkSans',
                     fontWeight: FontWeight.bold,
                     fontSize: 20),
@@ -94,18 +101,18 @@ class DraggableChatWindow extends StatelessWidget {
                   onPressed: () {
                     chatModel.hideChatWindowOverlay();
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.keyboard_arrow_down,
-                    color: Colors.white,
+                    color: UiColor.of(context).onPrimary,
                   )),
               IconButton(
                   onPressed: () {
                     chatModel.hideChatWindowOverlay();
                     chatModel.hideChatIconOverlay();
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.close,
-                    color: Colors.white,
+                    color: UiColor.of(context).onPrimary,
                   ))
             ],
           )
@@ -208,19 +215,19 @@ class DraggableMobileActions extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         IconButton(
-                            color: Colors.white,
+                            color: _onRemoteChrome,
                             onPressed: onBackPressed,
                             splashRadius: kDesktopIconButtonSplashRadius,
                             icon: const Icon(Icons.arrow_back),
                             iconSize: 24 * scale),
                         IconButton(
-                            color: Colors.white,
+                            color: _onRemoteChrome,
                             onPressed: onHomePressed,
                             splashRadius: kDesktopIconButtonSplashRadius,
                             icon: const Icon(Icons.home),
                             iconSize: 24 * scale),
                         IconButton(
-                            color: Colors.white,
+                            color: _onRemoteChrome,
                             onPressed: onRecentPressed,
                             splashRadius: kDesktopIconButtonSplashRadius,
                             icon: const Icon(Icons.more_horiz),
@@ -232,7 +239,7 @@ class DraggableMobileActions extends StatelessWidget {
                           endIndent: 10,
                         ),
                         IconButton(
-                            color: Colors.white,
+                            color: _onRemoteChrome,
                             onPressed: onHidePressed,
                             splashRadius: kDesktopIconButtonSplashRadius,
                             icon: const Icon(Icons.keyboard_arrow_down),
