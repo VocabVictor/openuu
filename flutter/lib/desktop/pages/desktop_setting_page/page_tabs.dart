@@ -95,6 +95,8 @@ extension _DesktopSettingPageTabs on _DesktopSettingPageState {
         ),
         if (videoConnBlock)
           Container(
+            // A scrim is black in both appearances: it darkens what is under
+            // it rather than being a surface of its own.
             color: Colors.black.withOpacity(0.5),
           )
       ]);

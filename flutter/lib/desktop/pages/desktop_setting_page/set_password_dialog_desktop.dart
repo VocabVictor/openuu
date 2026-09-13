@@ -81,7 +81,7 @@ void _setPasswordDialogDesktop(
                 decoration: InputDecoration(
                     counterText: '',
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: UiColor.of(context).surface,
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: UiSpace.inputPaddingX, vertical: 8),

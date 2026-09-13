@@ -45,6 +45,8 @@ extension _NetworkProvision on _NetworkState {
           _dialogTitle(context, zh ? '分享配置二维码' : 'Share configuration', close),
           const SizedBox(height: UiSpace.s2),
           Container(
+              // Not a themed surface: a QR code is read as dark modules on a
+              // light quiet zone, and a scanner does not know about themes.
               color: Colors.white,
               padding: const EdgeInsets.all(UiSpace.s2),
               child: QrImageView(
