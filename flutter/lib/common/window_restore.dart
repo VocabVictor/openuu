@@ -134,6 +134,13 @@ Future<bool> restoreWindowPosition(WindowType type,
     }
     isRemotePeerPos = pos != null;
   }
+  // A remote-desktop window without a frame of its own peer keeps the frame it
+  // was created with and is fitted to the peer's display on the first peer
+  // info (fitWindowToPeer); another peer's remembered frame, maximized or not,
+  // does not apply to it.
+  if (type == WindowType.RemoteDesktop && !isRemotePeerPos) {
+    return false;
+  }
   pos ??= bind.getLocalFlutterOption(k: windowFramePrefix + type.name);
 
   var lpos = LastWindowPosition.loadFromString(pos);
