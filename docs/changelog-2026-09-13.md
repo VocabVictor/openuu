@@ -220,7 +220,12 @@ Measurements and their limits are in `docs/perf-baseline-2026-09-13.md`
 * The single most valuable number of the day: sessions to the LAN peer had
   always gone through the relay at about 1.3 s, because the peer was
   registered by hand and had no inbound firewall rule, so the successful
-  punch could not be accepted. With a rule it is 11 to 20 ms, direct.
+  punch could not be accepted. With a rule it is 11 to 20 ms, direct. The
+  path that found it, worth reusing: the server log shows the rendezvous
+  deciding `local_addr`, so the peers are on one segment and the punch
+  itself worked; the client then times out after its 1 s direct attempt and
+  asks for a relay; which points at the peer accepting nothing inbound, and
+  the peer had no rule because it was registered without the installer.
 * Hardware encoders now follow the frame rate QoS actually paces the capture
   at, instead of a hardcoded 30. `a6ad433d2`, `cfecf0155`, `593b91cda`,
   `64f9f9ea1`, unit tests plus the `video_qos` simulation.
