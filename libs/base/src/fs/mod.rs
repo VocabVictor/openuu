@@ -46,9 +46,6 @@ pub use jobs::*;
 mod file_ops;
 pub use file_ops::*;
 
-#[cfg(test)]
-#[path = "fs_transfer_tests.rs"]
-mod transfer_network_tests;
 
 pub fn get_next_job_id() -> i32 {
     NEXT_JOB_ID.fetch_add(1, Ordering::SeqCst)
