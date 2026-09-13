@@ -54,6 +54,8 @@ mod decoder_frames;
 mod options;
 pub use options::*;
 mod bitrate;
+mod fps;
+pub use fps::fps_compensated_kbs;
 pub use bitrate::*;
 
 #[derive(Debug, Clone)]
@@ -79,6 +81,12 @@ pub trait EncoderApi {
     fn input_texture(&self) -> bool;
 
     fn set_quality(&mut self, ratio: f32) -> ResultType<()>;
+
+    /// The frame rate QoS now paces the capture loop at. Encoders whose rate control assumes
+    /// a fixed frame rate re-target on it; the rest need nothing.
+    fn set_fps(&mut self, _fps: u32) -> ResultType<()> {
+        Ok(())
+    }
 
     fn bitrate(&self) -> u32;
 
