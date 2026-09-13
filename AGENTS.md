@@ -47,6 +47,16 @@ workspace member. `base::config::keys` re-exports the handful of keys
   same appearance the off state already owns. Before this rule the board drew
   an unchangeable permission in grey, which is exactly what a withheld
   permission looked like.
+* **A capability the other end cannot currently accept is shown and
+  explained, never hidden.** Leaving the control out reads as "no such
+  feature"; the truth is "not right now, and here is why". Show it disabled,
+  say what the condition is and what would satisfy it, and point at the
+  control that would satisfy it when there is one. Ctrl + Alt + Del is the
+  worked example: Windows delivers it only to a process with SAS rights, so
+  the menu item used to be absent unless the controlled side ran as a
+  service. A user pressing the keys gets nothing, because Windows holds them,
+  and then finds no such wording anywhere in the menu -- so the conclusion is
+  that the product cannot do it, when the fix is one elevation away.
 
 ### Consent surfaces (mandatory)
 
