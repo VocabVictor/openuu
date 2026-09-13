@@ -18,6 +18,19 @@ than no scan.
 Exit code 1 when something is found, so it can gate a commit or a script
 install. Three control characters are legitimate in text and are allowed: tab,
 line feed and carriage return.
+
+Allowing carriage return left a blind spot, and the shape of it is worth
+knowing. A patch whose anchor began with a bare line feed, applied to a CRLF
+file whose replacement text had been converted to CRLF, produced one line
+ending in two carriage returns. Every byte in it was on the allowed list, so
+the scan passed; PowerShell ran the script without complaining, and the build
+succeeded, so nothing anywhere reported it. The defect was found by diffing
+the installed copy against the local one.
+
+The scan was not missing a check so much as missing a dimension: it knew which
+bytes were allowed and not how many of them may stand together. A doubled
+carriage return is now reported, and that is an exact match rather than a
+guess -- no line-ending convention produces two in a row.
 """
 
 import os
@@ -84,6 +97,16 @@ def offending_bytes(data):
     for offset, byte in enumerate(data):
         if byte == DEL or (byte < 32 and byte not in (TAB, LF, CR)):
             yield offset, byte
+    # A carriage return is allowed; two in a row are not, under any convention.
+    # This is the one case where the byte is legal and its repetition is not.
+    start = 0
+    pair = bytes([CR, CR])
+    while True:
+        found = data.find(pair, start)
+        if found < 0:
+            return
+        yield found + 1, CR
+        start = found + 1
 
 
 def render(line, bad_column):
@@ -92,7 +115,9 @@ def render(line, bad_column):
     The text around it is decoded, or a line of Chinese would come back as
     mojibake and the reader could not tell which sentence to go and look at.
     """
-    if line.endswith(b"\r"):
+    # The CRLF that ends the line is not news -- unless the flagged byte is
+    # that very carriage return, which is the doubled-CR case.
+    if line.endswith(b"\r") and bad_column != len(line) - 1:
         line = line[:-1]
     shown = b""
     for column, byte in enumerate(line):
@@ -150,6 +175,8 @@ def main(argv):
     print("0x08 is a backslash-b that a shell heredoc ate; write the file with")
     print("a tool that does not interpret escapes, or build the path from")
     print("chr(92), and run this again.")
+    print("Two 0x0D in a row are a patch that spliced CRLF text onto a line")
+    print("that already ended in CR; rewrite that line, do not hand-trim it.")
     return 1
 
 
