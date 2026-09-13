@@ -298,27 +298,44 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   carries a comment saying so, and it is the only literal left in that file --
   the status pill's near-black was retired when `695ced93d` added
   `inverseSurface`.
-* **Nine files look migrated and are not: they are on the light tokens, never
-  on the palette.** The dark acceptance grep found 60-odd literals in
-  `flutter/lib/desktop/pages/server_page/` (`cm_control_panel_authorized.dart`,
-  `cm_control_panel.dart`, `privilege_board.dart`, `cm_header.dart`,
-  `file_transfer_log.dart`, `connection_manager.dart`),
-  `flutter/lib/desktop/widgets/tabbar_widget/tabbar_theme.dart` and
-  `flutter/lib/common/widgets/overlay/chat_window.dart`.
+* **Done: the connection manager is on the palette.** Six files under
+  `flutter/lib/desktop/pages/server_page/` were on the *light tokens* — the
+  token round replaced literals with `UiColor.<name>` constants, and the
+  palette round never reached them, so `UiColor` appeared throughout and the
+  files read as finished. The grep that separates the two rounds is
+  `UiColor\.[a-z]` *without* `UiColor\.of(`; it now returns one hit in the
+  whole tree, the documented `DesktopWelcomePage.blue` exception.
 
-  **Why they look done.** Each was migrated in the *token* round, whose commits
-  read `... on the design tokens`, and they do reference `UiColor` and `UiType`
-  throughout. But the token round predates the palette: it replaced scattered
-  literals with `UiColor.<name>` **constants**, which are the light values by
-  design. The palette round replaced those constants with
-  `UiColor.of(context).<name>`, and it never reached these files. So a reader
-  grepping for `UiColor` finds hits everywhere and concludes the file is done;
-  the grep that separates the two rounds is `UiColor\.[a-z]` *without*
-  `UiColor\.of(`. **A file on the tokens is not a file on the palette, and the
-  commit subject does not distinguish them.**
+  Two members were added rather than reused, because the measurement said so:
+  white on the dark `danger` is 2.93:1 and on `warning` 2.12:1, against the
+  4.5 a label needs. Both are text colours, meant to be read on the page
+  rather than to carry text. `dangerFill` carries white at 4.98:1;
+  `warning` stays amber in both appearances, so `onWarning` is the dark ink
+  that sits on it. That also fixed a live light-appearance defect nobody had
+  reported: the *Accept and Elevate* button measured 2.57:1 in light, and it
+  was the full-table recount that found it, not an eye.
 
-  **What is missing: one pass, and nothing else.** No environment, no device,
-  no CI capacity; the mechanical part is the same as the toolbar's. The one
-  judgement call is the connection manager, whose controls are a consent
-  surface (AGENTS.md), so its two buttons must stay distinguishable from each
-  other after the swap, not merely legible.
+* **The tab bar's theme is a second appearance mechanism, not an unmigrated
+  file.** `flutter/lib/desktop/widgets/tabbar_widget/tabbar_theme.dart`
+  declares its own `static const light` and `static const dark`. It has zero
+  hits for the grep above; it appeared in the acceptance output only because
+  it contains literal whites and blacks — which are its light values and its
+  dark values. **What is missing: a decision about merging two mechanisms**,
+  which is a different job from a migration: a migration swaps values in a
+  file that has one appearance, a merge takes a living mechanism out and puts
+  another in its place. It needs its own commission and its own verification.
+
+* **The chat window is on the Material theme, not on the tokens.**
+  `flutter/lib/common/widgets/overlay/chat_window.dart` reads
+  `Theme.of(context).colorScheme.primary` and `MyTheme.accent`; it has never
+  referenced `UiColor`. Its literal whites are content on a filled bar, which
+  is `onPrimary` in meaning. **What is missing: the file has to be put on the
+  tokens first**; only then is there anything to migrate to the palette.
+
+  **Why both of these were filed as unmigrated**, which is the part worth
+  keeping: the grouping was made on *does the file contain a literal white or
+  black*, and that is true in three unrelated situations — a file stuck on the
+  light values, a file carrying both appearances itself, and a file on another
+  theme system entirely. **A feature that three different states share cannot
+  sort them**, and it read as a sound criterion because in the first batch
+  every hit happened to be the first case.
