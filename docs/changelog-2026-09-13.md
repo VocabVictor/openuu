@@ -234,6 +234,34 @@ resolves; the hashes here are the current ones.
   real user resize. `99acc702b`, `9aa881fa6`, `a759a73ed`, log-verified.
 * The end-to-end lag instrument imported `message_proto` from the wrong
   crate and mis-detected a sender restart. `0d197948c`, `09d6c2c88`.
+* **A peer asked public STUN servers because the other end had a feature on.**
+  `test_ipv6` learns this host's public v6 address from the built-in list of
+  public STUN servers when the deployment has configured none of its own, and
+  two of its three call sites had no gate: the controlled side's `start_ipv6`
+  and NAT typing. Which third parties a machine contacted was therefore
+  decided by the *other* end's settings, and a controlled machine is usually
+  the one whose owner is not watching. The gate now sits at the probe so every
+  path is covered; skipping costs nothing, since the host simply offers no v6
+  candidate. `ee2ba8721`, with a test that asserts a disabled probe does not
+  even record an attempt.
+* **Hole punching was switched off for every self-hosted deployment.**
+  `get_local_option` answered `N` for the three punch switches whenever the
+  rendezvous server was not one of the public ones, reading a deployment's
+  shape as a statement about its capability; our own hbbs punches like any
+  other, so self-hosted deployments relayed every session while reporting the
+  switches as off. What decides the default now is whose servers a capability
+  needs when nothing is configured: UDP punching talks only to this
+  deployment's own rendezvous server and defaults on, while IPv6 punching and
+  WebRTC fall back to the public STUN list and wait for `ice-servers` or an
+  explicit switch. `7cace660c`, `1be21e66f`; the reasoning, the interaction
+  between the baked-in and read-time layers, and the timeout on each fallback
+  path are in `docs/punch-defaults.md`.
+
+  In the shipped default configuration this changes no behaviour, since UDP
+  punching was already on through the baked-in default and the other two
+  remain off. Measured on the LAN peer: direct in 1.07 ms with an inbound
+  rule, relay in 1.21 s without one, so the fallback still costs about the
+  second its timeout allows.
 
 ## Features
 
