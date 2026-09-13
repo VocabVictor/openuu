@@ -36,6 +36,9 @@ GUI 每秒从服务同步一次选项，无需重启即可登录。服务侧文�
 
 ## 说明
 
-- `--import-config` 只在服务侧文件比用户文件旧（或不存在）时写入，升级安装不会覆盖已有的服务侧配置。
+- `--import-config`（`src/core_main/import_config.rs`）对两个文件各自决定：`OpenUU.toml`（ID/密码）只在非空、比服务侧新且早于 exe 时写入；
+  `OpenUU2.toml`（选项）在服务侧文件不存在、服务侧没有 `custom-rendezvous-server`、或用户侧更新时导入，
+  已存在的服务侧文件保留自己的其它键（如 `pinned-windows-session`），只叠加用户侧的选项。
+  旧逻辑在用户侧 `OpenUU.toml` 为空时整体跳过、且 `OpenUU2.toml` 只看修改时间，会让服务侧缺少服务器四项（`a1443182b` 修复，带单元测试）。
 - 已弃用的方案：让 `--server` 首次启动时读活动用户的 `%APPDATA%`（`bbe6fcc73`，已 revert）；
   多用户机器上"活动用户"不确定，且服务进程读用户文件属于新增行为。
