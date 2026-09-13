@@ -51,13 +51,17 @@ impl Client {
         log::info!("rendezvous server: {}", rendezvous_server);
         let mut socket = socket?;
         let my_addr = socket.local_addr();
-        let mut signed_id_pk = Vec::new();
-        let mut relay_server = "".to_owned();
-        let mut peer_addr = Config::get_any_listen_addr(true);
-        let mut peer_nat_type = NatType::UNKNOWN_NAT;
+        let mut state = PunchState {
+            peer_nat_type: NatType::UNKNOWN_NAT,
+            is_local: false,
+            signed_id_pk: Vec::new(),
+            relay_server: "".to_owned(),
+            peer_addr: Config::get_any_listen_addr(true),
+            feedback: 0,
+            webrtc_sdp_answer: String::new(),
+            pending_webrtc_ice: Vec::new(),
+        };
         let my_nat_type = crate::get_nat_type(100).await;
-        let mut is_local = false;
-        let mut feedback = 0;
         use hbb_common::protobuf::Enum;
         let nat_type = if interface.is_force_relay() {
             NatType::SYMMETRIC
@@ -149,134 +153,44 @@ impl Client {
             .and_then(|guard| guard.stream())
             .map(|stream| stream.session_key().to_owned())
             .unwrap_or_default();
-        let mut webrtc_sdp_answer = String::new();
-        let mut pending_webrtc_ice = Vec::<String>::new();
-        'punch_attempts: for i in 1..=3 {
-            log::info!(
-                "#{} {} punch attempt with {}, id: {}",
-                i,
-                punch_type,
-                my_addr,
-                peer
-            );
-            socket.send(&msg_out).await?;
-            // below timeout should not bigger than hbbs's connection timeout.
-            let attempt_deadline = Instant::now() + Duration::from_millis((i * 3000) as u64);
-            loop {
-                let remaining = attempt_deadline.saturating_duration_since(Instant::now());
-                if remaining.is_zero() {
-                    break;
-                }
-                let timeout_ms = remaining
-                    .as_millis()
-                    .clamp(1, u64::MAX as u128) as u64;
-                let Some(msg_in) =
-                    crate::get_next_nonkeyexchange_msg(&mut socket, Some(timeout_ms)).await
-                else {
-                    break;
-                };
-                match msg_in.union {
-                    Some(rendezvous_message::Union::PunchHoleResponse(ph)) => {
-                        if ph.socket_addr.is_empty() {
-                            if !ph.other_failure.is_empty() {
-                                bail!(ph.other_failure);
-                            }
-                            match ph.failure.enum_value() {
-                                Ok(punch_hole_response::Failure::ID_NOT_EXIST) => {
-                                    bail!("ID does not exist");
-                                }
-                                Ok(punch_hole_response::Failure::OFFLINE) => {
-                                    bail!("Remote desktop is offline");
-                                }
-                                Ok(punch_hole_response::Failure::LICENSE_MISMATCH) => {
-                                    bail!("Key mismatch");
-                                }
-                                Ok(punch_hole_response::Failure::LICENSE_OVERUSE) => {
-                                    bail!("Key overuse");
-                                }
-                                _ => bail!("other punch hole failure"),
-                            }
-                        } else {
-                            peer_nat_type = ph.nat_type();
-                            is_local = ph.is_local();
-                            signed_id_pk = ph.pk.into();
-                            relay_server = ph.relay_server;
-                            peer_addr = AddrMangle::decode(&ph.socket_addr);
-                            feedback = ph.feedback;
-                            webrtc_sdp_answer = ph.webrtc_sdp_answer;
-                            let s = udp.0.take();
-                            if udp_nat_port > 0 && ph.is_udp && s.is_some() {
-                                if let Some(s) = s {
-                                    allow_err!(s.connect(peer_addr).await);
-                                    udp.0 = Some(s);
-                                }
-                            }
-                            let s = ipv6.0.take();
-                            if !ph.socket_addr_v6.is_empty() && s.is_some() {
-                                let addr = AddrMangle::decode(&ph.socket_addr_v6);
-                                if addr.port() > 0 {
-                                    if let Some(s) = s {
-                                        allow_err!(s.connect(addr).await);
-                                        ipv6.0 = Some(s);
-                                    }
-                                }
-                            }
-                            log::info!("{} Hole Punched {} = {}", punch_type, peer, peer_addr);
-                            break 'punch_attempts;
-                        }
-                    }
-                    Some(rendezvous_message::Union::RelayResponse(rr)) => {
-                        let ctx = StartCtx {
-                            peer: &peer,
-                            key: &key,
-                            token: &token,
-                            conn_type,
-                            interface,
-                            rendezvous_server: &rendezvous_server,
-                            my_addr,
-                            start,
-                        };
-                        return Self::connect_on_relay_response(
-                            rr,
-                            socket,
-                            ipv6.0,
-                            webrtc_offerer.take(),
-                            pending_webrtc_ice,
-                            ctx,
-                        )
-                        .await;
-                    }
-                    Some(rendezvous_message::Union::IceCandidate(ice)) => {
-                        if Self::is_expected_webrtc_ice_candidate(&ice, &webrtc_session_key) {
-                            // Evict the oldest, not the newest. Candidates arrive in gathering
-                            // order — host first, then srflx, then relay — so dropping arrivals
-                            // would discard exactly the ones that traverse NAT and keep the
-                            // host ones that only work on a shared LAN.
-                            if pending_webrtc_ice.len() >= Self::MAX_PENDING_WEBRTC_ICE {
-                                if let Some(n) = PENDING_ICE_FULL_LOG.due() {
-                                    log::warn!(
-                                        "WebRTC ICE pending buffer full ({}), evicted {} oldest",
-                                        Self::MAX_PENDING_WEBRTC_ICE,
-                                        n
-                                    );
-                                }
-                                pending_webrtc_ice.remove(0);
-                            }
-                            pending_webrtc_ice.push(ice.candidate);
-                        } else if let Some(n) = UNEXPECTED_ICE_LOG.due() {
-                            log::debug!(
-                                "dropped {} ICE candidate(s) for unexpected WebRTC session key, last: {}",
-                                n,
-                                ice.session_key,
-                            );
-                        }
-                    }
-                    _ => {
-                        log::error!("Unexpected protobuf msg received: {:?}", msg_in);
-                    }
-                }
-            }
-        }
+        let ctx = StartCtx {
+            peer: &peer,
+            key: &key,
+            token: &token,
+            conn_type,
+            interface,
+            rendezvous_server: &rendezvous_server,
+            my_addr,
+            start,
+        };
+        let (socket, ctx) = match Self::punch_hole_attempts(
+            socket,
+            &msg_out,
+            &punch_type,
+            udp_nat_port,
+            &mut udp.0,
+            &mut ipv6.0,
+            &mut webrtc_offerer,
+            &webrtc_session_key,
+            &mut state,
+            ctx,
+        )
+        .await?
+        {
+            PunchOutcome::Connected(result) => return Ok(result),
+            PunchOutcome::Punched { socket, ctx } => (socket, ctx),
+        };
+        let StartCtx { interface, .. } = ctx;
+        let PunchState {
+            peer_nat_type,
+            is_local,
+            signed_id_pk,
+            relay_server,
+            peer_addr,
+            feedback,
+            webrtc_sdp_answer,
+            mut pending_webrtc_ice,
+        } = state;
         let mut webrtc_bridge_stop = None;
         let mut webrtc_for_connect = None;
         if !webrtc_sdp_answer.is_empty() {
