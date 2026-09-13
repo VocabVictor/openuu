@@ -32,6 +32,22 @@ workspace member. `base::config::keys` re-exports the handful of keys
   - Mobile: `flutter/lib/mobile/`
   - Shared: `flutter/lib/common/` and `flutter/lib/models/`
 
+### State must be readable without colour (mandatory)
+
+* **A state is never signalled by colour alone.** On, off, selected, error
+  and warning each need a second cue as well: fill against outline, a shape,
+  an icon, or a word. A user who cannot separate the two hues must still be
+  able to read the screen, and a screenshot in review must still be legible.
+  The permission board is the worked example: a granted permission is a
+  filled tile and a withheld one an outlined tile, so the state survives with
+  the colour removed.
+* **A disabled control must not look like a negative one.** "You may not
+  change this" and "this is off" are different facts and need different
+  renderings; dim the control to show it is locked, rather than giving it the
+  same appearance the off state already owns. Before this rule the board drew
+  an unchangeable permission in grey, which is exactly what a withheld
+  permission looked like.
+
 ### Consent surfaces (mandatory)
 
 A screen that asks the user to grant control, authorise access or confirm a
