@@ -1182,7 +1182,20 @@ pub fn main_deploy_device(token: String, id: String) -> String {
             "" => None,
             id => Some(id.to_owned()),
         };
-        ui_interface::deploy_device(token, new_id).message()
+        // DeployResult has no message(); the desktop path matches the variants
+        // itself because it also maps them to exit codes. This side only needs
+        // a sentence for the UI.
+        match ui_interface::deploy_device(token, new_id) {
+            ui_interface::DeployResult::Ok => "Device deployed.".to_owned(),
+            ui_interface::DeployResult::NotEnabled => {
+                "Server does not require deployment.".to_owned()
+            }
+            ui_interface::DeployResult::InvalidInput => "Invalid input.".to_owned(),
+            ui_interface::DeployResult::IdTaken(id) => {
+                format!("Id `{}` is already used by another machine on the server.", id)
+            }
+            ui_interface::DeployResult::Error(err) => err,
+        }
     }
     #[cfg(not(target_os = "android"))]
     {
