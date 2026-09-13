@@ -137,10 +137,19 @@ extension _RemoteToolbarLayout on _RemoteToolbarState {
     return Theme.of(context).copyWith(
       menuButtonTheme: MenuButtonThemeData(
         style: ButtonStyle(
-          minimumSize: MaterialStatePropertyAll(Size(64, 32)),
-          textStyle: MaterialStatePropertyAll(
-            TextStyle(fontWeight: FontWeight.normal),
-          ),
+          minimumSize: const WidgetStatePropertyAll(
+              Size(UiSession.toolbarMenuMinWidth, UiSpace.menuItemHeight)),
+          padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: UiSpace.menuItemPaddingX)),
+          textStyle: WidgetStatePropertyAll(UiType.sidebarItem),
+          foregroundColor: WidgetStatePropertyAll(
+              Theme.of(context).brightness == Brightness.dark
+                  ? null
+                  : UiColor.text),
+          overlayColor: WidgetStatePropertyAll(
+              Theme.of(context).brightness == Brightness.dark
+                  ? null
+                  : UiColor.settingsRowHover),
           shape: MaterialStatePropertyAll(RoundedRectangleBorder(
               borderRadius:
                   BorderRadius.circular(_ToolbarTheme.menuButtonBorderRadius))),

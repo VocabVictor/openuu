@@ -140,11 +140,13 @@ class _ToolbarTheme {
 
   static double dividerSpaceToAction = isWindows ? 8 : 14;
 
-  static double menuBorderRadius = isWindows ? 5.0 : 7.0;
-  static EdgeInsets menuPadding = isWindows
-      ? EdgeInsets.fromLTRB(4, 12, 4, 12)
-      : EdgeInsets.fromLTRB(6, 14, 6, 14);
-  static const double menuButtonBorderRadius = 3.0;
+  // Menus follow the design-review menu token: 8 radius, 1px border, a soft
+  // shadow, 4 vertical padding, 32-high items with 12 side padding.
+  static const double menuBorderRadius = UiSpace.menuRadius;
+  static const EdgeInsets menuPadding =
+      EdgeInsets.symmetric(vertical: UiSpace.menuPaddingY, horizontal: 4);
+  static const double menuButtonBorderRadius = UiSpace.buttonRadius;
+  static const double menuElevation = 4;
 
   static Color borderColor(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
@@ -152,9 +154,14 @@ class _ToolbarTheme {
           : UiColor.border;
 
   static Color? dividerColor(BuildContext context) =>
-      MyTheme.color(context).divider;
+      Theme.of(context).brightness == Brightness.dark
+          ? MyTheme.color(context).divider
+          : UiColor.settingsDivider;
 
   static MenuStyle defaultMenuStyle(BuildContext context) => MenuStyle(
+        backgroundColor: WidgetStatePropertyAll(barColor(context)),
+        surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+        elevation: const WidgetStatePropertyAll(menuElevation),
         side: MaterialStateProperty.all(BorderSide(
           width: 1,
           color: borderColor(context),

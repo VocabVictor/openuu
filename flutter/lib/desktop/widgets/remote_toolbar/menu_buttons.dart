@@ -165,19 +165,23 @@ class RdoMenuButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RadioMenuButton(
-      value: value,
-      groupValue: groupValue,
-      child: child,
+    return MenuItemButton(
+      leadingIcon: SizedBox(
+        width: 14,
+        child: value == groupValue
+            ? const Icon(Icons.check, size: 14, color: UiColor.primary)
+            : null,
+      ),
       closeOnActivate: closeOnActivate,
-      onChanged: onChanged != null
-          ? (T? value) {
+      onPressed: onChanged != null
+          ? () {
               if (ffi != null && closeOnActivate) {
                 _menuDismissCallback(ffi!);
               }
               onChanged?.call(value);
             }
           : null,
+      child: child,
     );
   }
 }
