@@ -811,5 +811,8 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("One-time password only", ""),
         ("Permanent password only", ""),
         ("Change verification", ""),
+        ("Connect using a device ID, then authenticate with your partner.", ""),
+        ("One-time password, renewed after each session", ""),
+        ("Scanning with OpenUU on a phone connects to this device; the code carries the current one-time password, do not forward it.", ""),
     ].iter().cloned().collect();
 }

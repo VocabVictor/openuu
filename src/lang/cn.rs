@@ -811,5 +811,8 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("One-time password only", "仅使用一次性密码"),
         ("Permanent password only", "仅使用固定密码"),
         ("Change verification", "切换验证方式"),
+        ("Connect using a device ID, then authenticate with your partner.", "通过设备 ID 连接，并按对方设置完成验证"),
+        ("One-time password, renewed after each session", "一次性密码，每次远控结束后自动更新"),
+        ("Scanning with OpenUU on a phone connects to this device; the code carries the current one-time password, do not forward it.", "手机 OpenUU 扫码后会直接连接本设备；二维码含本次一次性密码，请勿转发。"),
     ].iter().cloned().collect();
 }
