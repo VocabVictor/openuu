@@ -190,6 +190,14 @@ What the backstop does and does not cover:
   prerequisite therefore carry a `guard` job (`if: always()`) that fails
   unless every prerequisite's result is success; read `guard`, not the
   individual job ticks, when judging a run.
+* **A background task's success is its exit code or an assertion on what it
+  produced, never the last line of its output.** A build killed part way
+  through leaves its final log line looking like progress, and its output
+  directory already wiped. `build-flutter.ps1` therefore asserts that the
+  shipped files exist and were written by that run, and exits non-zero
+  otherwise; check the artifact before reporting a build as done. On
+  2026-09-13 a build reported as finished had in fact been killed for memory
+  and had produced nothing.
 
 ### Deferred: needs macOS CI
 
