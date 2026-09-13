@@ -8,6 +8,24 @@ name: Android build
 
 on:
   workflow_dispatch:
+  # Runs when something it actually covers changes, rather than on a timer:
+  # an Android build takes about 40 minutes and this code changes rarely.
+  #
+  # Known gap: the Rust android arms are not all here. Besides the two paths
+  # below (the JNI surface), `cfg(target_os = "android")` items are scattered
+  # across a dozen directories under src/ -- connection, video_service,
+  # clipboard_service, audio_service, rendezvous_mediator, ui_interface and
+  # more -- and enumerating them would rot. Touching those still needs a
+  # manual run from the Actions tab.
+  push:
+    branches:
+      - master
+    paths:
+      - "flutter/android/**"
+      - "flutter/lib/mobile/**"
+      - "libs/scrap/src/android/**"
+      - "src/flutter_ffi.rs"
+      - ".github/workflows/android-build.yml"
 
 env:
   RUST_VERSION: "1.92.0"
