@@ -44,13 +44,18 @@ the others are identified by the commit the build came from.
   `\Thread(openuu*)\Context Switches/sec`, 6 samples at 5 s.
 * **Decides**: the baseline the five standby commits are measured against.
 
-### 2. Mouse movement, before (old controller bundle) — 52, 10 min
+### 2. Mouse movement, before (counter only) — 52, 10 min
 
-* **Needs**: the peer can stay on whichever bundle it has; this measures what the
-  controller sends. A window on the peer to drag over.
-* **Run**: a fixed drag pattern for 30 s, counting input messages. 52 owns the counting
-  method; if it is a log line, say which, so the after run counts the same thing.
-* **Decides**: the before half of the coalescing comparison.
+* **Needs**: a controller built at the commit that adds the counter and nothing else. The
+  peer can stay on whichever bundle it has, since this measures what the controller sends.
+  A window on the peer to drag over.
+* **Run**: with `RUSTDESK_INPUT_VERBOSE=1`, one continuous drag of a fixed duration, say
+  30 s of circles, and read the counter's mouse-move messages per second.
+* **Decides**: the before half of the coalescing comparison. 52 owns the method and chose
+  to land the counter as its own commit so that both halves count the same quantity: log
+  lines for this do not exist yet, and packet capture after encryption can only count
+  bytes. Compare the per-second average, not the total — the drag is done by hand and
+  cannot be repeated exactly, so the same person should do both runs at the same pace.
 
 ### 3. Swap the peer to a build of current master — e9, 5 min
 
@@ -102,8 +107,8 @@ Everything below needs it. One swap, not one per item.
 
 ### 7. Mouse movement, after — 52, 10 min
 
-* **Needs**: the controller bundle with the coalescing change; the same drag pattern and
-  the same counting method as item 2.
+* **Needs**: a controller built at the counter commit plus the coalescing change; the same
+  drag pattern, the same duration and the same counter as item 2.
 * **Decides**: message count down, and the drag still feels continuous — the risk is losing
   intermediate positions, which matters for drawing applications.
 
