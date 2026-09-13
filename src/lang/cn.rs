@@ -832,5 +832,16 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Port forwarding", "端口映射"),
         ("Restart", "重启"),
         ("Shut down", "关机"),
+        ("Add executable", "手动添加程序"),
+        ("Add shortcut", "添加快捷方式"),
+        ("Arguments (one per line, optional)", "启动参数（每行一个，可留空）"),
+        ("Check the application path and arguments", "请检查程序路径和启动参数"),
+        ("Desktop user", "当前桌面用户"),
+        ("Manage shortcut", "管理快捷方式"),
+        ("Move earlier", "向前移动"),
+        ("Remote executable absolute path", "远端程序绝对路径"),
+        ("Remove shortcut", "移除快捷方式"),
+        ("Search applications", "搜索应用"),
+        ("Shortcut added", "已添加快捷方式"),
     ].iter().cloned().collect();
 }

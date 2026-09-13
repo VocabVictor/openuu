@@ -824,5 +824,16 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Port forwarding", ""),
         ("Restart", ""),
         ("Shut down", ""),
+        ("Add executable", ""),
+        ("Add shortcut", ""),
+        ("Arguments (one per line, optional)", ""),
+        ("Check the application path and arguments", ""),
+        ("Desktop user", ""),
+        ("Manage shortcut", ""),
+        ("Move earlier", ""),
+        ("Remote executable absolute path", ""),
+        ("Remove shortcut", ""),
+        ("Search applications", ""),
+        ("Shortcut added", ""),
     ].iter().cloned().collect();
 }
