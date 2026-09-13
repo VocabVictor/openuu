@@ -64,8 +64,7 @@ extension MultiWindowManagerSessions on RustDeskMultiWindowManager {
     final windowId = windowController.windowId;
     if (!withScreenRect) {
       windowController
-        ..setFrame(const Offset(0, 0) &
-            Size(1280 + windowId * 20, 720 + windowId * 20))
+        ..setFrame(await _initialSessionFrame(windowId))
         ..center()
         ..setTitle(getWindowNameWithId(
           remoteId,
@@ -83,6 +82,19 @@ extension MultiWindowManagerSessions on RustDeskMultiWindowManager {
     registerActiveWindow(windowId);
     windows.add(windowId);
     return windowId;
+  }
+
+  /// The frame a session window is created with, before the peer's display
+  /// size is known: a 1280x720 (16:9) window shrunk to fit the work area,
+  /// offset per window. The first peer info refits it (fitWindowToPeer).
+  Future<Rect> _initialSessionFrame(int windowId) async {
+    Rect work = const Rect.fromLTWH(0, 0, 1280, 720);
+    try {
+      final screen = await window_size.getCurrentScreen();
+      if (screen != null) work = screen.visibleFrame;
+    } catch (_) {}
+    final frame = fitRemoteWindowFrame(const Size(1280, 720), work);
+    return frame.shift(Offset(windowId * 20.0, windowId * 20.0));
   }
 
   Future<MultiWindowCallResult> _newSession(
