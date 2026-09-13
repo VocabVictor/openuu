@@ -27,10 +27,6 @@
 //! write happens, so it moved in here with it. Losing it would not fail anything visibly:
 //! the controller would simply go blind on thin links again.
 
-// The loop is wired to this in a following commit; `close` and `is_closed` are how it
-// ends the session, and this goes with that.
-#![allow(dead_code)]
-
 use super::*;
 use crate::stream_split::ConnWriter;
 use base::message_proto::Message;
