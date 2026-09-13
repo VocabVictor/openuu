@@ -15,6 +15,10 @@ pub const KEY_ID_SERVER: &str = "custom-rendezvous-server";
 pub const KEY_RELAY_SERVER: &str = "relay-server";
 pub const KEY_API_SERVER: &str = "api-server";
 pub const KEY_KEY: &str = "key";
+/// Set to "Y" whenever an id server is baked in: the peer then registers over the
+/// secured TCP rendezvous connection (docs/peer-registration-encryption.md). A
+/// user value or a custom client file still overrides it.
+pub const KEY_DISABLE_UDP: &str = "disable-udp";
 
 /// True when the build carried at least an id server.
 pub fn is_configured() -> bool {
@@ -51,6 +55,10 @@ fn apply_values(id: &str, relay: &str, api: &str, key: &str) {
     }
     if !id.is_empty() {
         *config::PROD_RENDEZVOUS_SERVER.write().unwrap() = id.to_owned();
+        config::DEFAULT_SETTINGS
+            .write()
+            .unwrap()
+            .insert(KEY_DISABLE_UDP.to_owned(), "Y".to_owned());
     }
     if applied > 0 {
         // The key is never logged; only whether the build carries one.
@@ -86,10 +94,11 @@ mod tests {
         assert_eq!(defaults(KEY_API_SERVER).as_deref(), Some("https://rs.test:21114"));
         assert_eq!(defaults(KEY_KEY).as_deref(), Some("pk=="));
         assert_eq!(*config::PROD_RENDEZVOUS_SERVER.read().unwrap(), "rs.test");
+        assert_eq!(defaults(KEY_DISABLE_UDP).as_deref(), Some("Y"));
         // an empty user value falls back to the default
         assert_eq!(config::Config::get_option(KEY_ID_SERVER), "rs.test");
         let mut d = config::DEFAULT_SETTINGS.write().unwrap();
-        for k in [KEY_ID_SERVER, KEY_API_SERVER, KEY_KEY] {
+        for k in [KEY_ID_SERVER, KEY_API_SERVER, KEY_KEY, KEY_DISABLE_UDP] {
             d.remove(k);
         }
         drop(d);
