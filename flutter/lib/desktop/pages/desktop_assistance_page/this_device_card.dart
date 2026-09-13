@@ -107,7 +107,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                       tooltip: translate('Share as QR code'),
                       onPressed: !widget.enabled
                           ? null
-                          : () => _shareQrDialog(context, t, temporary),
+                          : () => _shareQrDialog(context, temporary),
                       icon: const Icon(Icons.qr_code_2_outlined,
                           color: UiColor.textSecondary)))),
         ]));
