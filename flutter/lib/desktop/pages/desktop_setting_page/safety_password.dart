@@ -19,36 +19,34 @@ extension _SafetyPassword on _SafetyState {
           bool permEnabled = model.verificationMethod != kUseTemporaryPassword;
           String currentValue =
               passwordValues[passwordKeys.indexOf(model.verificationMethod)];
+          radiosOnChanged(String value) async {
+            callback() async {
+              await model.setVerificationMethod(
+                  passwordKeys[passwordValues.indexOf(value)]);
+              await model.updatePasswordModel();
+            }
+
+            if (value ==
+                    passwordValues[passwordKeys.indexOf(kUsePermanentPassword)] &&
+                (await bind.mainGetCommon(key: "permanent-password-set")) !=
+                    "true") {
+              if (isChangePermanentPasswordDisabled()) {
+                await callback();
+                return;
+              }
+              setPasswordDialog(notEmptyCallback: callback);
+            } else {
+              await callback();
+            }
+          }
+
           List<Widget> radios = passwordValues
               .map((value) => _Radio<String>(
                     context,
                     value: value,
                     groupValue: currentValue,
                     label: value,
-                    onChanged: locked
-                        ? null
-                        : ((value) async {
-                            callback() async {
-                              await model.setVerificationMethod(
-                                  passwordKeys[passwordValues.indexOf(value)]);
-                              await model.updatePasswordModel();
-                            }
-
-                            if (value ==
-                                    passwordValues[passwordKeys
-                                        .indexOf(kUsePermanentPassword)] &&
-                                (await bind.mainGetCommon(
-                                        key: "permanent-password-set")) !=
-                                    "true") {
-                              if (isChangePermanentPasswordDisabled()) {
-                                await callback();
-                                return;
-                              }
-                              setPasswordDialog(notEmptyCallback: callback);
-                            } else {
-                              await callback();
-                            }
-                          }),
+                    onChanged: locked ? null : radiosOnChanged,
                   ))
               .toList();
 
@@ -143,11 +141,62 @@ extension _SafetyPassword on _SafetyState {
                   initialKey: modeInitialKey,
                   onChanged: (key) => model.setApproveMode(key),
                 ).marginOnly(left: _kContentHMargin);
+          if (desktop) {
+            final zh = Localizations.localeOf(context).languageCode == 'zh';
+            return futureBuilder(
+                future: bind.mainGetCommon(key: 'permanent-password-set'),
+                hasData: (data) {
+                  final permanentSet = data == 'true';
+                  return _Card(
+                      title: 'Password',
+                      title_suffix: [approveMode],
+                      children: [
+                        if (usePassword)
+                          _settingRow(
+                              context,
+                              zh ? '验证方式' : 'Verification method',
+                              SettingsDropdown(
+                                  keys: passwordKeys,
+                                  values: passwordValues,
+                                  current: model.verificationMethod,
+                                  width: 200,
+                                  enabled: !locked,
+                                  onChanged: (key) => radiosOnChanged(
+                                      passwordValues[passwordKeys.indexOf(key)])),
+                              description: ''),
+                        if (usePassword)
+                          _childRow(_settingRow(
+                              context,
+                              'One-time password length',
+                              SettingsDropdown(
+                                  keys: const ['6', '8', '10'],
+                                  values: const ['6', '8', '10'],
+                                  current: model.temporaryPasswordLength,
+                                  width: 96,
+                                  enabled: tmpEnabled && !locked,
+                                  onChanged: (v) => onChanged?.call(v)),
+                              enabled: tmpEnabled && !locked,
+                              description: '')),
+                        if (usePassword)
+                          _childRow(_switchRow(
+                              context,
+                              'Numeric one-time password',
+                              model.allowNumericOneTimePassword,
+                              (_) => model.switchAllowNumericOneTimePassword(),
+                              enabled: isNumOPTChangable,
+                              description: '')),
+                        if (usePassword && !isChangePermanentPasswordDisabled())
+                          _secretRow(context, 'Permanent password', permanentSet,
+                              () => setPasswordDialog(),
+                              enabled: permEnabled && !locked, description: ''),
+                      ]);
+                });
+          }
           return _Card(
               title: 'Password',
-              title_suffix: desktop ? [approveMode] : null,
+              title_suffix: null,
               children: [
-            if (!desktop) approveMode,
+            approveMode,
             if (usePassword) radios[0],
             if (usePassword)
               _SubLabeledWidget(

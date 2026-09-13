@@ -34,6 +34,7 @@ import '../../../common/widgets/login.dart';
 part 'account_about.dart';
 part 'constants.dart';
 part 'controls.dart';
+part 'desktop_rows.dart';
 part 'display.dart';
 part 'display_quality.dart';
 part 'display_style.dart';
