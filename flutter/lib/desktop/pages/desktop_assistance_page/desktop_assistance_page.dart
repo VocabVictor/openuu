@@ -101,8 +101,6 @@ class _DesktopAssistancePageState extends State<DesktopAssistancePage> {
 
   @override
   Widget build(BuildContext context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
-    String t(String cn, String en) => zh ? cn : en;
     return DesktopWelcomePage(
         assistanceSelected: true,
         onLogin: widget.onAccount,
@@ -110,18 +108,18 @@ class _DesktopAssistancePageState extends State<DesktopAssistancePage> {
         onAssistance: () {},
         onFavorites: widget.onFavorites,
         onSettings: widget.onSettings,
-        header: Text(t('开始协助', 'Start assistance'), style: UiType.pageTitle),
+        header: Text(translate('Start assistance'), style: UiType.pageTitle),
         content: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(UiSpace.pagePaddingX, 0,
                 UiSpace.pagePaddingX, UiSpace.pagePaddingBottom),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _thisDeviceCard(t),
+                  _thisDeviceCard(),
                   const SizedBox(height: UiSpace.sectionCardGap),
-                  _partnerCard(t),
+                  _partnerCard(),
                   const SizedBox(height: UiSpace.sectionCardGap),
-                  _recentCard(t),
+                  _recentCard(),
                 ])));
   }
 }

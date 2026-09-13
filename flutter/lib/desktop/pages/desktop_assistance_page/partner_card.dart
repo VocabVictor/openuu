@@ -1,7 +1,7 @@
 part of 'desktop_assistance_page.dart';
 
 extension _PartnerCard on _DesktopAssistancePageState {
-  Widget _partnerCard(String Function(String, String) t) {
+  Widget _partnerCard() {
     final fieldStyle = OutlineInputBorder(
         borderRadius: BorderRadius.circular(UiSpace.inputRadius),
         borderSide: const BorderSide(color: UiColor.border));
@@ -9,14 +9,13 @@ extension _PartnerCard on _DesktopAssistancePageState {
         Padding(
             padding: const EdgeInsets.symmetric(vertical: UiSpace.s3),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(t('远控伙伴设备', 'Connect to a partner'),
+              Text(translate('Connect to a partner'),
                   style: UiType.sectionTitle),
               const SizedBox(height: UiSpace.s1),
-              _caption(t('通过设备 ID 连接，并按对方设置完成验证',
-                  'Connect using a device ID, then authenticate with your partner.')),
+              _caption(translate('Connect using a device ID, then authenticate with your partner.')),
             ])),
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _caption(t('伙伴的设备 ID', 'Partner device ID')),
+          _caption(translate('Partner device ID')),
           const SizedBox(height: UiSpace.fieldLabelGap),
           Row(children: [
             SizedBox(
@@ -32,7 +31,7 @@ extension _PartnerCard on _DesktopAssistancePageState {
                     },
                     style: UiType.rowTitle.copyWith(fontWeight: FontWeight.w400),
                     decoration: InputDecoration(
-                        hintText: t('请输入设备 ID', 'Enter device ID'),
+                        hintText: translate('Enter device ID'),
                         hintStyle: UiType.caption.copyWith(fontSize: 13),
                         filled: true,
                         fillColor: Colors.white,
@@ -59,7 +58,7 @@ extension _PartnerCard on _DesktopAssistancePageState {
                     onPressed: _remoteId.text.trim().isEmpty
                         ? null
                         : () => widget.onConnect(_remoteId.text.trim()),
-                    child: Text(t('连接', 'Connect')))),
+                    child: Text(translate('Connect')))),
           ]),
         ]),
         divider: false);

@@ -1,7 +1,7 @@
 part of 'desktop_assistance_page.dart';
 
 extension _ThisDeviceCard on _DesktopAssistancePageState {
-  Widget _thisDeviceCard(String Function(String, String) t) {
+  Widget _thisDeviceCard() {
     final temporary = widget.temporaryPassword;
     return _card(
         Wrap(
@@ -11,7 +11,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
             runSpacing: UiSpace.s2,
             children: [
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(t('本设备', 'This device'), style: UiType.sectionTitle),
+                Text(translate('This device'), style: UiType.sectionTitle),
                 const SizedBox(width: UiSpace.rowMetaGap),
                 ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 200),
@@ -27,11 +27,11 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                         shape: BoxShape.circle,
                         color: widget.online ? UiColor.ready : UiColor.faint)),
                 const SizedBox(width: UiSpace.statusDotGap),
-                Text(widget.online ? t('在线', 'Online') : t('未就绪', 'Not ready'),
+                Text(widget.online ? translate('Online') : translate('Not ready'),
                     style: UiType.caption),
               ]),
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(t('允许他人远程协助', 'Allow remote assistance'),
+                Text(translate('Allow remote assistance'),
                     style:
                         UiType.rowTitle.copyWith(fontWeight: FontWeight.w400)),
                 const SizedBox(width: UiSpace.s2),
@@ -59,12 +59,12 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
           SizedBox(
               width: 200,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _caption(t('本设备 ID', 'This device ID')),
+                _caption(translate('This device ID')),
                 const SizedBox(height: UiSpace.s2),
                 SelectableText(widget.deviceId, style: UiType.deviceId),
               ])),
           const SizedBox(width: UiSpace.s8),
-          Expanded(child: _passwordColumn(t, temporary)),
+          Expanded(child: _passwordColumn(temporary)),
           const SizedBox(width: UiSpace.s8),
           Padding(
               // Centre the button on the value row below the captions.
@@ -83,7 +83,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                           ? null
                           : () async {
                               final passwordLine = temporary
-                                  ? '\n${t('验证码', 'Password')}: ${widget.password}'
+                                  ? '\n${translate('Password')}: ${widget.password}'
                                   : '';
                               final text =
                                   'OpenUU\nID: ${widget.deviceId}$passwordLine';
@@ -93,8 +93,8 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                               }
                             },
                       child: Text(_copied
-                          ? t('已复制', 'Copied')
-                          : t('复制并分享', 'Copy and share'))))),
+                          ? translate('Copied')
+                          : translate('Copy and share'))))),
           const SizedBox(width: UiSpace.s2),
           Padding(
               padding: const EdgeInsets.only(top: 18 + UiSpace.s2),
@@ -104,7 +104,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                   child: IconButton(
                       padding: EdgeInsets.zero,
                       iconSize: 18,
-                      tooltip: t('二维码分享', 'Share as QR code'),
+                      tooltip: translate('Share as QR code'),
                       onPressed: !widget.enabled
                           ? null
                           : () => _shareQrDialog(context, t, temporary),
@@ -117,7 +117,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
   /// one-time password is showing, a connect{id,password} entry so the
   /// phone that scans it lands straight on this device.
   Future<void> _shareQrDialog(BuildContext context,
-      String Function(String, String) t, bool temporary) async {
+      bool temporary) async {
     final reply = await bind.mainEncodeShareConfigWithConnect(
         optionKeys: [],
         id: widget.deviceId,
@@ -127,7 +127,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
       json = jsonDecode(reply) as Map<String, dynamic>;
     } catch (_) {}
     if (json['ok'] != true) {
-      showToast(json['error']?.toString() ?? t('无法生成二维码', 'Cannot build the QR code'));
+      showToast(json['error']?.toString() ?? translate('Cannot build the QR code'));
       return;
     }
     final payload = json['payload'].toString();
@@ -139,7 +139,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
               height: 48,
               child: Row(children: [
                 Expanded(
-                    child: Text(t('二维码分享', 'Share as QR code'),
+                    child: Text(translate('Share as QR code'),
                         style: UiType.sectionTitle.copyWith(fontSize: 16))),
                 IconButton(
                     iconSize: 16,
@@ -156,9 +156,8 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
           const SizedBox(height: UiSpace.s3),
           Text(
               temporary
-                  ? t('手机 OpenUU 扫码后会直接连接本设备；二维码含本次一次性密码，请勿转发。',
-                      'Scanning with OpenUU on a phone connects to this device; the code carries the current one-time password, do not forward it.')
-                  : t('手机 OpenUU 扫码后会连接本设备。', 'Scanning with OpenUU on a phone connects to this device.'),
+                  ? translate('Scanning with OpenUU on a phone connects to this device; the code carries the current one-time password, do not forward it.')
+                  : translate('Scanning with OpenUU on a phone connects to this device.'),
               style: UiType.caption,
               textAlign: TextAlign.center),
           const SizedBox(height: UiSpace.s6),
@@ -166,16 +165,16 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
         onCancel: close));
   }
 
-  Widget _passwordColumn(String Function(String, String) t, bool temporary) =>
+  Widget _passwordColumn(bool temporary) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _verificationMenu(t),
+        _verificationMenu(),
         const SizedBox(height: UiSpace.s2),
         Row(children: [
           Flexible(
               child: Text(
                   temporary
                       ? (_visible ? widget.password : '••••••••')
-                      : t('已配置验证方式', 'Authentication configured'),
+                      : translate('Authentication configured'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: temporary
@@ -185,19 +184,18 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
           if (temporary)
             _actionIcon(
                 _visible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                t('显示／隐藏验证码', 'Show / hide password'),
+                translate('Show / hide password'),
                 () => _setState(() => _visible = !_visible)),
           if (temporary)
-            _actionIcon(Icons.refresh, t('刷新验证码', 'Refresh password'),
+            _actionIcon(Icons.refresh, translate('Refresh password'),
                 widget.onRefresh),
           _actionIcon(Icons.settings_outlined,
-              t('验证设置', 'Authentication settings'), widget.onSecurity),
+              translate('Authentication settings'), widget.onSecurity),
         ]),
         const SizedBox(height: 6),
         _caption(temporary
-            ? t('一次性密码，每次远控结束后自动更新',
-                'One-time password, renewed after each session')
-            : t('连接时按安全设置验证', 'Uses your security settings')),
+            ? translate('One-time password, renewed after each session')
+            : translate('Uses your security settings')),
       ]);
 
   Widget _actionIcon(IconData icon, String tooltip, VoidCallback onTap) =>
@@ -215,15 +213,15 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
 
   /// The verification method as a menu anchored under its trigger: same
   /// left edge, at least the trigger's width, current value ticked.
-  Widget _verificationMenu(String Function(String, String) t) =>
+  Widget _verificationMenu() =>
       LayoutBuilder(builder: (context, bounds) {
         final entries = [
-          (_useTemporaryPassword, t('仅使用一次性密码', 'One-time password only')),
-          (_usePermanentPassword, t('仅使用固定密码', 'Permanent password only')),
-          (_useBothPasswords, t('同时使用两种密码', 'Use both passwords')),
+          (_useTemporaryPassword, translate('One-time password only')),
+          (_usePermanentPassword, translate('Permanent password only')),
+          (_useBothPasswords, translate('Use both passwords')),
         ];
         return PopupMenuButton<String>(
-            tooltip: t('切换验证方式', 'Change verification'),
+            tooltip: translate('Change verification'),
             position: PopupMenuPosition.under,
             offset: const Offset(0, UiSpace.menuOffset),
             constraints: BoxConstraints(minWidth: bounds.maxWidth),
