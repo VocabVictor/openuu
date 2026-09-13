@@ -16,7 +16,7 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
             children: [
               Expanded(
                 child: buildButton(context,
-                    color: UiColor.primary,
+                    color: UiColor.of(context).primaryFill,
                     onClick: null, onTapDown: (details) async {
                   final devicesInfo =
                       await AudioInput.getDevicesInfo(true, true);
@@ -73,24 +73,24 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
                 },
                     icon: Icon(
                       Icons.call_rounded,
-                      color: Colors.white,
+                      color: UiColor.of(context).onPrimary,
                       size: UiCm.controlIconSize,
                     ),
                     text: "Audio input",
-                    textColor: Colors.white),
+                    textColor: UiColor.of(context).onPrimary),
               ),
               Expanded(
                 child: buildButton(
                   context,
-                  color: Colors.red,
+                  color: UiColor.of(context).dangerFill,
                   onClick: () => closeVoiceCall(),
                   icon: Icon(
                     Icons.call_end_rounded,
-                    color: Colors.white,
+                    color: UiColor.of(context).onPrimary,
                     size: UiCm.controlIconSize,
                   ),
                   text: "Stop voice call",
-                  textColor: Colors.white,
+                  textColor: UiColor.of(context).onPrimary,
                 ),
               )
             ],
@@ -102,28 +102,28 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
             children: [
               Expanded(
                 child: buildButton(context,
-                    color: UiColor.primary,
+                    color: UiColor.of(context).primaryFill,
                     onClick: () => handleVoiceCall(true),
                     icon: Icon(
                       Icons.call_rounded,
-                      color: Colors.white,
+                      color: UiColor.of(context).onPrimary,
                       size: UiCm.controlIconSize,
                     ),
                     text: "Accept",
-                    textColor: Colors.white),
+                    textColor: UiColor.of(context).onPrimary),
               ),
               Expanded(
                 child: buildButton(
                   context,
-                  color: Colors.red,
+                  color: UiColor.of(context).dangerFill,
                   onClick: () => handleVoiceCall(false),
                   icon: Icon(
                     Icons.phone_disabled_rounded,
-                    color: Colors.white,
+                    color: UiColor.of(context).onPrimary,
                     size: UiCm.controlIconSize,
                   ),
                   text: "Dismiss",
-                  textColor: Colors.white,
+                  textColor: UiColor.of(context).onPrimary,
                 ),
               )
             ],
@@ -132,43 +132,46 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
         Offstage(
           offstage: !client.fromSwitch,
           child: buildButton(context,
+              // Not a palette member: this one button is purple to set the
+              // "switch sides" action apart from every other action here, and
+              // no token means that. It keeps its value until a member does.
               color: Colors.purple,
               onClick: () => handleSwitchBack(context),
-              icon: Icon(Icons.reply, color: Colors.white),
+              icon: Icon(Icons.reply, color: UiColor.of(context).onPrimary),
               text: "Switch Sides",
-              textColor: Colors.white),
+              textColor: UiColor.of(context).onPrimary),
         ),
         Offstage(
           offstage: !showElevation,
           child: buildButton(
             context,
-            color: UiColor.warning,
+            color: UiColor.of(context).warning,
             onClick: () {
               handleElevate(context);
               windowManager.minimize();
             },
             icon: Icon(
               Icons.security_rounded,
-              color: Colors.white,
+              color: UiColor.of(context).onWarning,
               size: UiCm.controlIconSize,
             ),
             text: 'Elevate',
-            textColor: Colors.white,
+            textColor: UiColor.of(context).onWarning,
           ),
         ),
         Row(
           children: [
             Expanded(
               child: buildButton(context,
-                  color: Colors.redAccent,
+                  color: UiColor.of(context).dangerFill,
                   onClick: handleDisconnect,
                   text: 'Disconnect',
                   icon: Icon(
                     Icons.link_off_rounded,
-                    color: Colors.white,
+                    color: UiColor.of(context).onPrimary,
                     size: UiCm.controlIconSize,
                   ),
-                  textColor: Colors.white),
+                  textColor: UiColor.of(context).onPrimary),
             ),
           ],
         )
