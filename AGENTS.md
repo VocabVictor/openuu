@@ -137,9 +137,12 @@ upstream commits by subject and then confirm each one against the code, as
   `flutter` feature is on by default) and `flutter analyze` with no new
   diagnostics.
 * Before a split lands, run `python tools/split/split_audit.py <repo> <since> out.md`
-  on it: a mechanical move scores 0 lines and 0 match arms lost per commit, and every
-  commit of the chain must hold the whole original on its own (no step may drop code
-  that a later step re-adds).
+  on it: a mechanical move scores **0 lines lost and 0 match arms lost** per commit, and
+  every commit of the chain must hold the whole original on its own (no step may drop
+  code that a later step re-adds). The report also counts lines it could account for as
+  renamed or deduplicated; those are expected in a move and are not failures, but say in
+  the commit message what was renamed, so a reader can tell a deliberate rename from a
+  line that went missing and happened to look like one.
 * When a task touches a legacy file that is still over 300 lines, split that
   file first in its own commit, then make the change.
 
@@ -172,6 +175,15 @@ commit (dozens of files, thousands of changed lines) cannot be reviewed.
   whatever else is staged. A bare `git commit`, `git commit -a` or
   `git add -A` sweeps other people's staged work into your commit. Check
   `git show --stat HEAD` afterwards.
+* **In a shared working tree `--amend` and `rebase` are never used, because HEAD
+  may not be your commit.** Other sessions commit between your own commits, so
+  by the time you amend, HEAD is somebody else's work and the amend rewrites
+  theirs. A pathspec guarantees you will not sweep up their uncommitted changes;
+  it does not stop you from committing onto their commit, which is a different
+  thing. When a commit of yours needs fixing, land another commit; a few extra
+  commits cost less than a rewritten history somebody else already has.
+  On 2026-09-13 repeated `--amend` while repairing compile errors folded one
+  session's Rust changes into two other sessions' documentation commits.
 
 ### Tracked exceptions
 
