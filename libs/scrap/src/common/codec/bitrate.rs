@@ -1,20 +1,27 @@
 use super::*;
 
+/// Bitrate at quality ratio 1.0, per resolution. A preset is what the screen needs to
+/// look sharp when the link can carry it, not what a thin link can afford: the quality
+/// ratio scales it down (Balanced 0.67, Low 0.5) and the QoS controller cuts further as
+/// soon as the path queues. The old table was the pixel count in thousands, which at
+/// 1080p left Balanced at 1.4 Mbps and made text permanently soft on links with far more
+/// capacity than that. Bits per pixel falls with resolution, as a larger screen tolerates
+/// fewer bits per pixel at the same viewing distance.
 pub fn base_bitrate(width: u32, height: u32) -> u32 {
     pub(super) const RESOLUTION_PRESETS: &[(u32, u32, u32)] = &[
-        (640, 480, 400),     // VGA, 307k pixels
-        (800, 600, 500),     // SVGA, 480k pixels
-        (1024, 768, 800),    // XGA, 786k pixels
-        (1280, 720, 1000),   // 720p, 921k pixels
-        (1366, 768, 1100),   // HD, 1049k pixels
-        (1440, 900, 1300),   // WXGA+, 1296k pixels
-        (1600, 900, 1500),   // HD+, 1440k pixels
-        (1920, 1080, 2073),  // 1080p, 2073k pixels
-        (2048, 1080, 2200),  // 2K DCI, 2211k pixels
-        (2560, 1440, 3000),  // 2K QHD, 3686k pixels
-        (3440, 1440, 4000),  // UWQHD, 4953k pixels
-        (3840, 2160, 5000),  // 4K UHD, 8294k pixels
-        (7680, 4320, 12000), // 8K UHD, 33177k pixels
+        (640, 480, 1200),    // VGA, 307k pixels
+        (800, 600, 1600),    // SVGA, 480k pixels
+        (1024, 768, 2400),   // XGA, 786k pixels
+        (1280, 720, 2800),   // 720p, 921k pixels
+        (1366, 768, 3100),   // HD, 1049k pixels
+        (1440, 900, 3600),   // WXGA+, 1296k pixels
+        (1600, 900, 4000),   // HD+, 1440k pixels
+        (1920, 1080, 6000),  // 1080p, 2073k pixels
+        (2048, 1080, 6300),  // 2K DCI, 2211k pixels
+        (2560, 1440, 9000),  // 2K QHD, 3686k pixels
+        (3440, 1440, 11000), // UWQHD, 4953k pixels
+        (3840, 2160, 16000), // 4K UHD, 8294k pixels
+        (7680, 4320, 40000), // 8K UHD, 33177k pixels
     ];
     let pixels = width * height;
 
@@ -28,7 +35,7 @@ pub fn base_bitrate(width: u32, height: u32) -> u32 {
                 pixels - preset_pixels
             }
         })
-        .unwrap_or(((1920 * 1080) as u32, &2073)); // default 1080p
+        .unwrap_or(((1920 * 1080) as u32, &6000)); // default 1080p
 
     let bitrate = (*preset_bitrate as f32 * (pixels as f32 / preset_pixels as f32)).round() as u32;
 
@@ -228,4 +235,63 @@ pub fn test_av1() {
             );
         });
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_preset_resolution_gets_its_own_figure() {
+        assert_eq!(base_bitrate(1920, 1080), 6000);
+        assert_eq!(base_bitrate(1280, 720), 2800);
+        assert_eq!(base_bitrate(3840, 2160), 16000);
+    }
+
+    #[test]
+    fn the_balanced_and_best_bitrates_a_preset_implies() {
+        let base = base_bitrate(1920, 1080) as f32;
+        assert_eq!((base * BR_BALANCED) as u32, 4020);
+        assert_eq!((base * BR_BEST) as u32, 9000);
+        assert_eq!((base * BR_SPEED) as u32, 3000);
+    }
+
+    #[test]
+    fn more_pixels_never_means_fewer_bits() {
+        let sizes = [
+            (640, 480),
+            (1024, 768),
+            (1280, 720),
+            (1366, 768),
+            (1600, 900),
+            (1920, 1080),
+            (2560, 1440),
+            (3440, 1440),
+            (3840, 2160),
+            (7680, 4320),
+        ];
+        let mut last = 0;
+        for (w, h) in sizes {
+            let bitrate = base_bitrate(w, h);
+            assert!(bitrate >= last, "{w}x{h}: {bitrate} < {last}");
+            last = bitrate;
+        }
+    }
+
+    #[test]
+    fn bits_per_pixel_falls_as_the_screen_grows() {
+        let bpp = |w: u32, h: u32| base_bitrate(w, h) as f32 / (w * h) as f32;
+        assert!(bpp(1280, 720) > bpp(1920, 1080));
+        assert!(bpp(1920, 1080) > bpp(3840, 2160));
+    }
+
+    #[test]
+    fn an_unlisted_size_is_scaled_from_the_nearest_preset() {
+        // Between 720p and 1080p in pixels, so between their figures.
+        let between = base_bitrate(1600, 1000);
+        let range = base_bitrate(1280, 720)..=base_bitrate(1920, 1080);
+        assert!(range.contains(&between), "{between}");
+        // A window, not a screen: still proportionate, never zero.
+        assert!(base_bitrate(320, 240) > 0);
+    }
 }

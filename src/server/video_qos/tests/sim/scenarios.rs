@@ -54,6 +54,10 @@ pub fn scenarios() -> Vec<Scenario> {
         ),
         base("bandwidth_halved_no_abr_30", 30, halved_link(), false, Cbr),
         base("mobile_bufferbloat_30", 30, mobile_link(), true, Cbr),
+        // A cloud relay with a fixed egress: capacity relative to the Balanced bitrate.
+        base("relay_1_3x_30", 30, relay_link(1.3), true, Cbr),
+        base("relay_0_7x_30", 30, relay_link(0.7), true, Cbr),
+        base("relay_0_3x_30", 30, relay_link(0.3), true, Cbr),
     ]
 }
 

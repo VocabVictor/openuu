@@ -123,6 +123,16 @@ pub(super) fn halved_link() -> Link {
     }
 }
 
+/// A cloud relay whose egress is `capacity` times the Balanced bitrate: a stable
+/// 40 ms path with a little jitter, nothing else wrong with it.
+pub(super) fn relay_link(capacity: f64) -> Link {
+    Link {
+        base_rtt_ms: 40.0,
+        jitter_median_ms: 5.0,
+        ..clean_link(BASE_KBPS * Quality::Balanced.ratio() as f64 * capacity)
+    }
+}
+
 pub(super) fn mobile_link() -> Link {
     Link {
         capacity_kbps: vec![(0, 6_000.0)],

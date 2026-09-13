@@ -83,6 +83,30 @@ pub fn bound_violations(s: &Summary) -> Vec<&'static str> {
             s.recovery_worst_ms.is_some_and(|ms| ms <= 20_000),
             "sustained recovery over 20 s",
         );
+    } else if name == "relay_1_3x_30" {
+        // A relay with a third more egress than the stream asks for is a clean link.
+        check(s.p10_target_worst == s.limit, "left the limit");
+        check(s.queue_p95_p90 < 150, "queue on a relay with headroom");
+        check(
+            s.time_to_90pct_worst_ms.is_some_and(|ms| ms <= 10_000),
+            "cold start over 10 s",
+        );
+    } else if name == "relay_0_7x_30" {
+        // Less egress than the stream asks for: the bitrate settles under the capacity
+        // and the frame rate is kept, since dropping frames would not shrink a CBR stream.
+        check(
+            s.mean_target_median >= 0.9 * limit,
+            "median target below 90%",
+        );
+        check(s.below_half_p90 <= 10.0, "below half the limit over 10%");
+        check(s.queue_p95_p90 < 1500, "queue p95 p90 over 1.5 s");
+    } else if name == "relay_0_3x_30" {
+        // Far below what the stream asks for: everything the controller can do is bounded
+        // by its own floor (1 Mbps and MIN_AUTO_FPS), and it must keep serving that floor
+        // rather than collapse. The startup queue on such a link takes minutes to drain;
+        // see docs/qos-tuning.md.
+        check(s.p10_target_worst >= 5, "target below the fps floor");
+        check(s.cold_start_min_median >= 5, "cold start below the fps floor");
     } else if name == "mobile_bufferbloat_30" {
         check(s.queue_p95_p90 < 2000, "queue p95 p90 over 2 s");
         check(s.frame_age_p95_p90 < 2000, "frame age p95 p90 over 2 s");
