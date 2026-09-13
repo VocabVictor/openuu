@@ -4,8 +4,7 @@ class _IconMenuButton extends StatefulWidget {
   final String? assetName;
   final Widget? icon;
   final String tooltip;
-  final Color color;
-  final Color hoverColor;
+  final _ButtonState state;
   final VoidCallback? onPressed;
   final double? hMargin;
   final double? vMargin;
@@ -16,8 +15,7 @@ class _IconMenuButton extends StatefulWidget {
     this.assetName,
     this.icon,
     required this.tooltip,
-    required this.color,
-    required this.hoverColor,
+    required this.state,
     required this.onPressed,
     this.hMargin,
     this.vMargin,
@@ -35,13 +33,14 @@ class _IconMenuButtonState extends State<_IconMenuButton> {
   @override
   Widget build(BuildContext context) {
     assert(widget.assetName != null || widget.icon != null);
-    final background = hover ? widget.hoverColor : widget.color;
+    final background =
+        _ToolbarTheme.buttonBackground(context, widget.state, hover: hover);
     final icon = widget.icon ??
         Center(
           child: SvgPicture.asset(
             widget.assetName!,
             colorFilter: ColorFilter.mode(
-                _ToolbarTheme.iconColor(context, background),
+                _ToolbarTheme.iconColor(context, widget.state),
                 BlendMode.srcIn),
             width: _ToolbarTheme.iconSize,
             height: _ToolbarTheme.iconSize,
@@ -90,8 +89,7 @@ class _IconSubmenuButton extends StatefulWidget {
   final String tooltip;
   final String? svg;
   final Widget? icon;
-  final Color color;
-  final Color hoverColor;
+  final _ButtonState state;
   final List<Widget> Function(_IconSubmenuButtonState state) menuChildrenGetter;
   final MenuStyle? menuStyle;
   final FFI? ffi;
@@ -102,8 +100,7 @@ class _IconSubmenuButton extends StatefulWidget {
     this.svg,
     this.icon,
     required this.tooltip,
-    required this.color,
-    required this.hoverColor,
+    required this.state,
     required this.menuChildrenGetter,
     this.ffi,
     this.menuStyle,
@@ -125,13 +122,14 @@ class _IconSubmenuButtonState extends State<_IconSubmenuButton> {
   @override
   Widget build(BuildContext context) {
     assert(widget.svg != null || widget.icon != null);
-    final background = hover ? widget.hoverColor : widget.color;
+    final background =
+        _ToolbarTheme.buttonBackground(context, widget.state, hover: hover);
     final icon = widget.icon ??
         Center(
           child: SvgPicture.asset(
             widget.svg!,
             colorFilter: ColorFilter.mode(
-                _ToolbarTheme.iconColor(context, background),
+                _ToolbarTheme.iconColor(context, widget.state),
                 BlendMode.srcIn),
             width: _ToolbarTheme.iconSize,
             height: _ToolbarTheme.iconSize,

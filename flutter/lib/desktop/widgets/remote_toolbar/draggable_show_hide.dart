@@ -121,7 +121,7 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
       minimumSize: MaterialStateProperty.all(const Size(0, 0)),
       padding: MaterialStateProperty.all(EdgeInsets.zero),
       foregroundColor: WidgetStatePropertyAll(
-          _ToolbarTheme.iconColor(context, _ToolbarTheme.blueColor)),
+          _ToolbarTheme.iconColor(context, _ButtonState.idle)),
     );
     final isFullscreen = stateGlobal.fullscreen;
     const double iconSize = UiSession.toolbarHandleIconSize;

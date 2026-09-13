@@ -11,11 +11,7 @@ class _PinMenu extends StatelessWidget {
         assetName: state.pin ? "assets/pinned.svg" : "assets/unpinned.svg",
         tooltip: state.pin ? 'Unpin Toolbar' : 'Pin Toolbar',
         onPressed: state.switchPin,
-        color:
-            state.pin ? _ToolbarTheme.activeColor(context) : _ToolbarTheme.blueColor,
-        hoverColor: state.pin
-            ? _ToolbarTheme.hoverActiveColor(context)
-            : _ToolbarTheme.hoverBlueColor(context),
+        state: state.pin ? _ButtonState.engaged : _ButtonState.idle,
       ),
     );
   }
@@ -33,12 +29,9 @@ class _MobileActionMenu extends StatelessWidget {
           tooltip: 'Mobile Actions',
           onPressed: () => ffi.dialogManager.setMobileActionsOverlayVisible(
               !ffi.dialogManager.mobileActionsOverlayVisible.value),
-          color: ffi.dialogManager.mobileActionsOverlayVisible.isTrue
-              ? _ToolbarTheme.activeColor(context)
-              : _ToolbarTheme.blueColor,
-          hoverColor: ffi.dialogManager.mobileActionsOverlayVisible.isTrue
-              ? _ToolbarTheme.hoverActiveColor(context)
-              : _ToolbarTheme.hoverBlueColor(context),
+          state: ffi.dialogManager.mobileActionsOverlayVisible.isTrue
+              ? _ButtonState.engaged
+              : _ButtonState.idle,
         ));
   }
 }
@@ -62,8 +55,7 @@ class _MainMonitorSwitchButton extends StatelessWidget {
 
       return _IconMenuButton(
         tooltip: cycle.tooltip,
-        color: _ToolbarTheme.blueColor,
-        hoverColor: _ToolbarTheme.hoverBlueColor(context),
+        state: _ButtonState.idle,
         onPressed: cycle.next,
         icon: SizedBox(
           width: _ToolbarTheme.buttonSize,
@@ -111,8 +103,7 @@ class _ControlMenu extends StatelessWidget {
     return _IconSubmenuButton(
         tooltip: 'Control Actions',
         svg: "assets/actions.svg",
-        color: _ToolbarTheme.blueColor,
-        hoverColor: _ToolbarTheme.hoverBlueColor(context),
+        state: _ButtonState.idle,
         ffi: ffi,
         menuChildrenGetter: (_) => toolbarControls(context, id, ffi).map((e) {
               if (e.divider) {
@@ -146,12 +137,8 @@ class _RecordMenu extends StatelessWidget {
           ? 'Stop session recording'
           : 'Start session recording',
       onPressed: () => recordingModel.toggle(),
-      color: recordingModel.start
-          ? _ToolbarTheme.redColor(context)
-          : _ToolbarTheme.blueColor,
-      hoverColor: recordingModel.start
-          ? _ToolbarTheme.hoverRedColor(context)
-          : _ToolbarTheme.hoverBlueColor(context),
+      state:
+          recordingModel.start ? _ButtonState.alerting : _ButtonState.idle,
     );
   }
 }
@@ -173,8 +160,7 @@ class _CloseMenu extends StatelessWidget {
         }
         closeConnection(id: id);
       },
-      color: _ToolbarTheme.redColor(context),
-      hoverColor: _ToolbarTheme.hoverRedColor(context),
+      state: _ButtonState.destructive,
     );
   }
 }

@@ -33,8 +33,7 @@ class _KeyboardMenu extends StatelessWidget {
         tooltip: 'Keyboard Settings',
         svg: "assets/keyboard_mouse.svg",
         ffi: ffi,
-        color: _ToolbarTheme.blueColor,
-        hoverColor: _ToolbarTheme.hoverBlueColor(context),
+        state: _ButtonState.idle,
         menuChildrenGetter: (_) => [
               keyboardMode(),
               localKeyboardType(),

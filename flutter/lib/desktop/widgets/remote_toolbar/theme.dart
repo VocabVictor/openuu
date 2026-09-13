@@ -1,5 +1,37 @@
 part of 'remote_toolbar.dart';
 
+/// What a toolbar button is currently saying. It decides the button's
+/// background and its icon colour together, so the two can never disagree.
+///
+/// The colours used to be read back from the background: the icon colour was
+/// chosen by comparing the background against the tints. That works only while
+/// no two states share a tint, and the day two of them do it picks the wrong
+/// colour silently -- there is nothing to report, because a colour that
+/// matched is indistinguishable from the colour that was meant.
+enum _ButtonState {
+  /// Nothing is claimed; the button is simply available.
+  idle,
+
+  /// The thing this button controls is on: pinned, recording, in a call,
+  /// mobile actions showing, the display being viewed.
+  engaged,
+
+  /// Something is live that the user should not lose track of: a voice call
+  /// waiting to be answered, a session being recorded. Pressing the button
+  /// cancels that thing, which is the safe direction.
+  ///
+  /// Not `engaged`, which is a convenience the user chose to leave on and is
+  /// not asking to be noticed. Not `destructive`, which is about what pressing
+  /// costs rather than about what is currently true. It shares the danger tint
+  /// with `destructive` today; keeping them apart is what lets one of them be
+  /// given its own colour later without hunting through call sites.
+  alerting,
+
+  /// Pressing it ends the session. Kept apart from `alerting` because this one
+  /// is about the cost of the press, not about a state to notice.
+  destructive,
+}
+
 class ToolbarState {
   late RxBool _pin;
 
@@ -122,15 +154,34 @@ class _ToolbarTheme {
   /// the red tint, secondary text otherwise. Recovering the meaning from the
   /// colour is a reverse lookup and should become an explicit enum; comparing
   /// against the resolved palette at least makes it hold in both themes.
-  static Color iconColor(BuildContext context, Color background) {
+  /// The icon colour a state calls for.
+  static Color iconColor(BuildContext context, _ButtonState state) {
     final pal = UiColor.of(context);
-    if (background == pal.primaryTint || background == pal.primaryTintHover) {
-      return pal.primary;
+    switch (state) {
+      case _ButtonState.engaged:
+        return pal.primary;
+      case _ButtonState.alerting:
+      case _ButtonState.destructive:
+        return pal.danger;
+      case _ButtonState.idle:
+        return pal.textSecondary;
     }
-    if (background == pal.dangerTint || background == pal.dangerTintHover) {
-      return pal.danger;
+  }
+
+  /// The background a state calls for, at rest and under the pointer. Taken
+  /// from the same state as the icon so that a button cannot be painted as one
+  /// thing and lettered as another.
+  static Color buttonBackground(BuildContext context, _ButtonState state,
+      {required bool hover}) {
+    switch (state) {
+      case _ButtonState.engaged:
+        return hover ? hoverActiveColor(context) : activeColor(context);
+      case _ButtonState.alerting:
+      case _ButtonState.destructive:
+        return hover ? hoverRedColor(context) : redColor(context);
+      case _ButtonState.idle:
+        return hover ? hoverBlueColor(context) : blueColor;
     }
-    return pal.textSecondary;
   }
 
   static Color barColor(BuildContext context) => UiColor.of(context).surface;
