@@ -2,22 +2,24 @@ part of 'port_forward_page.dart';
 
 extension _PortForwardTunnels on _PortForwardPageState {
   buildPrompt(BuildContext context) {
+    final pal = UiColor.of(context);
+    final type = UiType.of(context);
     return Obx(() => Offstage(
           offstage: pfs.isEmpty && !widget.isRDP,
           child: Container(
               padding: const EdgeInsets.symmetric(
                   horizontal: UiSession.statusBarPaddingX,
                   vertical: UiSpace.s2),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(bottom: BorderSide(color: UiColor.border)),
+              decoration: BoxDecoration(
+                color: pal.surface,
+                border: Border(bottom: BorderSide(color: pal.border)),
               ),
               child: Row(children: [
                 Container(
                   width: UiSpace.statusDotSize,
                   height: UiSpace.statusDotSize,
-                  decoration: const BoxDecoration(
-                      color: UiColor.success, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                      color: pal.success, shape: BoxShape.circle),
                 ),
                 const SizedBox(width: UiSpace.statusDotGap),
                 Expanded(
@@ -26,17 +28,18 @@ extension _PortForwardTunnels on _PortForwardPageState {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                       Text(translate('Listening ...'),
-                          style: UiType.rowTitle.copyWith(fontSize: 13)),
+                          style: type.rowTitle.copyWith(fontSize: 13)),
                       Text(translate('not_close_tcp_tip'),
-                          style: UiType.caption),
+                          style: type.caption),
                     ])),
               ])).marginOnly(bottom: UiSpace.s2),
         ));
   }
 
   buildTunnel(BuildContext context) {
+    final type = UiType.of(context);
     text(String label) => Expanded(
-        child: Text(translate(label), style: UiType.caption)
+        child: Text(translate(label), style: type.caption)
             .marginOnly(left: _kTextLeftMargin));
 
     return Theme(
@@ -58,7 +61,7 @@ extension _PortForwardTunnels on _PortForwardPageState {
                   text('Remote Port'),
                   SizedBox(
                       width: _kColumn4Width,
-                      child: Text(translate('Action'), style: UiType.caption))
+                      child: Text(translate('Action'), style: type.caption))
                 ]),
               );
             } else if (index == 1) {
@@ -71,6 +74,8 @@ extension _PortForwardTunnels on _PortForwardPageState {
   }
 
   buildTunnelAddRow(BuildContext context) {
+    final pal = UiColor.of(context);
+    final type = UiType.of(context);
     var portInputFormatter = [
       FilteringTextInputFormatter.allow(RegExp(
           r'^([0-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$'))
@@ -95,15 +100,15 @@ extension _PortForwardTunnels on _PortForwardPageState {
           height: UiSpace.controlHeight,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-                backgroundColor: UiColor.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: pal.primaryFill,
+                foregroundColor: pal.onPrimary,
                 elevation: 0,
                 padding:
                     const EdgeInsets.symmetric(horizontal: UiSpace.s4),
                 shape: RoundedRectangleBorder(
                     borderRadius:
                         BorderRadius.circular(UiSpace.buttonRadius)),
-                textStyle: UiType.button),
+                textStyle: type.button),
             onPressed: () async {
             int? localPort = int.tryParse(localPortController.text);
             int? remotePort = int.tryParse(remotePortController.text);
@@ -148,8 +153,10 @@ extension _PortForwardTunnels on _PortForwardPageState {
   }
 
   Widget buildTunnelDataRow(BuildContext context, _PortForward pf, int index) {
+    final pal = UiColor.of(context);
+    final type = UiType.of(context);
     text(String label) => Expanded(
-        child: Text(label, style: UiType.rowTitle)
+        child: Text(label, style: type.rowTitle)
             .marginOnly(left: _kTextLeftMargin));
 
     return Container(
@@ -169,7 +176,7 @@ extension _PortForwardTunnels on _PortForwardPageState {
           width: _kColumn4Width,
           child: IconButton(
             iconSize: UiSpace.rowActionIconSize,
-            icon: const Icon(Icons.close, color: UiColor.muted),
+            icon: Icon(Icons.close, color: pal.muted),
             onPressed: () async {
               await bind.sessionRemovePortForward(
                   sessionId: _ffi.sessionId, localPort: pf.localPort);
@@ -193,11 +200,13 @@ extension _PortForwardTunnels on _PortForwardPageState {
   }
 
   buildRdp(BuildContext context) {
+    final pal = UiColor.of(context);
+    final type = UiType.of(context);
     text1(String label) => Expanded(
-        child: Text(translate(label), style: UiType.caption)
+        child: Text(translate(label), style: type.caption)
             .marginOnly(left: _kTextLeftMargin));
     text2(String label) => Expanded(
-        child: Text(label, style: UiType.rowTitle)
+        child: Text(label, style: type.rowTitle)
             .marginOnly(left: _kTextLeftMargin));
     return Theme(
       data: Theme.of(context)
@@ -230,15 +239,15 @@ extension _PortForwardTunnels on _PortForwardPageState {
                         height: UiSpace.controlHeight,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: UiColor.primary,
-                              foregroundColor: Colors.white,
+                              backgroundColor: pal.primaryFill,
+                              foregroundColor: pal.onPrimary,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: UiSpace.s4),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
                                       UiSpace.buttonRadius)),
-                              textStyle: UiType.button),
+                              textStyle: type.button),
                           onPressed: () =>
                               bind.sessionNewRdp(sessionId: _ffi.sessionId),
                           child: Text(translate('New RDP')),

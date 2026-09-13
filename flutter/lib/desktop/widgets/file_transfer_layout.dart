@@ -19,6 +19,8 @@ class FileTransferLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final pal = UiColor.of(context);
+    final type = UiType.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     Widget identity(String name, bool local) => Expanded(
             child: Row(
@@ -31,7 +33,7 @@ class FileTransferLayout extends StatelessWidget {
                       child: Text(name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: UiType.pageTitle))),
+                          style: type.pageTitle))),
               const SizedBox(width: UiSpace.s2),
               Container(
                   height: UiSpace.tagHeight,
@@ -40,23 +42,22 @@ class FileTransferLayout extends StatelessWidget {
                       horizontal: UiSpace.tagPaddingX),
                   decoration: BoxDecoration(
                       color: local
-                          ? UiColor.settingsRowHover
-                          : UiColor.primaryTint,
+                          ? pal.settingsRowHover
+                          : pal.primaryTint,
                       borderRadius:
                           BorderRadius.circular(UiSpace.tagRadius)),
                   child: Text(
                       local ? (zh ? '本机' : 'Local') : (zh ? '远端' : 'Remote'),
-                      style: UiType.tag.copyWith(
+                      style: type.tag.copyWith(
                           color: local
-                              ? UiColor.textSecondary
-                              : UiColor.primary))),
+                              ? pal.textSecondary
+                              : pal.primary))),
             ]));
     Widget panel(Widget child) => Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-            color: dark ? const Color(0xff22262c) : Colors.white,
-            border: Border.all(
-                color: dark ? Colors.white24 : UiColor.border),
+            color: pal.surface,
+            border: Border.all(color: pal.border),
             borderRadius:
                 BorderRadius.circular(UiSpace.sectionCardRadius)),
         child: child);
@@ -64,15 +65,15 @@ class FileTransferLayout extends StatelessWidget {
     return Theme(
         data: theme.copyWith(
           textTheme: theme.textTheme.apply(fontFamily: 'Microsoft YaHei'),
-          colorScheme: theme.colorScheme.copyWith(primary: UiColor.primary),
+          colorScheme: theme.colorScheme.copyWith(primary: pal.primaryFill),
           filledButtonTheme: FilledButtonThemeData(
               style: FilledButton.styleFrom(
-                  backgroundColor: UiColor.primary,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: UiColor.primaryDisabled,
-                  disabledForegroundColor: Colors.white,
+                  backgroundColor: pal.primaryFill,
+                  foregroundColor: pal.onPrimary,
+                  disabledBackgroundColor: pal.primaryDisabled,
+                  disabledForegroundColor: pal.onPrimary,
                   elevation: 0,
-                  textStyle: UiType.button,
+                  textStyle: type.button,
                   shape: RoundedRectangleBorder(
                       borderRadius:
                           BorderRadius.circular(UiSpace.buttonRadius)),
@@ -80,7 +81,7 @@ class FileTransferLayout extends StatelessWidget {
                       const Size(84, UiSpace.controlHeight))),
         ),
         child: ColoredBox(
-            color: dark ? const Color(0xff191d23) : UiColor.panelBg,
+            color: dark ? const Color(0xff191d23) : pal.panelBg,
             child: LayoutBuilder(builder: (context, bounds) {
               final inset = bounds.maxWidth < 1000 ? 16.0 : 24.0;
               return Padding(
