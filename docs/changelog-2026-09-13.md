@@ -168,6 +168,17 @@ resolves; the hashes here are the current ones.
   `Expanded` child and the icons sit on the card's right edge. `084b443ac`,
   a widget test measures the icon centres across three name lengths.
 
+* Two verifications turned out never to have run at all. The Android arms of
+  the Rust core had not been compiled since they were written: the first CI run
+  of the revived `android-build.yml` found a vector whose element type only
+  ever came from the three desktop `cfg` blocks, and a call to a `message()`
+  method `DeployResult` has never had. Separately, nothing anywhere ran the 147
+  Dart widget tests -- no workflow, and not the build machine either, where a
+  proxy variable makes `flutter test` fail to load its suite rather than fail a
+  test. A button renamed in `0ec0a3088` had left all nine cases of the
+  transfer-layout suite red with no one to notice. `07a0dc2c3`, `aea6320f2`,
+  `fc75fab29`, gated from now on by `android-build.yml` and by a `flutter test`
+  job in `linux-check.yml` (`1df7a9acb`).
 * Escape in a `UiDialog` fell back to the first secondary action when no
   close handler was given. Every call site happened to put the cancelling
   action first, so nothing misbehaved; but a trust dialog puts the permissive
