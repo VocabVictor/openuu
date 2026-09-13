@@ -7,7 +7,7 @@ mod ipc_fs;
 // module, declared the same way as the other pieces of this file, so the opt-in feature adds a
 // bounded, self-contained surface here instead of ~1800 lines in the middle of the shared IPC.
 #[cfg(all(target_os = "linux", feature = "drm"))]
-#[path = "drm.rs"]
+#[path = "drm/mod.rs"]
 mod ipc_drm;
 mod data_types;
 mod data;
