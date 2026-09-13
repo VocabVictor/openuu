@@ -89,13 +89,13 @@ extension ChatModelOverlay on ChatModel {
   }
 
   _isChatOverlayHide() =>
-      ((!(isDesktop || isWebDesktop) && chatIconOverlayEntry == null) ||
+      ((!isDesktop && chatIconOverlayEntry == null) ||
           chatWindowOverlayEntry == null);
 
   toggleChatOverlay({Offset? chatInitPos}) {
     if (_isChatOverlayHide()) {
       gFFI.invokeMethod("enable_soft_keyboard", true);
-      if (!(isDesktop || isWebDesktop)) {
+      if (!isDesktop) {
         showChatIconOverlay();
       }
       showChatWindowOverlay(chatInitPos: chatInitPos);

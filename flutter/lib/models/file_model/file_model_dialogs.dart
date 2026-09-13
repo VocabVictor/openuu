@@ -180,7 +180,7 @@ extension FileModelSelection on FileModel {
     final toPath = otherSideData.directory.path;
     final isPeerWindows = otherSideData.options.isWindows;
 
-    final isLocalWindows = isWindows || isWebOnWindows;
+    final isLocalWindows = isWindows;
     for (var dir in emptyDirs) {
       if (isLocalWindows != isPeerWindows) {
         dir = PathUtil.convert(dir, isLocalWindows, isPeerWindows);

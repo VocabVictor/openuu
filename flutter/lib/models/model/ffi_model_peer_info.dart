@@ -152,7 +152,7 @@ extension FfiModelPeerInfo on FfiModel {
     _pi.isSet.value = true;
     stateGlobal.resetLastResolutionGroupValues(peerId);
 
-    if (isDesktop || isWebDesktop) {
+    if (isDesktop) {
       // checkDesktopKeyboardMode may change the keyboard mode if the current
       // mode is not supported. Re-sync InputModel.keyboardMode afterwards.
       // Note: updateKeyboardMode() is a no-op on mobile (early-returns).

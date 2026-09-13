@@ -67,7 +67,7 @@ class FileModel {
   Future<void> onReady() async {
     fileFetcher.beginRemoteSession();
     await evtLoop.onReady();
-    if (!isWeb) await localController.onReady();
+    await localController.onReady();
     await remoteController.onReady();
   }
 
@@ -79,7 +79,7 @@ class FileModel {
   }
 
   Future<void> refreshAll() async {
-    if (!isWeb) await localController.refresh();
+    await localController.refresh();
     await remoteController.refresh();
   }
 

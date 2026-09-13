@@ -37,9 +37,8 @@ extension FileControllerTransfer on FileController {
           "path: ${from.path}, toPath: $toPath, to: ${PathUtil.join(toPath, from.name, isWindows)}");
     }
 
-    if (isWeb ||
-        (!isLocal &&
-            versionCmp(rootState.target!.ffiModel.pi.version, '1.3.3') < 0)) {
+    if (!isLocal &&
+        versionCmp(rootState.target!.ffiModel.pi.version, '1.3.3') < 0) {
       return;
     }
 

@@ -73,7 +73,7 @@ extension InputModelKeyboard on InputModel {
   // Because `sessionGetKeyboardMode` relies on the peer version.
   updateKeyboardMode() async {
     // * Currently mobile does not enable map mode
-    if (isDesktop || isWebDesktop) {
+    if (isDesktop) {
       keyboardMode = await bind.sessionGetKeyboardMode(sessionId: sessionId) ??
           kKeyLegacyMode;
     }

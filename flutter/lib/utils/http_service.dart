@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_hbb/consts.dart';
 import 'package:http/http.dart' as http;
 import '../models/platform_model.dart';
@@ -17,16 +16,12 @@ class HttpService {
   }) async {
     headers ??= {'Content-Type': 'application/json'};
 
-    // Use Rust HTTP implementation for non-web platforms for consistency.
-    var useFlutterHttp = (isWeb || kIsWeb);
-    if (!useFlutterHttp) {
-      final enableFlutterHttpOnRust =
-          mainGetLocalBoolOptionSync(kOptionEnableFlutterHttpOnRust);
-      // Use flutter http if:
-      // Not `enableFlutterHttpOnRust` and no proxy is set
-      useFlutterHttp =
-          !(enableFlutterHttpOnRust || await bind.mainGetProxyStatus());
-    }
+    final enableFlutterHttpOnRust =
+        mainGetLocalBoolOptionSync(kOptionEnableFlutterHttpOnRust);
+    // Use flutter http if:
+    // Not `enableFlutterHttpOnRust` and no proxy is set
+    final useFlutterHttp =
+        !(enableFlutterHttpOnRust || await bind.mainGetProxyStatus());
 
     if (useFlutterHttp) {
       return await _pollFlutterHttp(url, method, headers: headers, body: body);

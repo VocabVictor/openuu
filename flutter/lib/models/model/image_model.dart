@@ -134,7 +134,7 @@ class ImageModel with ChangeNotifier {
       rgba,
       rect?.width.toInt() ?? 0,
       rect?.height.toInt() ?? 0,
-      isWeb | isWindows | isLinux
+      isWindows | isLinux
           ? ui.PixelFormat.rgba8888
           : ui.PixelFormat.bgra8888,
     );
@@ -149,7 +149,7 @@ class ImageModel with ChangeNotifier {
       {bool Function()? isCurrentSession}) async {
     if (_disposeIfStale(image, isCurrentSession)) return;
     if (_image == null && image != null) {
-      if (isDesktop || isWebDesktop) {
+      if (isDesktop) {
         await parent.target?.canvasModel.updateViewStyle();
         await parent.target?.canvasModel.updateScrollStyle();
         await parent.target?.canvasModel.initializeEdgeScrollEdgeThickness();

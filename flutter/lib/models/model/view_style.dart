@@ -68,7 +68,7 @@ class ViewStyle {
   });
 
   static defaultViewStyle() {
-    final desktop = (isDesktop || isWebDesktop);
+    final desktop = isDesktop;
     final w =
         desktop ? kDesktopDefaultDisplayWidth : kMobileDefaultDisplayWidth;
     final h =

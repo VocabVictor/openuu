@@ -204,7 +204,7 @@ extension InputModelTouch on InputModel {
   /// Desktop and web desktop continue to use the global position directly
   /// because their pointer mapping is window-based.
   Offset _pointerPositionForRemoteCanvas(PointerEvent event) {
-    if (isDesktop || isWebDesktop) {
+    if (isDesktop) {
       return event.position;
     }
     final mediaData = MediaQueryData.fromView(

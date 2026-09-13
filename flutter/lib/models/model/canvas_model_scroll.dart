@@ -2,7 +2,7 @@ part of 'model.dart';
 
 extension CanvasModelScroll on CanvasModel {
   void activateLocalCursor() {
-    if (isDesktop || isWebDesktop) {
+    if (isDesktop) {
       try {
         RemoteCursorMovedState.find(id).value = false;
       } catch (e) {
@@ -16,7 +16,7 @@ extension CanvasModelScroll on CanvasModel {
     // If keyboard is not permitted, do not move cursor when mouse is moving.
     if (parent.target != null && parent.target!.ffiModel.keyboard) {
       // Draw cursor if is not desktop.
-      if (!(isDesktop || isWebDesktop)) {
+      if (!isDesktop) {
         parent.target!.cursorModel.moveLocal(x, y);
       } else {
         try {

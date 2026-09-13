@@ -80,24 +80,7 @@ class StateGlobal {
     if (_fullscreen.value != v) {
       _fullscreen.value = v;
       _showTabBar.value = !_fullscreen.value;
-      if (isWebDesktop) {
-        procFullscreenWeb();
-      } else {
-        procFullscreenNative(procWnd);
-      }
-    }
-  }
-
-  procFullscreenWeb() {
-    final isFullscreen = ffiGetByName('fullscreen') == 'Y';
-    String fullscreenValue = '';
-    if (isFullscreen && _fullscreen.isFalse) {
-      fullscreenValue = 'N';
-    } else if (!isFullscreen && fullscreen.isTrue) {
-      fullscreenValue = 'Y';
-    }
-    if (fullscreenValue.isNotEmpty) {
-      ffiSetByName('fullscreen', fullscreenValue);
+      procFullscreenNative(procWnd);
     }
   }
 
@@ -132,13 +115,7 @@ class StateGlobal {
     _inputSource = bind.mainGetInputSource();
   }
 
-  StateGlobal._() {
-    if (isWebDesktop) {
-      platformFFI.setFullscreenCallback((v) {
-        _fullscreen.value = v;
-      });
-    }
-  }
+  StateGlobal._();
 
   static final StateGlobal instance = StateGlobal._();
 }

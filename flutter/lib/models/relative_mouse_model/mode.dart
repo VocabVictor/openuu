@@ -2,11 +2,6 @@ part of 'relative_mouse_model.dart';
 
 extension RelativeMouseMode on RelativeMouseModel {
   bool setRelativeMouseMode(bool value) {
-    // Web is not supported due to Pointer Lock API integration complexity with Flutter's input system
-    if (isWeb) {
-      return false;
-    }
-
     if (value) {
       if (!keyboardPerm() || isViewCamera()) {
         return false;

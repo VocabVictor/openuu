@@ -53,7 +53,7 @@ extension FfiModelDisplay on FfiModel {
   }
 
   handleAliasChanged(Map<String, dynamic> evt) {
-    if (!(isDesktop || isWebDesktop)) return;
+    if (!isDesktop) return;
     final String peerId = evt['id'];
     final String alias = evt['alias'];
     String label = getDesktopTabLabel(peerId, alias);

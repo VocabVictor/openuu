@@ -128,7 +128,7 @@ extension TerminalModelInput on TerminalModel {
       // text input with no paste-origin metadata. Keep them on the keyboard path;
       // clipboard-content heuristics can misclassify ordinary typing.
       source: TerminalInputSource.keyboard,
-      isMobileOrWebMobile: isMobile || (isWeb && !isWebDesktop),
+      isMobileOrWebMobile: isMobile,
       bracketedPasteMode: terminal.bracketedPasteMode,
       ctrlLocked: ctrlLocked,
       altLocked: altLocked,

@@ -172,10 +172,6 @@ class UserModel {
     avatar.value = user.avatar;
     isAdmin.value = user.isAdmin;
     bind.mainSetLocalOption(key: 'user_info', value: jsonEncode(user));
-    if (isWeb) {
-      // ugly here, tmp solution
-      bind.mainSetLocalOption(key: 'verifier', value: user.verifier ?? '');
-    }
   }
 
   // update ab and group status

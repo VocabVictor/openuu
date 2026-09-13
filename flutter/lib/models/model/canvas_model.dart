@@ -105,14 +105,14 @@ class CanvasModel with ChangeNotifier {
       parent.target?.ffiModel._pi.cursorEmbedded ?? false;
 
   int getDisplayWidth() {
-    final defaultWidth = (isDesktop || isWebDesktop)
+    final defaultWidth = isDesktop
         ? kDesktopDefaultDisplayWidth
         : kMobileDefaultDisplayWidth;
     return parent.target?.ffiModel.rect?.width.toInt() ?? defaultWidth;
   }
 
   int getDisplayHeight() {
-    final defaultHeight = (isDesktop || isWebDesktop)
+    final defaultHeight = isDesktop
         ? kDesktopDefaultDisplayHeight
         : kMobileDefaultDisplayHeight;
     return parent.target?.ffiModel.rect?.height.toInt() ?? defaultHeight;

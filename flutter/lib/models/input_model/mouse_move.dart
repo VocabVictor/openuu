@@ -24,7 +24,7 @@ extension InputModelMouseMove on InputModel {
     if (!isInputSourceFlutter) {
       bind.sessionEnterOrLeave(sessionId: sessionId, enter: enter);
     }
-    if (!isWeb && enter) {
+    if (enter) {
       bind.setCurSessionId(sessionId: sessionId);
     }
   }

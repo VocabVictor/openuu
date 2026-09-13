@@ -110,7 +110,7 @@ extension FfiModelListener on FfiModel {
       } else if (name == 'fingerprint') {
         FingerprintState.find(peerId).value = evt['fingerprint'] ?? '';
       } else if (name == "sync_peer_hash_password_to_personal_ab") {
-        if (desktopType == DesktopType.main || isWeb || isMobile) {
+        if (desktopType == DesktopType.main || isMobile) {
           final id = evt['id'];
           final hash = evt['hash'];
           if (id != null && hash != null) {
@@ -128,14 +128,6 @@ extension FfiModelListener on FfiModel {
         handleFollowCurrentDisplay(evt, sessionId, peerId);
       } else if (name == 'use_texture_render') {
         _handleUseTextureRender(evt, sessionId, peerId);
-      } else if (name == "selected_files") {
-        if (isWeb) {
-          parent.target?.fileModel.onSelectedFiles(evt);
-        }
-      } else if (name == "send_emptry_dirs") {
-        if (isWeb) {
-          parent.target?.fileModel.sendEmptyDirs(evt);
-        }
       } else if (name == "record_status") {
         if (desktopType == DesktopType.remote ||
             desktopType == DesktopType.viewCamera ||

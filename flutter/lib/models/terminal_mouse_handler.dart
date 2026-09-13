@@ -1,17 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:xterm/xterm.dart';
 
-import 'platform_model.dart';
-import 'rustdesk_terminal.dart';
 import 'terminal_copy_shortcut.dart';
 import 'terminal_mouse_drag_reporter.dart';
 
 part 'terminal_mouse_handler_input.dart';
-part 'terminal_web_clipboard_gesture.dart';
 
 class TerminalMouseInteraction extends StatefulWidget {
   const TerminalMouseInteraction(
@@ -70,8 +66,6 @@ class _TerminalMouseInteractionState extends State<TerminalMouseInteraction> {
   var _selectionHasScrolled = false;
   var _scrollDirection = _noScroll;
   // xterm can finish its tap callbacks after the raw drag was reported.
-  var _suppressXtermLeftButton = false;
-  var _terminalClipboardGesturePrepared = false;
   TerminalViewState? get _terminalView => _terminalViewKey.currentState;
 
   @override
@@ -79,7 +73,6 @@ class _TerminalMouseInteractionState extends State<TerminalMouseInteraction> {
     super.initState();
     _mouseHandler = WheelButtonFixMouseHandler(
       positionProvider: _cellAtPointer,
-      suppressLeftButton: kIsWeb ? _consumeXtermLeftButtonSuppression : null,
     );
     _installMouseHandler(widget.terminal);
   }
@@ -98,7 +91,6 @@ class _TerminalMouseInteractionState extends State<TerminalMouseInteraction> {
     if (controllerChanged && !terminalChanged) {
       _mouseDrag.updateController(widget.controller);
     } else {
-      _discardPendingTerminalClipboardWrites();
       _mouseDrag.cancel();
     }
     _clearSelectionDrag();
@@ -121,13 +113,7 @@ class _TerminalMouseInteractionState extends State<TerminalMouseInteraction> {
   void _handlePointerMove(PointerMoveEvent event) {
     _updatePointerPosition(event);
     if (_handlePendingTouchMove(event)) return;
-    if (_mouseDrag.handleMove(
-      event,
-      widget.terminal,
-      _terminalView,
-      beforeRelease: _finishTerminalClipboardWrite,
-      onCancel: _cancelTerminalClipboardWrite,
-    )) {
+    if (_mouseDrag.handleMove(event, widget.terminal, _terminalView)) {
       return;
     }
     if (event.pointer != _selectionPointerId) return;
@@ -218,15 +204,8 @@ class _TerminalMouseInteractionState extends State<TerminalMouseInteraction> {
         _takePendingTouchMouseDrag(pointer: event.pointer);
       }
     }
-    final handledByMouseDrag = _mouseDrag.handleEnd(
-      event,
-      widget.terminal,
-      _terminalView,
-      beforeRelease: event is PointerUpEvent
-          ? _finishTerminalClipboardWrite
-          : (_) => _cancelTerminalClipboardWrite(),
-      onCancel: _cancelTerminalClipboardWrite,
-    );
+    final handledByMouseDrag =
+        _mouseDrag.handleEnd(event, widget.terminal, _terminalView);
     if (!handledByMouseDrag && event.pointer != _selectionPointerId) {
       return;
     }
@@ -252,7 +231,6 @@ class _TerminalMouseInteractionState extends State<TerminalMouseInteraction> {
 
   @override
   void dispose() {
-    _discardPendingTerminalClipboardWrites();
     _cancelPendingTouchMouseDrag();
     _mouseDrag.cancel();
     _clearSelectionDrag();

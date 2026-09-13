@@ -58,11 +58,8 @@ extension _TerminalMouseInput on _TerminalMouseInteractionState {
 
   void _handlePointerDown(PointerDownEvent event) {
     _updatePointerPosition(event);
-    _suppressXtermLeftButton = false;
     if (_startPendingTouchMouseDrag(event)) return;
     if (_mouseDrag.handleDown(event, widget.terminal, _terminalView)) {
-      _prepareTerminalClipboardWrite();
-      if (kIsWeb) _suppressXtermLeftButton = true;
       _clearSelectionDrag();
       return;
     }
@@ -109,7 +106,6 @@ extension _TerminalMouseInput on _TerminalMouseInteractionState {
   }) {
     if (_takePendingTouchMouseDrag() == null) return false;
     if (_mouseDrag.activateDeferredDown(widget.terminal)) {
-      _prepareTerminalClipboardWrite();
       _clearSelectionDrag();
       return true;
     }
@@ -152,11 +148,4 @@ extension _TerminalMouseInput on _TerminalMouseInteractionState {
     return true;
   }
 
-  bool _consumeXtermLeftButtonSuppression(TerminalMouseButtonState state) {
-    final suppress = _suppressXtermLeftButton;
-    if (state == TerminalMouseButtonState.up) {
-      _suppressXtermLeftButton = false;
-    }
-    return suppress;
-  }
 }

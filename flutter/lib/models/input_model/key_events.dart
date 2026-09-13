@@ -7,8 +7,6 @@ extension InputModelKeyEvents on InputModel {
     if (!isInputSourceFlutter) {
       if (isDesktop) {
         return KeyEventResult.handled;
-      } else if (isWeb) {
-        return KeyEventResult.ignored;
       }
     }
 
@@ -77,7 +75,7 @@ extension InputModelKeyEvents on InputModel {
     }
 
     // * Currently mobile does not enable map mode
-    if ((isDesktop || isWebDesktop) && keyboardMode == kKeyMapMode) {
+    if (isDesktop && keyboardMode == kKeyMapMode) {
       mapKeyboardModeRaw(e, iosCapsLock);
     } else {
       legacyKeyboardModeRaw(e);
@@ -92,8 +90,6 @@ extension InputModelKeyEvents on InputModel {
     if (!isInputSourceFlutter) {
       if (isDesktop) {
         return KeyEventResult.handled;
-      } else if (isWeb) {
-        return KeyEventResult.ignored;
       }
     }
     if (isWindows || isLinux) {
@@ -174,7 +170,7 @@ extension InputModelKeyEvents on InputModel {
     }
 
     final isDesktopAndMapMode =
-        isDesktop || (isWebDesktop && keyboardMode == kKeyMapMode);
+        isDesktop;
     if (isMobileAndMapMode || isDesktopAndMapMode) {
       // FIXME: e.character is wrong for dead keys, eg: ^ in de
       newKeyboardMode(

@@ -57,16 +57,13 @@ extension FfiSession on FFI {
   /// Close the remote session.
   Future<void> close({bool closeSession = true}) async {
     closed = true;
-    if (isWeb) {
-      platformFFI.clearVideoFrameCallback();
-    }
     chatModel.close();
     // Close all terminal models
     for (final model in _terminalModels.values) {
       model.dispose();
     }
     _terminalModels.clear();
-    if (imageModel.image != null && !isWebDesktop) {
+    if (imageModel.image != null) {
       await setCanvasConfig(
           sessionId,
           cursorModel.x,

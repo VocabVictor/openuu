@@ -16,10 +16,10 @@ class Display {
   double get scale => _scale > 1.0 ? _scale : 1.0;
 
   Display() {
-    width = (isDesktop || isWebDesktop)
+    width = isDesktop
         ? kDesktopDefaultDisplayWidth
         : kMobileDefaultDisplayWidth;
-    height = (isDesktop || isWebDesktop)
+    height = isDesktop
         ? kDesktopDefaultDisplayHeight
         : kMobileDefaultDisplayHeight;
   }
@@ -94,7 +94,7 @@ class PeerInfo with ChangeNotifier {
       platformAdditions[kPlatformAdditionsAmyuniVirtualDisplays] ?? 0;
 
   bool get isSupportMultiDisplay =>
-      (isDesktop || isWebDesktop) && isSupportMultiUiSession;
+      isDesktop && isSupportMultiUiSession;
   bool get forceTextureRender => currentDisplay == kAllDisplayValue;
 
   bool get cursorEmbedded => tryGetDisplay()?.cursorEmbedded ?? false;
@@ -183,16 +183,8 @@ Future<void> setCanvasConfig(
 }
 
 Future<Map<String, dynamic>?> getCanvasConfig(SessionID sessionId) async {
-  if (!isWebDesktop) return null;
-  var p =
-      await bind.sessionGetFlutterOption(sessionId: sessionId, k: canvasKey);
-  if (p == null || p.isEmpty) return null;
-  try {
-    Map<String, dynamic> m = json.decode(p);
-    return m;
-  } catch (e) {
-    return null;
-  }
+  // The canvas config was only persisted for the web client.
+  return null;
 }
 
 Future<void> initializeCursorAndCanvas(FFI ffi) async {

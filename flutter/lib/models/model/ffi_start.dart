@@ -132,23 +132,6 @@ extension FfiStart on FFI {
           sessionId: sessionId, id: id, displays: Int32List.fromList(displays));
     }
 
-    if (isWeb) {
-      platformFFI.setRgbaCallback((int display, Uint8List data) {
-        onEvent2UIRgba();
-        imageModel.onRgba(display, data);
-      });
-      platformFFI.setVideoFrameCallback((int display, ui.Image image,
-          bool Function() isCurrentSession) async {
-        if (!isCurrentSession()) {
-          image.dispose();
-          return;
-        }
-        await onEvent2UIRgba();
-        await imageModel.onImage(display, image, isCurrentSession);
-      });
-      this.id = id;
-      return;
-    }
 
     final cb = ffiModel.startEventListener(sessionId, id);
 

@@ -10,11 +10,7 @@ extension CanvasModelPan on CanvasModel {
   }
 
   resetOffset() {
-    if (isWebDesktop) {
-      updateViewStyle();
-    } else {
-      _resetCanvasOffset(getDisplayWidth(), getDisplayHeight());
-    }
+    _resetCanvasOffset(getDisplayWidth(), getDisplayHeight());
     _notify();
   }
 

@@ -187,7 +187,7 @@ extension JobControllerJobs on JobController {
     }
 
     if (!isAutoStart) {
-      if (!(isDesktop || isWebDesktop)) {
+      if (!isDesktop) {
         // Don't add to job table if not auto start on mobile.
         // Because mobile does not support job list view now.
         return;

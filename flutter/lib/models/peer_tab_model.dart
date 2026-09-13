@@ -40,7 +40,7 @@ class PeerTabModel with ChangeNotifier {
   List<bool> isEnabled = List.from([
     true,
     true,
-    !isWeb && bind.mainGetLocalOption(key: "disable-discovery-panel") != "Y",
+    bind.mainGetLocalOption(key: "disable-discovery-panel") != "Y",
     !(bind.isDisableAb() || bind.isDisableAccount()),
     !(bind.isDisableGroupPanel() || bind.isDisableAccount()),
   ]);
@@ -152,7 +152,7 @@ class PeerTabModel with ChangeNotifier {
       // https://github.com/flutter/flutter/issues/101275#issuecomment-1604541700
       // After onTap, the shift key should be pressed for a while when not in multiselection mode,
       // because onTap is delayed when onDoubleTap is not null
-      if (isDesktop || isWebDesktop) return;
+      if (isDesktop) return;
       _multiSelectionMode = true;
     }
     final cached = _currentTabCachedPeers.map((e) => e.id).toList();
