@@ -127,12 +127,20 @@ their own backlog entry:
 
 **Literals that are not surfaces**, and stay whatever the appearance:
 
+Each carries the condition that would end the exception, so none of them
+becomes decoration:
+
 * a QR code's quiet zone (`network_provision.dart`) — part of what a scanner
-  reads, not a themed surface
-* a scrim (`page_tabs.dart`, `desktop_preview`'s overlay) — it darkens what is
-  under it rather than being a surface of its own
+  reads, not a themed surface. **Never released**: it is a property of the
+  format, so no change to the palette can reach it.
+* a scrim (`page_tabs.dart`, `desktop_preview`'s overlay) — it darkens what
+  is under it rather than being a surface of its own. **Never released** for
+  the same reason: its job is defined against whatever is below it, not
+  against the page.
 * an illustration's own palette (`desktop_welcome_page/devices_painter.dart`)
-  — art with no context to read a theme from
+  — art with no context to read a theme from. **Released if** the painter is
+  ever given a palette to draw with, which would be a redesign of the
+  illustration rather than a migration of it.
 
 Anything the commands print that is not on one of these lists, or in the
 three known exceptions above, is a finding.
