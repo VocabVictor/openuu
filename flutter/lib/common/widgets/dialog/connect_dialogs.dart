@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 
 import '../../../common.dart';
 import '../../../models/platform_model.dart';
+import '../../../desktop/widgets/ui_tokens.dart';
+import '../ui_dialog.dart';
+import '../ui_fields.dart';
 import 'validation.dart';
 import 'package:flutter_hbb/models/model.dart';
 
@@ -20,22 +23,15 @@ void wrongPasswordDialog(SessionID sessionId,
       enterPasswordDialog(sessionId, dialogManager);
     }
 
-    return CustomAlertDialog(
-        title: null,
-        content: msgboxContent(type, title, text),
-        onSubmit: submit,
-        onCancel: cancel,
-        actions: [
-          dialogButton(
-            'Cancel',
-            onPressed: cancel,
-            isOutline: true,
-          ),
-          dialogButton(
-            'Retry',
-            onPressed: submit,
-          ),
-        ]);
+    return UiDialog(
+      title: translate(title),
+      onClose: cancel,
+      body: uiDialogText(translate(text)),
+      actions: [
+        UiDialogAction.secondary('Cancel', cancel),
+        UiDialogAction.primary('Retry', submit),
+      ],
+    ).alert(context);
   });
 }
 
@@ -81,6 +77,7 @@ _connectDialog(
 }) async {
   final errUsername = ''.obs;
   var rememberPassword = false;
+  var showPassword = false;
   if (passwordController != null) {
     rememberPassword =
         await bind.sessionGetRemember(sessionId: sessionId) ?? false;
@@ -124,128 +121,60 @@ _connectDialog(
           onCancel: closeConnection);
     }
 
-    descWidget(String text) {
-      return Column(
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              text,
-              maxLines: 3,
-              softWrap: true,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-          Container(
-            height: 8,
-          ),
-        ],
-      );
-    }
-
-    rememberWidget(
-      String desc,
-      bool remember,
-      ValueChanged<bool?>? onChanged,
-    ) {
-      return CheckboxListTile(
-        contentPadding: const EdgeInsets.all(0),
-        dense: true,
-        controlAffinity: ListTileControlAffinity.leading,
-        title: Text(desc),
-        value: remember,
-        onChanged: onChanged,
-      );
-    }
+    toggleShow() => setState(() => showPassword = !showPassword);
 
     osAccountWidget() {
       if (osUsernameController == null || osPasswordController == null) {
         return Offstage();
       }
-      return Column(
-        children: [
-          if (osAccountDescTip != null) descWidget(translate(osAccountDescTip)),
-          DialogTextField(
-            title: translate(DialogTextField.kUsernameTitle),
-            controller: osUsernameController,
-            prefixIcon: DialogTextField.kUsernameIcon,
-            errorText: null,
-          ),
-          if (errUsername.value.isNotEmpty)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: SelectableText(
-                errUsername.value,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                  fontSize: 12,
-                ),
-                textAlign: TextAlign.left,
-              ).paddingOnly(left: 12, bottom: 2),
-            ),
-          PasswordWidget(
-            controller: osPasswordController,
-            autoFocus: false,
-          ),
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        if (osAccountDescTip != null) ...[
+          uiDialogText(translate(osAccountDescTip)),
+          const SizedBox(height: UiSpace.s3),
         ],
-      );
+        uiDialogField(
+            translate(DialogTextField.kUsernameTitle), osUsernameController,
+            error: errUsername.value, autoFocus: true, onSubmitted: submit),
+        uiDialogField(translate('Password'), osPasswordController,
+            obscure: !showPassword,
+            onToggleObscure: toggleShow,
+            onSubmitted: submit),
+      ]);
     }
 
     passwdWidget() {
       if (passwordController == null) {
         return Offstage();
       }
-      return Column(
-        children: [
-          descWidget(translate('verify_rustdesk_password_tip')),
-          PasswordWidget(
-            controller: passwordController,
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        uiDialogText(translate('verify_rustdesk_password_tip')),
+        const SizedBox(height: UiSpace.s3),
+        uiDialogField(translate('Password'), passwordController,
             autoFocus: osUsernameController == null,
-          ),
-          rememberWidget(
-            translate('Remember password'),
-            rememberPassword,
-            (v) {
-              if (v != null) {
-                setState(() => rememberPassword = v);
-              }
-            },
-          ),
-        ],
-      );
+            obscure: !showPassword,
+            onToggleObscure: toggleShow,
+            onSubmitted: submit),
+        uiDialogToggle(translate('Remember password'), rememberPassword,
+            (v) => setState(() => rememberPassword = v)),
+      ]);
     }
 
-    return CustomAlertDialog(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.password_rounded, color: MyTheme.accent),
-          Text(translate('Password Required')).paddingOnly(left: 10),
-        ],
-      ),
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        osAccountWidget(),
-        osUsernameController == null || passwordController == null
-            ? Offstage()
-            : Container(height: 12),
-        passwdWidget(),
-      ]),
+    return UiDialog(
+      title: translate('Password Required'),
+      onClose: cancel,
+      body: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            osAccountWidget(),
+            if (osUsernameController != null && passwordController != null)
+              const SizedBox(height: UiSpace.s3),
+            passwdWidget(),
+          ]),
       actions: [
-        dialogButton(
-          'Cancel',
-          icon: Icon(Icons.close_rounded),
-          onPressed: cancel,
-          isOutline: true,
-        ),
-        dialogButton(
-          'OK',
-          icon: Icon(Icons.done_rounded),
-          onPressed: submit,
-        ),
+        UiDialogAction.secondary('Cancel', cancel),
+        UiDialogAction.primary('OK', submit),
       ],
-      onSubmit: submit,
-      onCancel: cancel,
-    );
+    ).alert(context);
   });
 }
