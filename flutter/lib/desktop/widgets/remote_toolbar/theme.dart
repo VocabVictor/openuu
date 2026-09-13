@@ -91,8 +91,6 @@ class _ToolbarTheme {
   // button. Names are kept so the menu items read as before.
   static const Color blueColor = Colors.transparent;
   static const Color hoverBlueColor = UiColor.settingsRowHover;
-  static Color inactiveColor = Colors.transparent;
-  static Color hoverInactiveColor = UiColor.settingsRowHover;
   static const Color activeColor = UiColor.primaryTint;
   static const Color hoverActiveColor = Color(0xffdce8ff);
 

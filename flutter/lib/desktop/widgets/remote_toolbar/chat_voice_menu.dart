@@ -127,8 +127,8 @@ class _VoiceCallMenu extends StatelessWidget {
             return _IconSubmenuButton(
               tooltip: 'Voice call',
               svg: 'assets/voice_call.svg',
-              color: _ToolbarTheme.blueColor,
-              hoverColor: _ToolbarTheme.hoverBlueColor,
+              color: _ToolbarTheme.activeColor,
+              hoverColor: _ToolbarTheme.hoverActiveColor,
               menuChildrenGetter: menuChildrenGetter,
               ffi: ffi,
             );

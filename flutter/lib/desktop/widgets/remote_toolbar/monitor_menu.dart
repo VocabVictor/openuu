@@ -111,9 +111,7 @@ class _MonitorMenu extends StatelessWidget {
   buildOneMonitorButton(i, curDisplay) => Text(
         '${i + 1}',
         style: TextStyle(
-          color: i == curDisplay
-              ? _ToolbarTheme.blueColor
-              : _ToolbarTheme.inactiveColor,
+          color: i == curDisplay ? UiColor.primary : UiColor.muted,
           fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
@@ -131,7 +129,7 @@ class _MonitorMenu extends StatelessWidget {
           Widget? monitorsIcon;
           if (isAllMonitors) {
             monitorsIcon = globalMonitorsWidget(
-                width, Colors.white, _ToolbarTheme.blueColor);
+                width, UiColor.textSecondary, UiColor.primary);
           }
           return _IconMenuButton(
             tooltip: isMulti
@@ -143,11 +141,11 @@ class _MonitorMenu extends StatelessWidget {
             vMargin: isMulti ? null : 12,
             topLevel: false,
             color: i == display.value
-                ? _ToolbarTheme.blueColor
-                : _ToolbarTheme.inactiveColor,
+                ? _ToolbarTheme.activeColor
+                : _ToolbarTheme.blueColor,
             hoverColor: i == display.value
-                ? _ToolbarTheme.hoverBlueColor
-                : _ToolbarTheme.hoverInactiveColor,
+                ? _ToolbarTheme.hoverActiveColor
+                : _ToolbarTheme.hoverBlueColor,
             width: isAllMonitors ? width.value : null,
             icon: isAllMonitors
                 ? monitorsIcon
@@ -222,9 +220,7 @@ class _MonitorMenu extends StatelessWidget {
                 child: Text(
               '${i + 1}',
               style: TextStyle(
-                color: display.value == i
-                    ? activeTextColor
-                    : _ToolbarTheme.inactiveColor,
+                color: display.value == i ? activeTextColor : UiColor.muted,
                 fontSize: fontSize,
                 fontWeight: FontWeight.bold,
               ),

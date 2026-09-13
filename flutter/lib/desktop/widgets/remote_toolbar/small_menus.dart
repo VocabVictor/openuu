@@ -12,10 +12,10 @@ class _PinMenu extends StatelessWidget {
         tooltip: state.pin ? 'Unpin Toolbar' : 'Pin Toolbar',
         onPressed: state.switchPin,
         color:
-            state.pin ? _ToolbarTheme.blueColor : _ToolbarTheme.inactiveColor,
+            state.pin ? _ToolbarTheme.activeColor : _ToolbarTheme.blueColor,
         hoverColor: state.pin
-            ? _ToolbarTheme.hoverBlueColor
-            : _ToolbarTheme.hoverInactiveColor,
+            ? _ToolbarTheme.hoverActiveColor
+            : _ToolbarTheme.hoverBlueColor,
       ),
     );
   }
@@ -34,11 +34,11 @@ class _MobileActionMenu extends StatelessWidget {
           onPressed: () => ffi.dialogManager.setMobileActionsOverlayVisible(
               !ffi.dialogManager.mobileActionsOverlayVisible.value),
           color: ffi.dialogManager.mobileActionsOverlayVisible.isTrue
-              ? _ToolbarTheme.blueColor
-              : _ToolbarTheme.inactiveColor,
+              ? _ToolbarTheme.activeColor
+              : _ToolbarTheme.blueColor,
           hoverColor: ffi.dialogManager.mobileActionsOverlayVisible.isTrue
-              ? _ToolbarTheme.hoverBlueColor
-              : _ToolbarTheme.hoverInactiveColor,
+              ? _ToolbarTheme.hoverActiveColor
+              : _ToolbarTheme.hoverBlueColor,
         ));
   }
 }
@@ -73,8 +73,10 @@ class _MainMonitorSwitchButton extends StatelessWidget {
             children: [
               SvgPicture.asset(
                 'assets/display_switcher.svg',
-                colorFilter:
-                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                colorFilter: ColorFilter.mode(
+                    _ToolbarTheme.iconColor(_ToolbarTheme.blueColor,
+                        dark: Theme.of(context).brightness == Brightness.dark),
+                    BlendMode.srcIn),
                 width: _ToolbarTheme.buttonSize,
                 height: _ToolbarTheme.buttonSize,
               ),
@@ -82,8 +84,8 @@ class _MainMonitorSwitchButton extends StatelessWidget {
                 label,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 11,
+                  color: UiColor.text,
+                  fontSize: 10,
                   height: 1,
                   fontWeight: FontWeight.bold,
                 ),
@@ -215,7 +217,7 @@ class _MinimizedMonitorSwitchButton extends StatelessWidget {
             padding: MaterialStateProperty.all(EdgeInsets.zero),
             backgroundColor: MaterialStateProperty.resolveWith((states) {
               if (states.contains(MaterialState.hovered)) {
-                return _ToolbarTheme.blueColor.withOpacity(0.15);
+                return _ToolbarTheme.hoverBlueColor;
               }
               return null;
             }),
@@ -225,15 +227,17 @@ class _MinimizedMonitorSwitchButton extends StatelessWidget {
             children: [
               SvgPicture.asset(
                 'assets/display_switcher.svg',
-                colorFilter:
-                    ColorFilter.mode(_ToolbarTheme.blueColor, BlendMode.srcIn),
+                colorFilter: ColorFilter.mode(
+                    _ToolbarTheme.iconColor(_ToolbarTheme.blueColor,
+                        dark: Theme.of(context).brightness == Brightness.dark),
+                    BlendMode.srcIn),
                 width: iconSize,
                 height: iconSize,
               ),
               Text(
                 label,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: UiColor.text,
                   fontSize: 9,
                   height: 1,
                   fontWeight: FontWeight.bold,
