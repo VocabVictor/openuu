@@ -32,6 +32,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
     required this.surface,
     required this.surfaceHover,
     required this.panelBg,
+    required this.inverseSurface,
+    required this.onInverseSurface,
     required this.onPrimary,
     required this.ready,
     required this.favorite,
@@ -67,6 +69,12 @@ class UiPalette extends ThemeExtension<UiPalette> {
   final Color surface;
   final Color surfaceHover;
   final Color panelBg;
+
+  /// A surface deliberately opposite to the page: dark in the light
+  /// appearance, light in the dark one. For the badge that has to stand
+  /// out of the page rather than sit on it.
+  final Color inverseSurface;
+  final Color onInverseSurface;
   final Color onPrimary;
   final Color ready;
   final Color favorite;
@@ -98,6 +106,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
     surface: Color(0xffffffff),
     surfaceHover: Color(0xfff5f8ff),
     panelBg: Color(0xfffafbfc),
+    inverseSurface: Color(0xff20262d),
+    onInverseSurface: Color(0xffffffff),
     onPrimary: Color(0xffffffff),
     ready: Color(0xff22c55e),
     favorite: Color(0xffffb020),
@@ -130,6 +140,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
     surface: Color(0xff23262e),
     surfaceHover: Color(0xff2a2e38),
     panelBg: Color(0xff1c1f24),
+    inverseSurface: Color(0xffe5e6eb),
+    onInverseSurface: Color(0xff1c1f24),
     onPrimary: Color(0xffffffff),
     ready: Color(0xff3ddc84),
     favorite: Color(0xffffc043),
@@ -163,6 +175,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
     Color? surface,
     Color? surfaceHover,
     Color? panelBg,
+    Color? inverseSurface,
+    Color? onInverseSurface,
     Color? onPrimary,
     Color? ready,
     Color? favorite,
@@ -194,6 +208,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
         surface: surface ?? this.surface,
         surfaceHover: surfaceHover ?? this.surfaceHover,
         panelBg: panelBg ?? this.panelBg,
+        inverseSurface: inverseSurface ?? this.inverseSurface,
+        onInverseSurface: onInverseSurface ?? this.onInverseSurface,
         onPrimary: onPrimary ?? this.onPrimary,
         ready: ready ?? this.ready,
         favorite: favorite ?? this.favorite,
@@ -229,6 +245,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
       surface: Color.lerp(surface, other.surface, t) ?? surface,
       surfaceHover: Color.lerp(surfaceHover, other.surfaceHover, t) ?? surfaceHover,
       panelBg: Color.lerp(panelBg, other.panelBg, t) ?? panelBg,
+      inverseSurface: Color.lerp(inverseSurface, other.inverseSurface, t) ?? inverseSurface,
+      onInverseSurface: Color.lerp(onInverseSurface, other.onInverseSurface, t) ?? onInverseSurface,
       onPrimary: Color.lerp(onPrimary, other.onPrimary, t) ?? onPrimary,
       ready: Color.lerp(ready, other.ready, t) ?? ready,
       favorite: Color.lerp(favorite, other.favorite, t) ?? favorite,

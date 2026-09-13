@@ -118,6 +118,33 @@ argument, the same answer. Whenever tuning a single value has a real case on
 both sides, the name is carrying two responsibilities, and no number settles
 it.
 
+## A token is chosen by meaning, not by where the colour sits
+
+Two live cases, one rule.
+
+* The primary blue is a fill under white content in one place and a label on
+  the page in another. The first takes `primaryFill`, the second `primary` —
+  and one file, `file_transfer_layout.dart`, holds both: its buttons are
+  fills, its remote badge is the same hue used as text.
+* White text on a semi-transparent black scrim in `desktop_preview.dart` is
+  not `onPrimary`. It happens to be white, as `onPrimary` is, but its reason
+  is "it sits on something dark of its own", not "it sits on the primary".
+  Mapping it to `onPrimary` would make the scrim follow the primary, which is
+  not what anyone meant.
+
+So: **tokenising exists to give a value a reason. Forcing a token whose
+meaning does not fit is worse than leaving the literal, because the literal is
+at least honest.** A literal that stays keeps a comment saying which meaning
+it is waiting for.
+
+The same reasoning produces new members rather than a bad fit. A badge that
+must stand out *of* the page rather than sit on it — the device page's status
+pill, near-black with white text in the light appearance — has no honest
+mapping among the surfaces, because every one of them follows the page.
+Inverting the page is its own meaning, so it is its own pair,
+`inverseSurface` / `onInverseSurface`: near-black under white in light,
+near-white under near-black in dark, 15.26:1 and 13.26:1 respectively.
+
 ## What the palette must satisfy
 
 The dark values are not the light ones inverted. Two rules from AGENTS.md bind
