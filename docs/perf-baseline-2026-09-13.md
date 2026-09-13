@@ -126,7 +126,32 @@ frame rate; only then apply the bandwidth cap and start the clock. The
 P0-a/b capture-pacing change therefore rests on its unit tests, not on a
 real-machine comparison.
 
-## 9. Open
+## 9. Capture pacing, measured with both bundles on the same codec
+
+With the fixture fixed (a full-screen window repainting 60 random rectangles
+every 33 ms in the interactive session, which the earlier scrolling console
+failed to produce) and the codec forced to AV1 on both sides so the automatic
+choice is not a variable, peer B was measured under the 2 Mbps cap for 60 s
+per bundle, 54 per-second samples each.
+
+| Metric | before | after |
+| --- | --- | --- |
+| captured = sent, fps | 9.8 | 9.7 |
+| `wait_max` ms, avg / p95 / max | 1.3 / 8 / 11 | 1.6 / 9 / 12 |
+| `send_max` ms max, `queued` max | 2, 0 | 1, 1 |
+| e2e excess, per-second p50 / p95 median / p95 max | 83 / 120 / 196 ms | 91 / 124 / 210 ms |
+
+The two are identical within noise, and the reason is structural rather than
+a fixture defect: on this peer the encoder is the bottleneck, not the link.
+Two vCPUs encoding 1080p AV1 in software top out near 10 fps, so frames never
+queue waiting for the viewer and the capture-side wait stays between 1 and
+12 ms in both builds, nowhere near the old multi-second ceiling the change
+addresses. Loading that path needs an encoder comfortably faster than the
+link, i.e. a hardware-encoder peer on a throttled link, which is the same
+compositing-GPU peer that section 8 says is unavailable. The capture-pacing
+change therefore rests on its unit tests.
+
+## 10. Open
 
 * Setting `codec-preference` for a measurement means editing that peer's own
   file, `config/peers/<id>.toml` under `[options]`. `Decoder::preference`
