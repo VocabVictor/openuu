@@ -134,8 +134,8 @@ target exists. Linux-only files below are no longer deferred; they are split
 under the Linux check rule above. macOS-only files stay as they are; do not
 split them before a check exists:
 
-* `src/server/uinput.rs`, `src/server/wayland.rs`, `src/server/rdp_input.rs`,
-  `src/server/drm_capturer.rs`
+* `src/server/drm_capturer.rs` (Linux + `drm` feature, checked by the second
+  step of the Linux workflow; `uinput/`, `wayland/`, `rdp_input/` are split)
 * `src/platform/linux.rs`, `src/platform/macos.rs`, `src/platform/gtk_sudo.rs`
 * `src/ipc/drm.rs` (Linux + `drm` feature), `src/ipc/auth/mod.rs` (Unix
   socket credentials); `src/ipc/fs/` was split under the Linux check
