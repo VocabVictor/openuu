@@ -6,8 +6,8 @@ class _AppIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.0),
-      child: loadIcon(30),
+      margin: const EdgeInsets.symmetric(horizontal: UiCm.titleBarPaddingX),
+      child: loadIcon(UiCm.appIconSize),
     );
   }
 }
@@ -23,7 +23,8 @@ class _CloseButton extends StatelessWidget {
       },
       icon: const Icon(
         IconFont.close,
-        size: 18,
+        size: UiCm.titleBarIconSize,
+        color: UiColor.textSecondary,
       ),
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,
@@ -67,105 +68,91 @@ class _CmHeaderState extends State<_CmHeader>
     super.dispose();
   }
 
+  /// The kind of session being asked for, shown under the id. Null for a
+  /// plain remote-control request, which the status line already describes.
+  String? _sessionKind() {
+    switch (client.type_()) {
+      case ClientType.terminal:
+        return translate("Terminal");
+      case ClientType.file:
+        return translate("Transfer file");
+      case ClientType.camera:
+        return translate("View camera");
+      default:
+        return client.portForward.isNotEmpty
+            ? "Port Forward: ${client.portForward}"
+            : null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final kind = _sessionKind();
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.0),
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [
-            Color(0xff00bfe1),
-            Color(0xff0071ff),
-          ],
-        ),
+        color: UiColor.panelBg,
+        borderRadius: BorderRadius.circular(UiCm.controlRadius),
+        border: Border.all(color: UiColor.border),
       ),
-      margin: EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
-      padding: EdgeInsets.only(
-        top: 10.0,
-        bottom: 10.0,
-        left: 10.0,
-        right: 5.0,
-      ),
+      margin: const EdgeInsets.symmetric(
+          horizontal: UiSpace.s1, vertical: UiSpace.s2),
+      padding: const EdgeInsets.symmetric(
+          horizontal: UiCm.bannerPaddingX, vertical: UiCm.bannerPaddingY),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildClientAvatar().marginOnly(right: 10.0),
+          _buildClientAvatar().marginOnly(right: UiCm.bannerGap),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FittedBox(
-                    child: Text(
+                Text(
                   client.name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                  style: UiType.sectionTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  "(${client.peerId})",
+                  style: UiType.caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (kind != null)
+                  Text(
+                    kind,
+                    style: UiType.caption,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                )),
-                FittedBox(
-                  child: Text(
-                    "(${client.peerId})",
-                    style: TextStyle(color: Colors.white, fontSize: 14),
-                  ),
-                ),
-                if (client.type_() == ClientType.terminal)
-                  FittedBox(
-                    child: Text(
-                      translate("Terminal"),
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                  ),
-                if (client.type_() == ClientType.file)
-                  FittedBox(
-                    child: Text(
-                      translate("Transfer file"),
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                  ),
-                if (client.type_() == ClientType.camera)
-                  FittedBox(
-                    child: Text(
-                      translate("View camera"),
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                  ),
-                if (client.portForward.isNotEmpty)
-                  FittedBox(
-                    child: Text(
-                      "Port Forward: ${client.portForward}",
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                  ),
-                SizedBox(height: 10.0),
-                FittedBox(
-                    child: Row(
+                const SizedBox(height: UiSpace.s3),
+                Row(
                   children: [
-                    Text(
-                      client.authorized
-                          ? client.disconnected
-                              ? translate("Disconnected")
-                              : translate("Connected")
-                          : "${translate("Request access to your device")}...",
-                      style: TextStyle(color: Colors.white),
-                    ).marginOnly(right: 8.0),
+                    Flexible(
+                      child: Text(
+                        client.authorized
+                            ? client.disconnected
+                                ? translate("Disconnected")
+                                : translate("Connected")
+                            : "${translate("Request access to your device")}...",
+                        style: UiType.rowTitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ).marginOnly(right: UiSpace.s2),
+                    ),
                     if (client.authorized)
                       Obx(
                         () => Text(
                           formatDurationToTime(
                             Duration(seconds: _time.value),
                           ),
-                          style: TextStyle(color: Colors.white),
+                          style: UiType.caption,
                         ),
                       )
                   ],
-                ))
+                )
               ],
             ),
           ),
@@ -200,8 +187,8 @@ class _CmHeaderState extends State<_CmHeader>
   Widget _buildClientAvatar() {
     return buildAvatarWidget(
           avatar: client.avatar,
-          size: 70,
-          borderRadius: 15,
+          size: UiCm.avatarSize,
+          borderRadius: UiCm.avatarRadius,
           fallback: _buildInitialAvatar(),
         ) ??
         _buildInitialAvatar();
@@ -209,19 +196,19 @@ class _CmHeaderState extends State<_CmHeader>
 
   Widget _buildInitialAvatar() {
     return Container(
-      width: 70,
-      height: 70,
+      width: UiCm.avatarSize,
+      height: UiCm.avatarSize,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: str2color(client.name),
-        borderRadius: BorderRadius.circular(15.0),
+        borderRadius: BorderRadius.circular(UiCm.avatarRadius),
       ),
       child: Text(
         client.name.isNotEmpty ? client.name[0] : '?',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
           color: Colors.white,
-          fontSize: 55,
+          fontSize: UiCm.avatarInitialSize,
         ),
       ),
     );
