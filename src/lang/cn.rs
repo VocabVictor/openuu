@@ -770,5 +770,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("pinned-windows-session-service-tip", "需安装为服务后才能固定会话。"),
         ("Check for updates", "检查更新"),
         ("Up to date", "已是最新版本"),
+        ("Scan to import configuration", "扫码导入配置"),
     ].iter().cloned().collect();
 }

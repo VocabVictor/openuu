@@ -770,5 +770,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("pinned-windows-session-service-tip", ""),
         ("Check for updates", ""),
         ("Up to date", ""),
+        ("Scan to import configuration", ""),
     ].iter().cloned().collect();
 }
