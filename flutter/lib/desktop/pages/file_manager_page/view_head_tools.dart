@@ -200,50 +200,19 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                           }
 
                           cancel() => close(false);
-                          return CustomAlertDialog(
-                            title: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SvgPicture.asset("assets/folder_new.svg",
-                                    colorFilter: svgColor(MyTheme.accent)),
-                                Text(
-                                  translate("Create Folder"),
-                                ).paddingOnly(
-                                  left: 10,
-                                ),
-                              ],
-                            ),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                TextFormField(
-                                  decoration: InputDecoration(
-                                    labelText: translate(
-                                      "Please enter the folder name",
-                                    ),
-                                    errorText: errorText,
-                                  ),
-                                  controller: name,
-                                  autofocus: true,
-                                ).workaroundFreezeLinuxMint(),
-                              ],
-                            ),
+                          return UiDialog(
+                            title: translate("Create Folder"),
+                            onClose: cancel,
+                            body: uiDialogField(
+                                translate("Please enter the folder name"), name,
+                                error: errorText,
+                                autoFocus: true,
+                                onSubmitted: submit),
                             actions: [
-                              dialogButton(
-                                "Cancel",
-                                icon: Icon(Icons.close_rounded),
-                                onPressed: cancel,
-                                isOutline: true,
-                              ),
-                              dialogButton(
-                                "Ok",
-                                icon: Icon(Icons.done_rounded),
-                                onPressed: submit,
-                              ),
+                              UiDialogAction.secondary('Cancel', cancel),
+                              UiDialogAction.primary('Ok', submit),
                             ],
-                            onSubmit: submit,
-                            onCancel: cancel,
-                          );
+                          ).alert(context);
                         });
                       },
                       child: _headToolIcon("assets/folder_new.svg"),
