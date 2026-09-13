@@ -22,7 +22,9 @@ is compared with afterwards:
   red is discovered by whoever happens to run it.
 
 Both are taken **on the build machine**, after `check.ps1 <branch> -Flutter`,
-which is what moves that worktree to the commit being measured.
+which is what moves that worktree to the commit being measured. **222 is a
+build-machine number. The shared working tree here holds untracked generated
+files, reads differently, and is not to be used for acceptance.**
 
 Not in the shared working tree on the development machine, where the same
 commit measures 228. The six extra are calls to `mainImportConfigText` and
