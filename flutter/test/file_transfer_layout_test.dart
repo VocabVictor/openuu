@@ -31,9 +31,13 @@ void main() {
         expect(local.right, lessThan(remote.left));
         expect(queue.top, greaterThan(local.bottom));
         expect(queue.bottom, lessThanOrEqualTo(size.height));
-        await tester.tap(find.text('Send').first);
+        // The two buttons no longer share a label: the right-hand one is
+        // Receive, and it is disabled here because onReceive was not given.
+        expect(find.text('Send'), findsOneWidget);
+        expect(find.text('Receive'), findsOneWidget);
+        await tester.tap(find.text('Send'));
         expect(sends, 1);
-        await tester.tap(find.text('Send').last);
+        await tester.tap(find.text('Receive'));
         expect(sends, 1);
       });
     }
