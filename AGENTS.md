@@ -480,6 +480,24 @@ today; when it crosses into someone else's area, say so in the assignment, and
 name who tells them. The defect here belongs to whoever writes the assignment,
 not to whoever follows it.
 
+### One batch in the CI queue at a time
+
+Every push starts three workflows, and the queue is first in, first out, so
+**pushing more often makes every result arrive later**. On 2026-09-13 the
+coordinator pushed a dozen times in an hour; the most recent completed run was
+44 commits behind the tip, and none of those 44 had been checked by CI --
+including a signature change that stopped `flutter build windows` from
+producing a binary. Master never went red, because it had not finished.
+**Getting a commit pushed and finding out whether it is right are two
+different things**, and the second one is the point.
+
+So: **let only one batch sit in the queue. Push, wait for it to finish, then
+push the next one.** That caps the queue at three workflows, and it makes a red
+result point at one batch instead of at forty-four commits; bisect inside the
+batch if you need finer. **Keep a batch to one kind of change** -- docs in one,
+Flutter styling in another, scripts in a third: a red on a single-kind batch
+says who should look at it from the subject line alone.
+
 ### Say which step you actually reached
 
 **"It compiles" has to name the step.** `flutter analyze` is not a build,
