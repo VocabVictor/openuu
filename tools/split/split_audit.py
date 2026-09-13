@@ -7,8 +7,19 @@ Commits: since <since-date> on <ref>, subject matching a refactor/move pattern (
 non-merge commit with --all). For each commit the parent versions of all touched .rs/.dart/.py
 files form the "before" multiset and the commit versions the "after" multiset; lines are
 normalised (whitespace, visibility, path prefixes, receiver names) and trivial lines dropped.
-"before - after" is what the commit lost. `Union::Variant(` patterns are compared separately
-so a dropped match arm is called out by name even when its body lines happen to exist elsewhere.
+"before - after" is what the commit did not carry over, and it is then split three ways, because
+a mechanical move legitimately produces two of them:
+
+* renamed -- the line's shape survives with different identifiers. Compared by replacing every
+  non-keyword identifier with a placeholder, so a member renamed during a move is recognised
+  rather than counted as a loss.
+* deduplicated -- the exact line still exists afterwards, just fewer times, which is what
+  collapsing two identical call sites into one helper does.
+* lost -- neither the text nor the shape is there afterwards. This is the only one the gate
+  counts, because it is the only one that can mean code went missing.
+
+`Union::Variant(` patterns are compared separately so a dropped match arm is called out by name
+even when its body lines happen to exist elsewhere.
 """
 import collections
 import re
@@ -50,6 +61,48 @@ def keep(s):
     if len(s) < 14:
         return False
     return not any(p.match(s) for p in DROP)
+
+# Words that carry meaning rather than naming something, so blanking them would make two
+# genuinely different lines look alike. `self`/`this` are deliberately NOT among them:
+# moving code out of a class turns the receiver into an ordinary parameter, which is the
+# commonest way a mechanical move changes a line's shape.
+KEYWORDS = set(
+    'as async await break const continue crate dyn else enum extern false fn for if impl in '
+    'let loop match mod move mut pub ref return static struct super trait true type '
+    'unsafe use where while abstract class extends factory final get implements import is new '
+    'null on operator part rethrow set show switch throw try var void with yield def '
+    'elif except lambda not or and pass raise'.split())
+IDENT = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
+
+def skeleton(s):
+    """The line with every name blanked, so only its shape is left."""
+    sk = IDENT.sub(lambda m: m.group(0) if m.group(0) in KEYWORDS else '_', s)
+    # A move often drops the qualifier a name needed in its old home, turning
+    # `Owner._field` into `_field`. That is the same line, so the shape ignores the chain.
+    return re.sub(r'(_\.)+_', '_', sk)
+
+def classify(missing, after):
+    """Split what a commit did not carry over into renamed, deduplicated and genuinely lost.
+
+    A line is only called a rename when a line of the same shape actually exists afterwards to
+    account for it, and each such line accounts for one removal, not for any number of them.
+    """
+    shapes = collections.Counter()
+    for line, cnt in after.items():
+        shapes[skeleton(line)] += cnt
+    renamed, deduped, lost = collections.Counter(), collections.Counter(), collections.Counter()
+    for line, cnt in missing.items():
+        if after[line]:
+            deduped[line] = cnt
+            continue
+        sk = skeleton(line)
+        take = min(cnt, shapes[sk])
+        if take:
+            renamed[line] = take
+            shapes[sk] -= take
+        if cnt - take:
+            lost[line] = cnt - take
+    return lost, renamed, deduped
 
 def arms(lines):
     c = collections.Counter()
@@ -100,9 +153,11 @@ for h, d, s in commits():
             after_raw += ls
             after.update(n for n in map(normalise, ls) if keep(n))
     missing = before - after
+    lost, renamed, deduped = classify(missing, after)
     lost_arms = arms(before_raw) - arms(after_raw)
-    n_missing = sum(missing.values())
-    summary.append((h[:9], d, s, n_missing, sum(lost_arms.values())))
+    n_missing = sum(lost.values())
+    summary.append((h[:9], d, s, n_missing, sum(lost_arms.values()),
+                    sum(renamed.values()), sum(deduped.values())))
     if n_missing == 0 and not lost_arms:
         continue
     report.append(f'## {h[:9]} {d} {s}')
@@ -112,14 +167,18 @@ for h, d, s in commits():
     if lost_arms:
         report.append('**Match arms lost:** ' + ', '.join(f'`{k}`×{v}' for k, v in sorted(lost_arms.items())))
         report.append('')
+    if renamed or deduped:
+        report.append(f'Accounted for: {sum(renamed.values())} renamed, '
+                      f'{sum(deduped.values())} deduplicated.')
+        report.append('')
     if n_missing:
         report.append(f'{n_missing} removed line(s) not found in any touched file afterwards:')
         report.append('')
         report.append('```')
-        for line, cnt in list(missing.items())[:60]:
+        for line, cnt in list(lost.items())[:60]:
             report.append((f'{cnt}x ' if cnt > 1 else '') + line[:160])
-        if len(missing) > 60:
-            report.append(f'... {len(missing) - 60} more')
+        if len(lost) > 60:
+            report.append(f'... {len(lost) - 60} more')
         report.append('```')
         report.append('')
 
@@ -150,8 +209,10 @@ def chain_audit():
                 after_raw += show(ref, f) or []
             after = collections.Counter(n for n in map(normalise, after_raw) if keep(n))
             missing = before - after
+            gone, renamed, deduped = classify(missing, after)
             lost = arms(before_raw) - arms(after_raw)
-            rows.append((h[:9], old, len(files), sum(missing.values()), lost, missing))
+            rows.append((h[:9], old, len(files), sum(gone.values()), lost, gone,
+                         sum(renamed.values()), sum(deduped.values())))
     return rows
 
 chain_rows = chain_audit()
@@ -159,16 +220,19 @@ report.append(f'# Chain-level: every renamed monolith vs its directory at `{ref}
 report.append('')
 report.append('| Rename commit | Original file | Files now | Lines not found | Arms not found |')
 report.append('| --- | --- | --- | --- | --- |')
-for h, old, n, m, lost, missing in chain_rows:
+for h, old, n, m, lost, missing, nr, nd in chain_rows:
     report.append(f'| {h} | `{old}` | {n} | {m} | {sum(lost.values())} |')
 report.append('')
-for h, old, n, m, lost, missing in chain_rows:
+for h, old, n, m, lost, missing, nr, nd in chain_rows:
     if not m and not lost:
         continue
     report.append(f'## chain {h} `{old}`')
     report.append('')
     if lost:
         report.append('**Match arms not found:** ' + ', '.join(f'`{k}`×{v}' for k, v in sorted(lost.items())))
+        report.append('')
+    if nr or nd:
+        report.append(f'Accounted for: {nr} renamed, {nd} deduplicated.')
         report.append('')
     report.append('```')
     for line, cnt in list(missing.items())[:40]:
@@ -178,10 +242,10 @@ for h, old, n, m, lost, missing in chain_rows:
     report.append('```')
     report.append('')
 
-report.insert(5, '| Commit | Date | Subject | Lines lost | Arms lost |')
-report.insert(6, '| --- | --- | --- | --- | --- |')
-for i, (h, d, s, n, a) in enumerate(summary):
-    report.insert(7 + i, f'| {h} | {d} | {s[:70]} | {n} | {a} |')
+report.insert(5, '| Commit | Date | Subject | Lines lost | Arms lost | Renamed | Dedup |')
+report.insert(6, '| --- | --- | --- | --- | --- | --- | --- |')
+for i, (h, d, s, n, a, nr, nd) in enumerate(summary):
+    report.insert(7 + i, f'| {h} | {d} | {s[:70]} | {n} | {a} | {nr} | {nd} |')
 report.insert(7 + len(summary), '')
 open(out, 'w', encoding='utf-8').write('\n'.join(report) + '\n')
 print(f'{len(summary)} commits audited; {sum(1 for x in summary if x[3] or x[4])} with findings -> {out}')
