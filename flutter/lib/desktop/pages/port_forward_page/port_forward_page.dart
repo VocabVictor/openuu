@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
+import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
 import 'package:flutter_hbb/models/model.dart';
 import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:get/get.dart';
@@ -11,8 +12,8 @@ part 'tunnels.dart';
 
 const double _kColumn1Width = 30;
 const double _kColumn4Width = 100;
-const double _kRowHeight = 60;
-const double _kTextLeftMargin = 20;
+const double _kRowHeight = 48;
+const double _kTextLeftMargin = UiSpace.s4;
 
 class _PortForward {
   int localPort;

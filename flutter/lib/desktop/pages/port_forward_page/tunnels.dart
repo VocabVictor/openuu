@@ -5,27 +5,39 @@ extension _PortForwardTunnels on _PortForwardPageState {
     return Obx(() => Offstage(
           offstage: pfs.isEmpty && !widget.isRDP,
           child: Container(
-              height: 45,
-              color: const Color(0xFF007F00),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      translate('Listening ...'),
-                      style: const TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                    Text(
-                      translate('not_close_tcp_tip'),
-                      style: const TextStyle(
-                          fontSize: 10, color: Color(0xFFDDDDDD), height: 1.2),
-                    )
-                  ])).marginOnly(bottom: 8),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: UiSession.statusBarPaddingX,
+                  vertical: UiSpace.s2),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(bottom: BorderSide(color: UiColor.border)),
+              ),
+              child: Row(children: [
+                Container(
+                  width: UiSpace.statusDotSize,
+                  height: UiSpace.statusDotSize,
+                  decoration: const BoxDecoration(
+                      color: UiColor.success, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: UiSpace.statusDotGap),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                      Text(translate('Listening ...'),
+                          style: UiType.rowTitle.copyWith(fontSize: 13)),
+                      Text(translate('not_close_tcp_tip'),
+                          style: UiType.caption),
+                    ])),
+              ])).marginOnly(bottom: UiSpace.s2),
         ));
   }
 
   buildTunnel(BuildContext context) {
     text(String label) => Expanded(
-        child: Text(translate(label)).marginOnly(left: _kTextLeftMargin));
+        child: Text(translate(label), style: UiType.caption)
+            .marginOnly(left: _kTextLeftMargin));
 
     return Theme(
       data: Theme.of(context).copyWith(
@@ -37,7 +49,7 @@ extension _PortForwardTunnels on _PortForwardPageState {
           itemBuilder: ((context, index) {
             if (index == 0) {
               return Container(
-                height: 25,
+                height: UiSpace.groupHeaderHeight,
                 color: Theme.of(context).scaffoldBackgroundColor,
                 child: Row(children: [
                   text('Local Port'),
@@ -45,7 +57,8 @@ extension _PortForwardTunnels on _PortForwardPageState {
                   text('Remote Host'),
                   text('Remote Port'),
                   SizedBox(
-                      width: _kColumn4Width, child: Text(translate('Action')))
+                      width: _kColumn4Width,
+                      child: Text(translate('Action'), style: UiType.caption))
                 ]),
               );
             } else if (index == 1) {
@@ -78,8 +91,20 @@ extension _PortForwardTunnels on _PortForwardPageState {
         buildTunnelInputCell(context,
             controller: remotePortController,
             inputFormatters: portInputFormatter),
-        ElevatedButton(
-          onPressed: () async {
+        SizedBox(
+          height: UiSpace.controlHeight,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: UiColor.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: UiSpace.s4),
+                shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(UiSpace.buttonRadius)),
+                textStyle: UiType.button),
+            onPressed: () async {
             int? localPort = int.tryParse(localPortController.text);
             int? remotePort = int.tryParse(remotePortController.text);
             if (localPort != null &&
@@ -99,10 +124,9 @@ extension _PortForwardTunnels on _PortForwardPageState {
               refreshTunnelConfig();
             }
           },
-          child: Text(
-            translate('Add'),
+            child: Text(translate('Add')),
           ),
-        ).marginSymmetric(horizontal: 10),
+        ).marginSymmetric(horizontal: UiSpace.s3),
       ]),
     );
   }
@@ -125,7 +149,7 @@ extension _PortForwardTunnels on _PortForwardPageState {
 
   Widget buildTunnelDataRow(BuildContext context, _PortForward pf, int index) {
     text(String label) => Expanded(
-        child: Text(label, style: const TextStyle(fontSize: 20))
+        child: Text(label, style: UiType.rowTitle)
             .marginOnly(left: _kTextLeftMargin));
 
     return Container(
@@ -144,7 +168,8 @@ extension _PortForwardTunnels on _PortForwardPageState {
         SizedBox(
           width: _kColumn4Width,
           child: IconButton(
-            icon: const Icon(Icons.close),
+            iconSize: UiSpace.rowActionIconSize,
+            icon: const Icon(Icons.close, color: UiColor.muted),
             onPressed: () async {
               await bind.sessionRemovePortForward(
                   sessionId: _ffi.sessionId, localPort: pf.localPort);
@@ -169,12 +194,11 @@ extension _PortForwardTunnels on _PortForwardPageState {
 
   buildRdp(BuildContext context) {
     text1(String label) => Expanded(
-        child: Text(translate(label)).marginOnly(left: _kTextLeftMargin));
+        child: Text(translate(label), style: UiType.caption)
+            .marginOnly(left: _kTextLeftMargin));
     text2(String label) => Expanded(
-            child: Text(
-          label,
-          style: const TextStyle(fontSize: 20),
-        ).marginOnly(left: _kTextLeftMargin));
+        child: Text(label, style: UiType.rowTitle)
+            .marginOnly(left: _kTextLeftMargin));
     return Theme(
       data: Theme.of(context)
           .copyWith(colorScheme: Theme.of(context).colorScheme),
@@ -184,7 +208,7 @@ extension _PortForwardTunnels on _PortForwardPageState {
           itemBuilder: ((context, index) {
             if (index == 0) {
               return Container(
-                height: 25,
+                height: UiSpace.groupHeaderHeight,
                 color: Theme.of(context).scaffoldBackgroundColor,
                 child: Row(children: [
                   text1('Local Port'),
@@ -203,15 +227,23 @@ extension _PortForwardTunnels on _PortForwardPageState {
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: SizedBox(
-                        width: 120,
+                        height: UiSpace.controlHeight,
                         child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: UiColor.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: UiSpace.s4),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      UiSpace.buttonRadius)),
+                              textStyle: UiType.button),
                           onPressed: () =>
                               bind.sessionNewRdp(sessionId: _ffi.sessionId),
-                          child: Text(
-                            translate('New RDP'),
-                          ),
-                        ).marginSymmetric(vertical: 10),
-                      ).marginOnly(left: 20),
+                          child: Text(translate('New RDP')),
+                        ),
+                      ).marginOnly(left: _kTextLeftMargin),
                     ),
                   ),
                   const SizedBox(
