@@ -18,6 +18,7 @@ class DesktopDevicesPage extends StatefulWidget {
 
 class _DesktopDevicesPageState extends State<DesktopDevicesPage> {
   String _localId = '';
+  Set<String> _favorites = {};
   Peer? _opened;
   final _listener = 'DesktopDevicesPage';
 
@@ -35,7 +36,20 @@ class _DesktopDevicesPageState extends State<DesktopDevicesPage> {
 
   Future<void> _loadLocal() async {
     final id = await bind.mainGetMyId();
-    if (mounted) setState(() => _localId = id);
+    final favorites = (await bind.mainGetFav()).toSet();
+    if (mounted) {
+      setState(() {
+        _localId = id;
+        _favorites = favorites;
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite(Peer peer) async {
+    final favorites = (await bind.mainGetFav()).toList();
+    if (!favorites.remove(peer.id)) favorites.add(peer.id);
+    await bind.mainStoreFav(favs: favorites);
+    if (mounted) setState(() => _favorites = favorites.toSet());
   }
 
   void _refresh() { if (mounted) setState(() {}); }
@@ -93,7 +107,12 @@ class _DesktopDevicesPageState extends State<DesktopDevicesPage> {
       onSettings: () => DesktopTabPage.onAddSetting(),
       onAssistance: () => DesktopTabPage.showHome(assistance: true),
       onFavorites: () => DesktopTabPage.showHome(favorites: true),
-      content: DeviceGroups(peers: peers, localId: _localId, onOpen: _open),
+      content: DeviceGroups(
+          peers: peers,
+          localId: _localId,
+          onOpen: _open,
+          favorites: _favorites,
+          onToggleFavorite: _toggleFavorite),
     );
   }
 }
@@ -105,7 +124,16 @@ class DeviceGroups extends StatefulWidget {
   final List<Peer> peers;
   final String localId;
   final ValueChanged<Peer> onOpen;
-  const DeviceGroups({super.key, required this.peers, required this.localId, required this.onOpen});
+  /// Favourite ids; when null the cards show no star.
+  final Set<String>? favorites;
+  final ValueChanged<Peer>? onToggleFavorite;
+  const DeviceGroups(
+      {super.key,
+      required this.peers,
+      required this.localId,
+      required this.onOpen,
+      this.favorites,
+      this.onToggleFavorite});
   @override
   State<DeviceGroups> createState() => _DeviceGroupsState();
 }
@@ -131,7 +159,12 @@ class _DeviceGroupsState extends State<DeviceGroups> {
           if (group.value.isEmpty) Padding(padding: const EdgeInsets.all(16),
             child: Text(zh ? '暂无设备' : 'No devices', style: const TextStyle(color: Colors.grey))),
           for (final peer in group.value)
-            DeviceCard(peer: peer, local: peer.id == widget.localId, onOpen: widget.onOpen),
+            DeviceCard(
+                peer: peer,
+                local: peer.id == widget.localId,
+                onOpen: widget.onOpen,
+                favorite: widget.favorites?.contains(peer.id),
+                onToggleFavorite: widget.onToggleFavorite),
         ],
         const SizedBox(height: 18),
       ]],
@@ -144,7 +177,16 @@ class DeviceCard extends StatelessWidget {
   final Peer peer;
   final bool local;
   final ValueChanged<Peer> onOpen;
-  const DeviceCard({super.key, required this.peer, required this.local, required this.onOpen});
+  /// Whether the peer is in the favourites; null hides the star.
+  final bool? favorite;
+  final ValueChanged<Peer>? onToggleFavorite;
+  const DeviceCard(
+      {super.key,
+      required this.peer,
+      required this.local,
+      required this.onOpen,
+      this.favorite,
+      this.onToggleFavorite});
 
   static bool mobile(Peer p) => ['android', 'ios', 'ipados'].contains(p.platform.toLowerCase());
 
@@ -166,6 +208,12 @@ class DeviceCard extends StatelessWidget {
             child: Text(zh ? '本机' : 'This device', style: const TextStyle(fontSize: 12, color: Color(0xff3979ff)))),
         ]),
         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+          if (favorite != null && !local)
+            IconButton(
+              tooltip: favorite! ? (zh ? '取消收藏' : 'Remove from favourites') : (zh ? '收藏' : 'Add to favourites'),
+              icon: Icon(favorite! ? Icons.star : Icons.star_border, size: 20,
+                color: favorite! ? const Color(0xfff5a623) : const Color(0xff9aa3ad)),
+              onPressed: onToggleFavorite == null ? null : () => onToggleFavorite!(peer)),
           IconButton(tooltip: zh ? '设备信息' : 'Device information', icon: const Icon(Icons.info_outline, size: 20),
             onPressed: () => showDialog<void>(context: context, builder: (context) => AlertDialog(
               title: Text(deviceName(peer)), content: SelectableText('ID: ${peer.id}\n${peer.platform}'),

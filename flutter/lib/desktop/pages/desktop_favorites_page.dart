@@ -47,6 +47,13 @@ class _DesktopFavoritesPageState extends State<DesktopFavoritesPage> {
     }
   }
 
+  Future<void> _toggleFavorite(Peer peer) async {
+    final favorites = (await bind.mainGetFav()).toList();
+    if (!favorites.remove(peer.id)) favorites.add(peer.id);
+    await bind.mainStoreFav(favs: favorites);
+    if (mounted) setState(() => _favorites = favorites);
+  }
+
   void _refresh() {
     if (mounted) setState(() {});
   }
@@ -121,7 +128,12 @@ class _DesktopFavoritesPageState extends State<DesktopFavoritesPage> {
                       ? '暂无收藏设备，在设备的操作菜单中收藏后会显示在这里。'
                       : 'No favourites yet. Devices you favourite will show up here.',
                   style: const TextStyle(fontSize: 14, color: Colors.grey)))
-          : DeviceGroups(peers: peers, localId: _localId, onOpen: _open),
+          : DeviceGroups(
+              peers: peers,
+              localId: _localId,
+              onOpen: _open,
+              favorites: _favorites.toSet(),
+              onToggleFavorite: _toggleFavorite),
     );
   }
 
