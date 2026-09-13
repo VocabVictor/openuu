@@ -4,11 +4,14 @@ extension _GeneralOther on _GeneralState {
   Widget other() {
     final incomingOnly = bind.isIncomingOnly();
     final outgoingOnly = bind.isOutgoingOnly();
-    final showAutoUpdate = (isWindows && bind.mainIsInstalled()) ||
-        (isMacOS &&
-            bind.mainIsInstalled() &&
-            bind.mainIsInstalledDaemon(prompt: false) &&
-            !bind.isCustomClient());
+    // A rebranded build does not ask upstream for a version, so offering the
+    // switch would leave a control that quietly does nothing. The macOS branch
+    // already excluded it; Windows showed it on every install.
+    final showAutoUpdate = !bind.isCustomClient() &&
+        ((isWindows && bind.mainIsInstalled()) ||
+            (isMacOS &&
+                bind.mainIsInstalled() &&
+                bind.mainIsInstalledDaemon(prompt: false)));
     final children = <Widget>[
       if (!incomingOnly)
         _OptionCheckBox(context, 'Confirm before closing multiple tabs',
