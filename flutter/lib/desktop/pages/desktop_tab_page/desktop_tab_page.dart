@@ -62,7 +62,7 @@ class DesktopTabPage extends StatefulWidget {
             .startsWith(programFiles.toLowerCase());
   }
 
-  /// Development start page, `--page assistance|favorites|settings[:tab]`,
+  /// Development start page, `--page assistance|favorites|login|settings[:tab]`,
   /// honoured by portable and debug builds so a screenshot needs no click.
   static void openDevPage(List<String> args) {
     if (!_devBuild) return;
@@ -75,6 +75,8 @@ class DesktopTabPage extends StatefulWidget {
           showHome(assistance: true);
         case 'favorites':
           showHome(favorites: true);
+        case 'login':
+          loginDialog();
         case 'settings':
           final tab = parts.length > 1 ? parts[1] : '';
           onAddSetting(
