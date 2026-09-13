@@ -28,6 +28,7 @@ import '../macos_full_screen_focus_recovery.dart';
 
 import 'package:flutter_hbb/native/custom_cursor.dart';
 import '../../widgets/session_status_bar.dart';
+import '../../widgets/ui_tokens.dart';
 part 'view.dart';
 part 'status.dart';
 part 'macos.dart';

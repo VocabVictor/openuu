@@ -160,7 +160,9 @@ extension _RemotePageView on _RemotePageState {
     }
     paints.add(
       Positioned(
-        top: 10,
+        // Below the status bar, which is drawn over this stack and would
+        // otherwise cover the monitor's first row.
+        top: UiSession.statusBarHeight + 10,
         right: 10,
         child: _buildRawTouchAndPointerRegion(
             QualityMonitor(_ffi.qualityMonitorModel), null, null),
