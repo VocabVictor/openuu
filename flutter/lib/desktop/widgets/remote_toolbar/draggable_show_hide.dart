@@ -91,8 +91,10 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
         axis: widget.multiEdgeEnabled ? null : Axis.horizontal,
         child: Icon(
           widget.isHorizontal ? Icons.drag_indicator : Icons.drag_handle,
-          size: 20,
-          color: MyTheme.color(context).drag_indicator,
+          size: UiSession.toolbarHandleIconSize,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? MyTheme.color(context).drag_indicator
+              : UiColor.faint,
         ),
         feedback: widget,
         onDragStarted: () {
@@ -117,15 +119,18 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final ButtonStyle buttonStyle = ButtonStyle(
       minimumSize: MaterialStateProperty.all(const Size(0, 0)),
       padding: MaterialStateProperty.all(EdgeInsets.zero),
+      foregroundColor: WidgetStatePropertyAll(
+          _ToolbarTheme.iconColor(_ToolbarTheme.blueColor, dark: dark)),
     );
     final isFullscreen = stateGlobal.fullscreen;
-    const double iconSize = 20;
+    const double iconSize = UiSession.toolbarHandleIconSize;
 
     buttonWrapper(VoidCallback? onPressed, Widget child,
-        {Color hoverColor = _ToolbarTheme.blueColor}) {
+        {Color hoverColor = _ToolbarTheme.hoverBlueColor}) {
       final bgColor = buttonStyle.backgroundColor?.resolve({});
       return TextButton(
         onPressed: onPressed,
@@ -133,7 +138,7 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
         style: buttonStyle.copyWith(
           backgroundColor: MaterialStateProperty.resolveWith((states) {
             if (states.contains(MaterialState.hovered)) {
-              return (bgColor ?? hoverColor).withOpacity(0.15);
+              return bgColor ?? hoverColor;
             }
             return bgColor;
           }),
@@ -197,11 +202,7 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
       data: TextButtonThemeData(style: buttonStyle),
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context)
-              .menuBarTheme
-              .style
-              ?.backgroundColor
-              ?.resolve(MaterialState.values.toSet()),
+          color: _ToolbarTheme.barColor(context),
           border: Border.all(
             color: _ToolbarTheme.borderColor(context),
             width: 1,
@@ -209,8 +210,8 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
           borderRadius: widget.borderRadius,
         ),
         child: SizedBox(
-          height: widget.isHorizontal ? 20 : null,
-          width: widget.isHorizontal ? null : 20,
+          height: widget.isHorizontal ? UiSession.toolbarHandleThickness : null,
+          width: widget.isHorizontal ? null : UiSession.toolbarHandleThickness,
           child: child,
         ),
       ),
