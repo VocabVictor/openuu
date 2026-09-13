@@ -308,6 +308,34 @@ invalidates it -- including a change made in the other file, which is the
 failure nobody would otherwise notice. Where a bound refers to another
 constant, name that constant rather than its current number.
 
+### Pick the case only the right answer passes
+
+A test earns nothing if a wrong implementation can pass it by luck, and the commonest
+way that happens is a case so small that several different answers all look alike.
+
+The worked example is the batch online query. Its answer is a bitmap: a device is
+identified by its position among the ids that were asked for, not by its id. Asking
+about one device and asserting "online" passes on a correct implementation, on one that
+reports every device online, and on one whose bit order is reversed -- with one bit
+there is nothing to reverse. The test that is worth writing asks about ten devices with
+the only online one last:
+
+```rust
+let states = ask(&mut rs, &ids).await;
+assert_eq!(
+    states,
+    vec![false, false, false, false, false, false, false, false, false, true],
+    "only the registered peer, and only in its own position"
+);
+```
+
+Now an implementation that is a bit out, a byte out, or reversed reports **some other
+device** as the online one, and says so. The rule generalises: where a result is
+positional, encoded or packed, choose inputs that make every neighbouring mistake
+produce a visibly different answer, and include something that must come back negative.
+A query with no negative case cannot tell a working server from one that answers yes to
+everything.
+
 ### Confirm the artefact carries the change
 
 Before measuring a build, prove the build is the one you mean. A timestamp says
