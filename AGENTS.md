@@ -57,6 +57,12 @@ workspace member. `base::config::keys` re-exports the handful of keys
   service. A user pressing the keys gets nothing, because Windows holds them,
   and then finds no such wording anywhere in the menu -- so the conclusion is
   that the product cannot do it, when the fix is one elevation away.
+* **A state with three answers needs three values, not a bool.** "Yes",
+  "no" and "nobody has asked yet" are three facts, and a bool can hold two,
+  so the interface is left to write one sentence for two of them. The device
+  page said "offline or unknown" for exactly that reason: the flag behind it
+  could not tell a device that answered no from a device nobody had asked
+  about. Until the answer is in, say that; say yes or no only once it is.
 
 ### Consent surfaces (mandatory)
 
