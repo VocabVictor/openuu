@@ -111,10 +111,14 @@ class _DesktopPreviewCaptureState extends State<DesktopPreviewCapture> {
         (_lastCapture != null &&
             DateTime.now().difference(_lastCapture!).inSeconds < 30)) return;
     final boundary = _boundary.currentContext?.findRenderObject();
+    // Not debugNeedsPaint: it assigns its `late bool` inside an assert, so in
+    // a release build reading it throws LateInitializationError. That threw on
+    // every attempt here, was swallowed by the catch below, and no preview was
+    // ever written outside a debug build. toImage tolerates a boundary that
+    // still needs paint, so the check is simply gone.
     if (boundary is! RenderRepaintBoundary ||
         !boundary.attached ||
-        boundary.size.isEmpty ||
-        boundary.debugNeedsPaint) return;
+        boundary.size.isEmpty) return;
     _busy = true;
     ui.Image? image;
     try {
