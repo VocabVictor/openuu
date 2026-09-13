@@ -42,6 +42,7 @@ part 'general.dart';
 part 'general_other.dart';
 part 'general_record.dart';
 part 'network.dart';
+part 'network_desktop.dart';
 part 'page_tabs.dart';
 part 'safety.dart';
 part 'safety_network.dart';

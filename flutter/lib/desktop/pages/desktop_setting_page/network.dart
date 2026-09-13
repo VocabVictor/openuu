@@ -8,6 +8,8 @@ class _Network extends StatefulWidget {
 }
 
 class _NetworkState extends State<_Network> with AutomaticKeepAliveClientMixin {
+  void _setState(VoidCallback fn) => setState(fn);
+
   @override
   bool get wantKeepAlive => true;
   final bool locked = false;
@@ -36,6 +38,12 @@ class _NetworkState extends State<_Network> with AutomaticKeepAliveClientMixin {
 
     if (hideServer && hideProxy && hideWebSocket) {
       return Offstage();
+    }
+    if (isWindows && !bind.isIncomingOnly()) {
+      return _networkDesktop(context,
+          hideServer: hideServer,
+          hideProxy: hideProxy,
+          hideWebSocket: hideWebSocket);
     }
 
     // Helper function to create network setting ListTiles
