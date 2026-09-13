@@ -157,14 +157,7 @@ Widget _Card(
         title_suffix == null &&
         ['Service', 'Theme', 'Language', 'Audio Input Device'].contains(title)) {
       return _group(null, [
-        Builder(
-            builder: (context) => LayoutBuilder(
-                builder: (context, bounds) => _settingRow(
-                    context,
-                    title,
-                    SizedBox(
-                        width: bounds.maxWidth < 600 ? 160 : 220,
-                        child: children.single))))
+        Builder(builder: (context) => _settingRow(context, title, children.single))
       ]);
     }
     return _group(translate(title), children,

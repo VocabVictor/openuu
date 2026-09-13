@@ -45,10 +45,10 @@ extension _GeneralTheme on _GeneralState {
     final isOptFixed = isOptionFixed(kCommConfKeyTheme);
     if (isWindows && !bind.isIncomingOnly()) {
       return _Card(title: 'Theme', children: [
-        ComboBox(
+        SettingsDropdown(
           keys: const ['light', 'dark', 'system'],
           values: ['Light', 'Dark', 'Follow System'].map(translate).toList(),
-          initialKey: current,
+          current: current,
           enabled: !isOptFixed,
           onChanged: onChanged,
         ),
@@ -168,10 +168,11 @@ extension _GeneralMedia on _GeneralState {
     }
 
     builder(devices, currentDevice, setDevice) {
-      final child = ComboBox(
+      final child = SettingsDropdown(
         keys: devices,
         values: devices,
-        initialKey: currentDevice,
+        current: currentDevice,
+        width: 240,
         onChanged: (key) async {
           setDevice(key);
           _setState(() {});
@@ -202,15 +203,24 @@ extension _GeneralLanguage on _GeneralState {
         currentKey = defaultOptionLang;
       }
       final isOptFixed = isOptionFixed(kCommConfKeyLang);
+      onChanged(String key) async {
+        await bind.mainSetLocalOption(key: kCommConfKeyLang, value: key);
+        reloadAllWindows();
+        bind.mainChangeLanguage(lang: key);
+      }
+      if (isWindows && !bind.isIncomingOnly()) {
+        return SettingsDropdown(
+            keys: keys,
+            values: values,
+            current: currentKey,
+            enabled: !isOptFixed,
+            onChanged: onChanged);
+      }
       return ComboBox(
         keys: keys,
         values: values,
         initialKey: currentKey,
-        onChanged: (key) async {
-          await bind.mainSetLocalOption(key: kCommConfKeyLang, value: key);
-          reloadAllWindows();
-          bind.mainChangeLanguage(lang: key);
-        },
+        onChanged: onChanged,
         enabled: !isOptFixed,
       ).marginOnly(left: _kContentHMargin);
     });

@@ -131,7 +131,7 @@ class SettingsSwitch extends StatelessWidget {
               activeTrackColor: UiColor.primary,
               inactiveThumbColor: Colors.white,
               inactiveTrackColor: UiColor.settingsSwitchOff,
-              trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               onChanged: onChanged)));
 }

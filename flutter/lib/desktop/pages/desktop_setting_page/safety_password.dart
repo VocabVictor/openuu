@@ -127,14 +127,27 @@ extension _SafetyPassword on _SafetyState {
           final usePassword = model.approveMode != 'click';
 
           final isApproveModeFixed = isOptionFixed(kOptionApproveMode);
-          return _Card(title: 'Password', children: [
-            ComboBox(
-              enabled: !locked && !isApproveModeFixed,
-              keys: modeKeys,
-              values: modeValues,
-              initialKey: modeInitialKey,
-              onChanged: (key) => model.setApproveMode(key),
-            ).marginOnly(left: _kContentHMargin),
+          final desktop = isWindows && !bind.isIncomingOnly();
+          final approveMode = desktop
+              ? SettingsDropdown(
+                  enabled: !locked && !isApproveModeFixed,
+                  keys: modeKeys,
+                  values: modeValues,
+                  current: modeInitialKey,
+                  width: 200,
+                  onChanged: (key) => model.setApproveMode(key))
+              : ComboBox(
+                  enabled: !locked && !isApproveModeFixed,
+                  keys: modeKeys,
+                  values: modeValues,
+                  initialKey: modeInitialKey,
+                  onChanged: (key) => model.setApproveMode(key),
+                ).marginOnly(left: _kContentHMargin);
+          return _Card(
+              title: 'Password',
+              title_suffix: desktop ? [approveMode] : null,
+              children: [
+            if (!desktop) approveMode,
             if (usePassword) radios[0],
             if (usePassword)
               _SubLabeledWidget(

@@ -1,5 +1,6 @@
 import 'package:flutter_hbb/common/widgets/brand_icon.dart';
 import '../desktop_welcome_page.dart';
+import '../../widgets/settings_dropdown.dart';
 import '../../widgets/settings_row.dart';
 import '../../widgets/ui_tokens.dart';
 import 'dart:async';

@@ -3,22 +3,20 @@ part of 'desktop_setting_page.dart';
 extension _DisplayStyle on _DisplayState {
   Widget _choiceCard(BuildContext context, String title, String current,
       Map<String, String> options, void Function(String) onChanged,
-      {bool enabled = true, Widget? detail}) {
+      {bool enabled = true, Widget? detail, double width = 200}) {
     return _group(null, [
-      LayoutBuilder(
-          builder: (context, bounds) => _settingRow(
-              context,
-              title,
-              SizedBox(
-                  width: bounds.maxWidth < 600 ? 160 : 220,
-                  child: ComboBox(
-                    keys: options.keys.toList(),
-                    values: options.values.map(translate).toList(),
-                    initialKey: current,
-                    enabled: enabled,
-                    onChanged: onChanged,
-                  )),
-              enabled: enabled)),
+      _settingRow(
+          context,
+          title,
+          SettingsDropdown(
+            keys: options.keys.toList(),
+            values: options.values.map(translate).toList(),
+            current: current,
+            width: width,
+            enabled: enabled,
+            onChanged: onChanged,
+          ),
+          enabled: enabled),
       if (detail != null)
         Padding(
             padding: const EdgeInsets.fromLTRB(

@@ -31,24 +31,37 @@ extension _SafetyPermissions on _SafetyState {
           break;
       }
 
-      return _Card(title: 'Permissions', children: [
-        ComboBox(
-            keys: [
-              defaultOptionAccessMode,
-              'full',
-              'view',
-            ],
-            values: [
-              translate('Custom'),
-              translate('Full Access'),
-              translate('Screen Share'),
-            ],
-            enabled: enabled && !isOptionFixed(kOptionAccessMode),
-            initialKey: initialKey,
-            onChanged: (mode) async {
-              await bind.mainSetOption(key: kOptionAccessMode, value: mode);
-              _setState(() {});
-            }).marginOnly(left: _kContentHMargin),
+      final desktop = isWindows && !bind.isIncomingOnly();
+      final presetKeys = <String>[defaultOptionAccessMode, 'full', 'view'];
+      final presetValues = [
+        translate('Custom'),
+        translate('Full Access'),
+        translate('Screen Share'),
+      ];
+      onPreset(String mode) async {
+        await bind.mainSetOption(key: kOptionAccessMode, value: mode);
+        _setState(() {});
+      }
+      final presetEnabled = enabled && !isOptionFixed(kOptionAccessMode);
+      final preset = desktop
+          ? SettingsDropdown(
+              keys: presetKeys,
+              values: presetValues,
+              current: initialKey,
+              enabled: presetEnabled,
+              onChanged: onPreset)
+          : ComboBox(
+                  keys: presetKeys,
+                  values: presetValues,
+                  enabled: presetEnabled,
+                  initialKey: initialKey,
+                  onChanged: onPreset)
+              .marginOnly(left: _kContentHMargin);
+      return _Card(
+          title: 'Permissions',
+          title_suffix: desktop ? [preset] : null,
+          children: [
+        if (!desktop) preset,
         Column(
           children: [
             _OptionCheckBox(

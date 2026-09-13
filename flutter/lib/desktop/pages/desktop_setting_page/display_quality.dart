@@ -105,7 +105,7 @@ extension _DisplayQuality on _DisplayState {
     }
     if (isWindows && !bind.isIncomingOnly()) {
       return _choiceCard(context, 'Default Codec', groupValue, codecOptions,
-        onChanged, enabled: !isOptFixed);
+        onChanged, enabled: !isOptFixed, width: 240);
     }
     return _Card(title: 'Default Codec', children: [
       _Radio(context,
