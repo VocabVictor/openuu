@@ -3,7 +3,6 @@ import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/common/widgets/login.dart';
 import 'package:flutter_hbb/consts.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_welcome_page.dart';
-import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
 import 'package:get/get.dart';
 import 'package:flutter_hbb/models/user_model.dart';
 
@@ -17,11 +16,13 @@ class AccountAction extends StatelessWidget {
     return Obx(() {
       final user = gFFI.userModel;
       if (!user.isLogin) {
-        return ActionIcon(
-          message: 'Login',
-          icon: Icons.person_outline,
-          onTap: () => loginDialog(),
-          isClose: false,
+        return TextButton(
+          onPressed: () => loginDialog(),
+          style: TextButton.styleFrom(
+              foregroundColor: DesktopWelcomePage.blue,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              minimumSize: const Size(0, 28)),
+          child: Text(translate('Login'), style: const TextStyle(fontSize: 13)),
         );
       }
       final name = user.displayNameOrUserName;

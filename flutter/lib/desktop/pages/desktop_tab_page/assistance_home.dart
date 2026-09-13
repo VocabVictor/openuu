@@ -50,24 +50,3 @@ extension _AssistanceHome on _DesktopTabPageState {
     }
   }
 }
-
-/// Keeps the home tab's page alive in the tab page view, so typed input on
-/// the assistance page survives switching tabs.
-class _KeepAlive extends StatefulWidget {
-  final Widget child;
-  const _KeepAlive({super.key, required this.child});
-  @override
-  State<_KeepAlive> createState() => _KeepAliveState();
-}
-
-class _KeepAliveState extends State<_KeepAlive>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return widget.child;
-  }
-}

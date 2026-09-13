@@ -7,7 +7,7 @@ import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/consts.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_assistance_page.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_setting_page.dart';
-import 'package:flutter_hbb/desktop/widgets/account_action.dart';
+import 'package:flutter_hbb/desktop/widgets/main_title_bar.dart';
 import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
 import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:flutter_hbb/models/server_model.dart';
@@ -73,7 +73,6 @@ class _DesktopTabPageState extends State<DesktopTabPage>
       _showFavorites = favorites;
       _showSettings = false;
     });
-    tabController.jumpTo(0);
   }
 
   void showSettings(SettingsTabKey tab) {
@@ -81,7 +80,6 @@ class _DesktopTabPageState extends State<DesktopTabPage>
       _showSettings = true;
       _settingsTab = tab;
     });
-    tabController.jumpTo(0);
     // The page keeps one instance; once it is mounted, jump to the requested
     // sub-page instead of rebuilding it.
     WidgetsBinding.instance
@@ -91,16 +89,9 @@ class _DesktopTabPageState extends State<DesktopTabPage>
   _DesktopTabPageState() {
     Get.put<_DesktopTabPageState>(this);
     RemoteCountState.init();
+    // Other code still looks the main controller up (isInHomePage, chat);
+    // the main window itself no longer renders tabs.
     Get.put<DesktopTabController>(tabController);
-    tabController.add(TabInfo(
-        key: kTabLabelHomePage,
-        label: kTabLabelHomePage,
-        selectedIcon: Icons.home_sharp,
-        unselectedIcon: Icons.home_outlined,
-        closable: false,
-        page: _KeepAlive(
-            key: const ValueKey(kTabLabelHomePage),
-            child: Builder(builder: (context) => _assistanceHome(context)))));
   }
 
   @override
@@ -131,61 +122,47 @@ class _DesktopTabPageState extends State<DesktopTabPage>
 
   @override
   Widget build(BuildContext context) {
-    final tabWidget = Container(
-        child: Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.background,
-            body: DesktopTab(
-              controller: tabController,
-              pageViewBuilder: (pageView) => Obx(() {
-                final signedIn = gFFI.userModel.isLogin;
-                final homeSelected =
-                    tabController.state.value.selectedTabInfo.key ==
-                        kTabLabelHomePage;
-                final showSettings = homeSelected && _showSettings;
-                final showWelcome =
-                    !signedIn && homeSelected && !_showSettings;
-                final showFavorites = signedIn &&
-                    homeSelected &&
-                    _showFavorites &&
-                    !_showSettings;
-                final showDevices = signedIn &&
-                    homeSelected &&
-                    !_showAssistance &&
-                    !_showFavorites &&
-                    !_showSettings;
-                return Stack(children: [
-                  // Keep the home tab mounted: the assistance page lives there.
-                  Offstage(
-                      offstage: showWelcome ||
-                          showDevices ||
-                          showFavorites ||
-                          showSettings,
-                      child: pageView),
-                  if (showDevices) const DesktopDevicesPage(),
-                  if (showFavorites) const DesktopFavoritesPage(),
-                  if (showSettings)
-                    DesktopSettingPage(
-                        key: const ValueKey(kTabLabelSettingPage),
-                        initialTabkey: _settingsTab),
-                  if (showWelcome)
-                    DesktopWelcomePage(
-                      onLogin: () {
-                        loginDialog();
-                      },
-                      onAssistance: () => loginDialog(),
-                      onFavorites: () =>
-                          DesktopTabPage.showHome(favorites: true),
-                      onSettings: bind.isDisableSettings()
-                          ? null
-                          : () => DesktopTabPage.onAddSetting(),
-                    ),
-                ]);
-              }),
-              tail: const Row(mainAxisSize: MainAxisSize.min, children: [
-                AccountAction(),
-              ]),
-            )));
-    final content = tabWidget;
+    final content = Scaffold(
+        backgroundColor: MainTitleBar.background,
+        body: Column(children: [
+          const MainTitleBar(),
+          Expanded(child: Obx(() {
+            final signedIn = gFFI.userModel.isLogin;
+            final showSettings = _showSettings;
+            final showWelcome = !signedIn && !_showSettings;
+            final showFavorites = signedIn && _showFavorites && !_showSettings;
+            final showDevices = signedIn &&
+                !_showAssistance &&
+                !_showFavorites &&
+                !_showSettings;
+            return Stack(children: [
+              // Keep the assistance page mounted: it holds typed input.
+              Offstage(
+                  offstage: showWelcome ||
+                      showDevices ||
+                      showFavorites ||
+                      showSettings,
+                  child: _assistanceHome(context)),
+              if (showDevices) const DesktopDevicesPage(),
+              if (showFavorites) const DesktopFavoritesPage(),
+              if (showSettings)
+                DesktopSettingPage(
+                    key: const ValueKey(kTabLabelSettingPage),
+                    initialTabkey: _settingsTab),
+              if (showWelcome)
+                DesktopWelcomePage(
+                  onLogin: () {
+                    loginDialog();
+                  },
+                  onAssistance: () => loginDialog(),
+                  onFavorites: () => DesktopTabPage.showHome(favorites: true),
+                  onSettings: bind.isDisableSettings()
+                      ? null
+                      : () => DesktopTabPage.onAddSetting(),
+                ),
+            ]);
+          })),
+        ]));
     return isMacOS || kUseCompatibleUiMode
         ? content
         : Obx(
