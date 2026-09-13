@@ -153,6 +153,7 @@ mod login_scope;
 mod on_message;
 mod login_msg;
 mod delay_switch_msg;
+mod input_msg;
 mod terminal_login;
 mod failures;
 mod display;
@@ -194,5 +195,6 @@ mod test {
     mod login_tests;
     mod pre_auth_tests;
     mod input_tests;
+    mod misc_tests;
 
 }
