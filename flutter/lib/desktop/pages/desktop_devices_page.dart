@@ -112,13 +112,12 @@ class DeviceGroups extends StatefulWidget {
 
 class _DeviceGroupsState extends State<DeviceGroups> {
   final _collapsed = <String>{};
-  bool _mobile(Peer p) => ['android', 'ios', 'ipados'].contains(p.platform.toLowerCase());
   @override
   Widget build(BuildContext context) {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
     final groups = {
-      zh ? '电脑' : 'Computers': widget.peers.where((p) => !_mobile(p)).toList(),
-      zh ? '手机/平板' : 'Phones / tablets': widget.peers.where(_mobile).toList(),
+      zh ? '电脑' : 'Computers': widget.peers.where((p) => !DeviceCard.mobile(p)).toList(),
+      zh ? '手机/平板' : 'Phones / tablets': widget.peers.where(DeviceCard.mobile).toList(),
     };
     return LayoutBuilder(builder: (context, bounds) => ListView(
       padding: EdgeInsets.symmetric(horizontal: (bounds.maxWidth * .05).clamp(20.0, 48.0), vertical: 12),
@@ -131,15 +130,27 @@ class _DeviceGroupsState extends State<DeviceGroups> {
         if (!_collapsed.contains(group.key)) ...[
           if (group.value.isEmpty) Padding(padding: const EdgeInsets.all(16),
             child: Text(zh ? '暂无设备' : 'No devices', style: const TextStyle(color: Colors.grey))),
-          for (final peer in group.value) _card(context, peer, zh),
+          for (final peer in group.value)
+            DeviceCard(peer: peer, local: peer.id == widget.localId, onOpen: widget.onOpen),
         ],
         const SizedBox(height: 18),
       ]],
     ));
   }
+}
 
-  Widget _card(BuildContext context, Peer peer, bool zh) {
-    final local = peer.id == widget.localId;
+/// One device row, shared by the grouped overview and other device lists.
+class DeviceCard extends StatelessWidget {
+  final Peer peer;
+  final bool local;
+  final ValueChanged<Peer> onOpen;
+  const DeviceCard({super.key, required this.peer, required this.local, required this.onOpen});
+
+  static bool mobile(Peer p) => ['android', 'ios', 'ipados'].contains(p.platform.toLowerCase());
+
+  @override
+  Widget build(BuildContext context) {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
     return Padding(padding: const EdgeInsets.only(bottom: 5), child: Material(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: const BorderSide(color: Color(0xffdfe3e6))),
@@ -147,7 +158,7 @@ class _DeviceGroupsState extends State<DeviceGroups> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(width: 36, height: 36,
           decoration: BoxDecoration(color: const Color(0xff3979ff), borderRadius: BorderRadius.circular(5)),
-          child: Icon(_mobile(peer) ? Icons.phone_android : Icons.desktop_windows_outlined, color: Colors.white, size: 24)),
+          child: Icon(mobile(peer) ? Icons.phone_android : Icons.desktop_windows_outlined, color: Colors.white, size: 24)),
         title: Row(children: [Flexible(child: Text(deviceName(peer), maxLines: 1, overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 16, color: Color(0xff20262d)))),
           if (local) Container(margin: const EdgeInsets.only(left: 10), padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
@@ -162,7 +173,7 @@ class _DeviceGroupsState extends State<DeviceGroups> {
             ))),
           SizedBox(width: 24, child: local ? null : const Icon(Icons.chevron_right, size: 20)),
         ]),
-        onTap: local ? null : () => widget.onOpen(peer),
+        onTap: local ? null : () => onOpen(peer),
       ),
     ));
   }
