@@ -85,7 +85,7 @@ impl Connection {
             require_2fa: None,
             awaiting_2fa: false,
             display_idx: 0,
-            stream,
+            stream: super::wire::Wire::Whole(stream),
             server: std::sync::Weak::new(),
             hash,
             read_jobs: Vec::new(),
