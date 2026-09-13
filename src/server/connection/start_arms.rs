@@ -76,8 +76,32 @@ impl Connection {
     }
 
     /// Once-a-second housekeeping; `false` ends the loop.
-    pub(super) async fn on_second_tick(&mut self, queued_video: usize) -> bool {
+    pub(super) async fn on_second_tick(&mut self, mut queued_video: usize) -> bool {
         let id = self.inner.id();
+        // Where the writing half belongs to a task, the numbers the bitrate controller
+        // needs were measured there; fold them in before the accounting below reads them.
+        if let Some(report) = self.stream.writer().map(|w| w.take_report()) {
+            self.video_send_bits = self.video_send_bits.saturating_add(report.bits);
+            self.video_blocked_ms = self.video_blocked_ms.saturating_add(report.blocked_ms);
+            self.video_send_max_ms = self.video_send_max_ms.max(report.max_ms);
+            self.video_send_sum_ms = self.video_send_sum_ms.saturating_add(report.blocked_ms);
+            self.video_send_count += report.count;
+            queued_video += report.queued;
+            if report.dropped > 0 {
+                // The peer is now missing frames the next one may be encoded against.
+                log::info!(
+                    "#{id} dropped {} video message(s) the link could not carry, asking for a key frame",
+                    report.dropped
+                );
+                self.refresh_video_display(None);
+            }
+        }
+        // A write that failed ends the session; the reading half may be perfectly
+        // healthy, so nothing else would notice.
+        if self.stream.is_closed() {
+            self.on_close("Send failed", false).await;
+            return false;
+        }
         #[cfg(windows)]
         self.portable_check();
         raii::AuthedConnID::check_wake_lock_on_setting_changed();
