@@ -2,61 +2,37 @@ part of 'desktop_home_page.dart';
 
 class _DesktopHomePageState extends State<DesktopHomePage>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  void _setState(VoidCallback fn) => setState(fn);
-  final _leftPaneScrollController = ScrollController();
-
   @override
   bool get wantKeepAlive => true;
-  var systemError = '';
   StreamSubscription? _uniLinksSubscription;
   var svcStopped = false.obs;
-  var watchIsCanScreenRecording = false;
-  var watchIsProcessTrust = false;
-  var watchIsInputMonitoring = false;
-  var watchIsCanRecordAudio = false;
   Timer? _updateTimer;
-  bool isCardClosed = false;
 
-  final RxBool _editHover = false.obs;
   final RxBool _block = false.obs;
-
-  final GlobalKey _childKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (isWindows && !bind.isIncomingOnly() && !bind.isOutgoingOnly()) {
-      return _buildBlock(child: AnimatedBuilder(animation: gFFI.serverModel,
-        builder: (context, _) {
-          final model = gFFI.serverModel;
-          return DesktopAssistancePage(
-            deviceId: model.serverId.text, password: model.serverPasswd.text,
-            deviceName: Platform.localHostname, online: model.connectStatus > 0,
-            verification: model.approveMode == 'click' ? translate('Accept sessions via click') : translate(_verificationLabel(model.verificationMethod)),
-            verificationMethod: model.verificationMethod.isEmpty ? kUseBothPasswords : model.verificationMethod,
-            onVerificationChanged: (method) => model.setVerificationMethod(method),
-            temporaryPassword: model.approveMode != 'click' && model.verificationMethod != kUsePermanentPassword,
-            enabled: !svcStopped.value, onEnable: (value) => start_service(value),
-            onConnect: (id) => connect(context, id),
-            recentPeers: gFFI.recentPeersModel.peers,
-            onOpenRecent: (peer) => connect(context, peer.id),
-            onRefresh: () => bind.mainUpdateTemporaryPassword(),
-            onSecurity: () => DesktopSettingPage.switch2page(SettingsTabKey.safety),
-            onDevices: () => DesktopTabPage.showHome(),
-            onFavorites: () => DesktopTabPage.showHome(favorites: true),
-            onSettings: DesktopTabPage.onAddSetting, onAccount: () => loginDialog());
-        }));
-    }
-    final isIncomingOnly = bind.isIncomingOnly();
-    return _buildBlock(
-        child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        buildLeftPane(context),
-        if (!isIncomingOnly) const VerticalDivider(width: 1),
-        if (!isIncomingOnly) Expanded(child: buildRightPane(context)),
-      ],
-    ));
+    return _buildBlock(child: AnimatedBuilder(animation: gFFI.serverModel,
+      builder: (context, _) {
+        final model = gFFI.serverModel;
+        return DesktopAssistancePage(
+          deviceId: model.serverId.text, password: model.serverPasswd.text,
+          deviceName: Platform.localHostname, online: model.connectStatus > 0,
+          verification: model.approveMode == 'click' ? translate('Accept sessions via click') : translate(_verificationLabel(model.verificationMethod)),
+          verificationMethod: model.verificationMethod.isEmpty ? kUseBothPasswords : model.verificationMethod,
+          onVerificationChanged: (method) => model.setVerificationMethod(method),
+          temporaryPassword: model.approveMode != 'click' && model.verificationMethod != kUsePermanentPassword,
+          enabled: !svcStopped.value, onEnable: (value) => start_service(value),
+          onConnect: (id) => connect(context, id),
+          recentPeers: gFFI.recentPeersModel.peers,
+          onOpenRecent: (peer) => connect(context, peer.id),
+          onRefresh: () => bind.mainUpdateTemporaryPassword(),
+          onSecurity: () => DesktopSettingPage.switch2page(SettingsTabKey.safety),
+          onDevices: () => DesktopTabPage.showHome(),
+          onFavorites: () => DesktopTabPage.showHome(favorites: true),
+          onSettings: DesktopTabPage.onAddSetting, onAccount: () => loginDialog());
+      }));
   }
 
   static String _verificationLabel(String method) {
@@ -80,51 +56,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     super.initState();
     _updateTimer = periodic_immediate(const Duration(seconds: 1), () async {
       await gFFI.serverModel.fetchID();
-      final error = await bind.mainGetError();
-      if (systemError != error) {
-        systemError = error;
-        setState(() {});
-      }
       final v = await mainGetBoolOption(kOptionStopService);
       if (v != svcStopped.value) {
         svcStopped.value = v;
         setState(() {});
-      }
-      if (watchIsCanScreenRecording) {
-        if (bind.mainIsCanScreenRecording(prompt: false)) {
-          watchIsCanScreenRecording = false;
-          setState(() {});
-        }
-      }
-      if (watchIsProcessTrust) {
-        if (bind.mainIsProcessTrusted(prompt: false)) {
-          watchIsProcessTrust = false;
-          setState(() {});
-        }
-      }
-      if (watchIsInputMonitoring) {
-        if (bind.mainIsCanInputMonitoring(prompt: false)) {
-          watchIsInputMonitoring = false;
-          // Do not notify for now.
-          // Monitoring may not take effect until the process is restarted.
-          // rustDeskWinManager.call(
-          //     WindowType.RemoteDesktop, kWindowDisableGrabKeyboard, '');
-          setState(() {});
-        }
-      }
-      if (watchIsCanRecordAudio) {
-        if (isMacOS) {
-          Future.microtask(() async {
-            if ((await osxCanRecordAudio() ==
-                PermissionAuthorizeType.authorized)) {
-              watchIsCanRecordAudio = false;
-              setState(() {});
-            }
-          });
-        } else {
-          watchIsCanRecordAudio = false;
-          setState(() {});
-        }
       }
     });
     Get.put<RxBool>(svcStopped, tag: 'stop-service');
@@ -227,27 +162,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       }
     });
     _uniLinksSubscription = listenUniLinks();
-
-    if (bind.isIncomingOnly()) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _updateWindowSize();
-      });
-    }
     WidgetsBinding.instance.addObserver(this);
-  }
-
-  _updateWindowSize() {
-    RenderObject? renderObject = _childKey.currentContext?.findRenderObject();
-    if (renderObject == null) {
-      return;
-    }
-    if (renderObject is RenderBox) {
-      final size = renderObject.size;
-      if (size != imcomingOnlyHomeSize) {
-        imcomingOnlyHomeSize = size;
-        windowManager.setSize(getIncomingOnlyHomeSize());
-      }
-    }
   }
 
   @override

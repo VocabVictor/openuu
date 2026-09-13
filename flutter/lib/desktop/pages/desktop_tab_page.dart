@@ -36,24 +36,6 @@ class DesktopTabPage extends StatefulWidget {
   /// Show the settings inside the home shell, on `initialPage`.
   static void onAddSetting(
       {SettingsTabKey initialPage = SettingsTabKey.general}) {
-    if (bind.isIncomingOnly()) {
-      // The incoming-only build has no home shell; keep the settings tab.
-      try {
-        DesktopTabController tabController = Get.find<DesktopTabController>();
-        tabController.add(TabInfo(
-            key: kTabLabelSettingPage,
-            label: kTabLabelSettingPage,
-            selectedIcon: Icons.build_sharp,
-            unselectedIcon: Icons.build_outlined,
-            page: DesktopSettingPage(
-              key: const ValueKey(kTabLabelSettingPage),
-              initialTabkey: initialPage,
-            )));
-      } catch (e) {
-        debugPrintStack(label: '$e');
-      }
-      return;
-    }
     final page = Get.find<_DesktopTabPageState>();
     page.showSettings(initialPage);
   }
@@ -101,17 +83,6 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
         page: DesktopHomePage(
           key: const ValueKey(kTabLabelHomePage),
         )));
-    if (bind.isIncomingOnly()) {
-      tabController.onSelected = (key) {
-        if (key == kTabLabelHomePage) {
-          windowManager.setSize(getIncomingOnlyHomeSize());
-          setResizable(false);
-        } else {
-          windowManager.setSize(getIncomingOnlySettingsSize());
-          setResizable(true);
-        }
-      };
-    }
   }
 
   @override
@@ -153,24 +124,14 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
                 final homeSelected =
                     tabController.state.value.selectedTabInfo.key ==
                         kTabLabelHomePage;
-                final showSettings = isWindows &&
-                    !bind.isIncomingOnly() &&
-                    homeSelected &&
-                    _showSettings;
-                final showWelcome = isWindows &&
-                    !bind.isIncomingOnly() &&
-                    !signedIn &&
-                    homeSelected &&
-                    !_showSettings;
-                final showFavorites = isWindows &&
-                    !bind.isIncomingOnly() &&
-                    signedIn &&
+                final showSettings = homeSelected && _showSettings;
+                final showWelcome =
+                    !signedIn && homeSelected && !_showSettings;
+                final showFavorites = signedIn &&
                     homeSelected &&
                     _showFavorites &&
                     !_showSettings;
-                final showDevices = isWindows &&
-                    !bind.isIncomingOnly() &&
-                    signedIn &&
+                final showDevices = signedIn &&
                     homeSelected &&
                     !_showAssistance &&
                     !_showFavorites &&
@@ -203,9 +164,8 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
                     ),
                 ]);
               }),
-              tail: Row(mainAxisSize: MainAxisSize.min, children: [
-                if (isWindows && !bind.isIncomingOnly())
-                  const AccountAction(),
+              tail: const Row(mainAxisSize: MainAxisSize.min, children: [
+                AccountAction(),
               ]),
             )));
     final content = tabWidget;
