@@ -13,6 +13,7 @@ on:
       - "README.md"
   push:
     branches:
+      - master
       - "ci/**"
 
 env:
