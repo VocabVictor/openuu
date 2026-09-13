@@ -50,6 +50,10 @@ upstream file layout carries no weight.
 * Every split commit must pass `cargo check --lib --features flutter` (the
   `flutter` feature is on by default) and `flutter analyze` with no new
   diagnostics.
+* Before a split lands, run `python tools/split/split_audit.py <repo> <since> out.md`
+  on it: a mechanical move scores 0 lines and 0 match arms lost per commit, and every
+  commit of the chain must hold the whole original on its own (no step may drop code
+  that a later step re-adds).
 * When a task touches a legacy file that is still over 300 lines, split that
   file first in its own commit, then make the change.
 
