@@ -89,6 +89,9 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
             bail!(e);
         }
     }
+    // The encoder was created for a fixed fps; start it on the one QoS paces at, since
+    // check_qos only reports changes from here on.
+    allow_err!(encoder.set_fps(VIDEO_QOS.lock().unwrap().fps()));
     VIDEO_QOS.lock().unwrap().store_bitrate(encoder.bitrate());
     VIDEO_QOS
         .lock()
