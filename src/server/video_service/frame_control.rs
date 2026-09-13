@@ -103,6 +103,28 @@ pub(super) fn ack_wait_window(spf: Duration, rtt_ms: Option<u32>) -> Duration {
     (spf * 2).max(rtt).clamp(ACK_WAIT_MIN, ACK_WAIT_SLICE)
 }
 
+/// Captures that brought nothing before the screen counts as still. A quarter second at
+/// thirty frames a second, which is longer than any gap between the frames of something
+/// that is actually moving.
+pub(super) const STILL_AFTER: u32 = 8;
+/// What the loop waits for a frame once the screen is still.
+const STILL_WAIT: Duration = Duration::from_millis(120);
+
+/// How long to wait for the next frame.
+///
+/// A screen nobody is touching produces nothing for as long as that lasts, and every wait
+/// is a round through the duplication. Waiting longer while it is still costs no
+/// responsiveness at all: the wait ends the moment a frame arrives, so a screen that
+/// starts moving again is captured as soon as it does, not when the wait runs out. What
+/// it does cost is the rest of the loop running at the longer period, which is why the
+/// wait is capped rather than open ended.
+pub(super) fn capture_timeout(spf: Duration, still_captures: u32) -> Duration {
+    if still_captures <= STILL_AFTER {
+        return spf;
+    }
+    STILL_WAIT.max(spf)
+}
+
 const ACK_WAIT_MIN: Duration = Duration::from_millis(50);
 const ACK_WAIT_SLICE: Duration = Duration::from_millis(300);
 /// The old fixed window: a viewer that never fetches must not freeze the others for longer.

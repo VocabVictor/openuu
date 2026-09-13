@@ -136,6 +136,8 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
     // a round waited for the previous frame to be picked up, so a blocked write
     // shows up here as capture stalling rather than as a slow network.
     let (mut sent_counter, mut wait_max_ms) = (0usize, 0u32);
+    // Captures in a row that brought nothing: the screen is not being touched.
+    let mut still_captures = 0u32;
     let mut fetch_hold = FetchHold::new();
 
     while sp.ok() {
@@ -216,9 +218,10 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
 
         let time = now - start;
         let ms = (time.as_secs() * 1000 + time.subsec_millis() as u64) as i64;
-        let res = match c.frame(spf) {
+        let res = match c.frame(capture_timeout(spf, still_captures)) {
             Ok(frame) => {
                 repeat_encode_counter = 0;
+                still_captures = 0;
                 if frame.valid() {
                     let screenshot_key = (vs.source, display_idx);
                     let screenshot = SCREENSHOTS.lock().unwrap().remove(&screenshot_key);
@@ -302,6 +305,7 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
 
         match res {
             Err(ref e) if e.kind() == WouldBlock => {
+                still_captures = still_captures.saturating_add(1);
                 #[cfg(windows)]
                 if try_gdi > 0 && !c.is_gdi() {
                     let waited = capture_started.elapsed();

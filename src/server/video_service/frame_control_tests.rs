@@ -146,3 +146,28 @@ fn the_tick_runs_between_slices_and_its_error_ends_the_wait() {
     assert!(err.is_err());
     assert_eq!(ticks, 1);
 }
+
+#[test]
+fn a_screen_that_is_being_used_is_waited_for_at_the_frame_rate() {
+    let spf = Duration::from_millis(33);
+    for still in 0..=STILL_AFTER {
+        assert_eq!(capture_timeout(spf, still), spf, "{still} empty captures");
+    }
+}
+
+#[test]
+fn a_still_screen_is_waited_for_longer() {
+    let spf = Duration::from_millis(33);
+    let waited = capture_timeout(spf, STILL_AFTER + 1);
+    assert!(waited > spf, "{waited:?}");
+    assert_eq!(waited, capture_timeout(spf, 10_000), "and no longer than that");
+}
+
+/// The wait never goes below the frame period, so a loop that is already slow is not
+/// made to spin faster than it would have.
+#[test]
+fn a_slow_frame_rate_keeps_its_own_period() {
+    let spf = Duration::from_millis(500);
+    assert_eq!(capture_timeout(spf, 0), spf);
+    assert_eq!(capture_timeout(spf, 100), spf);
+}
