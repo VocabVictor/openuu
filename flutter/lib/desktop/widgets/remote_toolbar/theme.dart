@@ -94,6 +94,10 @@ class _ToolbarTheme {
   static const Color activeColor = UiColor.primaryTint;
   static const Color hoverActiveColor = Color(0xffdce8ff);
 
+  // The three close affordances of a session window deliberately hover
+  // differently, by how much the click costs: a tab close drops one tab and
+  // uses a plain 6% black, while closing from the toolbar or the window ends
+  // the session and earns this danger tint. Do not "unify" them.
   static const Color redColor = Color(0xfffff0ef);
   static const Color hoverRedColor = Color(0xffffe1df);
   // kMinInteractiveDimension
