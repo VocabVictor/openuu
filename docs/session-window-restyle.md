@@ -44,3 +44,33 @@
 - 状态条"已连接"后 3 s 自动收起；鼠标移到画布顶部 8px 热区或状态变化时再出现（不常驻）。
 - 断线重连不再弹框：状态条内显示"已断开，N 秒后重连"倒计时 + "立即重连 / 断开"两个按钮（Secondary / Danger）。
 - 截图只截本机窗口（PowerShell 截当前进程窗口）；不动虚机桌面。
+
+## 5. 实施结果（2026-09-13）
+
+9 步全部落 master，每步 `flutter analyze` 均为 224 个问题（基线 227，无新增诊断）。
+
+| 步骤 | 提交 |
+| --- | --- |
+| 1 `UiSession` token | 先于本表（`ui_tokens.dart`） |
+| 2 工具栏容器与按钮 | `5853f5319` |
+| 2b 激活态改主色淡底 | `39e12ebf6` |
+| 3 菜单走 menu token | `5980a0f9a` |
+| 4 拖拽手柄 | `cd9a8f279` |
+| 5 会话 tab 项与窗口按钮 | `ea6beb38f` |
+| 6 状态条组件 / i18n / 接入画布 | `641982bc2`、`d2f925cb4`、`d84c98abe` |
+| 7 连接密码框 + 公共对话框控件 | `9bcbfcbc5` |
+| 8 2FA 与等待接受 / 中继提示 / 断线重连 | `e05471593`、`f266873bf`、`a18401c4a` |
+| 9 端口转发 / 文件传输 / 终端页 | `4242def67`、`0ec0a3088`、`50fdcf0b0` |
+
+方案外的三项补充：
+
+* 通用外壳做成了 `flutter/lib/common/widgets/ui_dialog.dart`（`UiDialog` + `UiDialogAction`），
+  而不是只供会话使用的 `SessionDialog`，登录框等也用它；`dialogManager.show` 的 builder 要求
+  `CustomAlertDialog`，因此 `UiDialog.alert(context)` 是它的正式入口，`build` 只是转调。
+* 对话框里重复出现的控件抽成 `flutter/lib/common/widgets/ui_fields.dart`
+  （`uiDialogField` / `uiDialogToggle` / `uiDialogText`）。
+* 断线重连的联动靠 `SessionStatusRegistry`（按 peer id 找到打开中的状态条）：
+  没有状态条的会话（移动端、其他窗口类型）仍走原来的对话框，改动不触及它们。
+
+截图仍未出：笔记本上有用户自己打开的主窗口，此时启动便携版发 `--connect` 会被 IPC 投递到那个实例，
+按"不打扰用户"的裁定推迟到该窗口关闭后再补。
