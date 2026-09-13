@@ -69,3 +69,5 @@ pub mod privacy_mode;
 pub mod virtual_display_manager;
 
 mod kcp_stream;
+
+mod stream_split;
