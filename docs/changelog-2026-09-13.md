@@ -28,6 +28,16 @@ a84c5c4d1 (bundle EC16A4976D69) is installed on the three test machines.
   only stripped double quotes. Parsed as TOML now. `7dfcacd9f`.
 * MSI: import the installing user's config before creating the service
   `01042ed3b` (replaces the reverted `bbe6fcc73` / `b732500c5`).
+* **master did not compile on Linux** after the split work: seven
+  visibility and naming errors in `cfg(linux)` items that the Windows build
+  machine cannot see, found by the first run of the new Linux check
+  workflow (`968942197`, run 34723224521). Fixed in `1a78914dc`
+  (input_service wayland clipboard items `pub(in crate::server)`),
+  `a0df9660f` (clipboard_service `wayland` renamed `wayland_text`),
+  `810f2f543` (core_main helpers exported), `b29837544` (clipboard context
+  `pub(super)`); third run green (34726276600). The workflow is now a gate
+  for any change touching Linux/Unix items (AGENTS.md) and also runs on
+  pushes to master (`878ab1ab1`).
 * Legacy signed-in session migrated to the connection-gate key
   `46d54296b`; portable data.bin include path after the move `fe9c91e8a`;
   audio_state_tests reaching AudioHandler fields `adf96605d`.
