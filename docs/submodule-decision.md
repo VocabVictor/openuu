@@ -111,6 +111,28 @@ have to stay identical on both ends or sessions stop working. Moving the transpo
 silent and fatal. So (c) is right for anything client-only still sitting in the
 submodule, and wrong for the transport, which is the thing we actually want to change.
 
+## 4a. Two things building it turned up
+
+Found while implementing option (b), after this page was written. Neither changes the
+recommendation; both make the estimate in section 2 slightly less cheap than it looked,
+and both are the kind of thing only writing the code finds.
+
+**`Stream` implements `Drop`.** It closes a WebRTC session on the way out, which means the
+enum's variants cannot be destructured at all — `cannot move out of type which implements
+the Drop trait`. The socket has to be taken out through a `&mut` with `mem::replace`, which
+needs an inert stand-in to leave behind, and the emptied husk is then dropped. That is safe
+only because `close_webrtc` does nothing on a TCP stream, which is one more upstream detail
+the module now depends on.
+
+The same `Drop` is why WebRTC is harder than section 2 implies. Its handle clones freely,
+but two `Stream`s over one connection would close the session when the first of them is
+dropped, so the halves cannot simply be two `Stream`s. Still easy, still not free.
+
+**The chaining adaptor's type cannot be named.** Bytes already pulled off the socket but not
+yet framed have to be read out before the socket itself, and the adaptor that does that is
+not exported by tokio, so the read side is a boxed trait object. One allocation per
+connection, and one more place where a version bump is felt.
+
 ## 5. Recommendation, and what would change it
 
 **Do not fork. Take option (b): build the writer split in this repository for TCP and
