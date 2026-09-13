@@ -35,6 +35,19 @@ pub fn apply() {
         BUILTIN_KEY,
     );
     apply_ui_defaults();
+    apply_local_defaults();
+}
+
+/// Product defaults for this machine's own settings (`LocalConfig`), in the
+/// default layer a custom client's `default-settings` uses: a stored user value
+/// wins, an empty one falls back to them. On Windows H264/H265 streams decode
+/// into a D3D11 texture instead of a CPU YUV->RGBA copy per frame; upstream keeps
+/// this off because `allow-*` keys are only true when set to "Y".
+pub fn apply_local_defaults() {
+    let mut d = config::DEFAULT_LOCAL_SETTINGS.write().unwrap();
+    #[cfg(windows)]
+    d.insert(crate::config::keys::OPTION_ALLOW_D3D_RENDER.to_owned(), "Y".to_owned());
+    let _ = &mut d;
 }
 
 /// Product defaults for the remote-control UI, in the same display-settings default
@@ -122,6 +135,22 @@ mod tests {
     // before DEFAULT_DISPLAY_SETTINGS), so a stored choice keeps winning; setting one
     // here would write the test machine's real user config, so only the default and the
     // overwrite layer above it are exercised.
+    #[cfg(windows)]
+    #[test]
+    fn d3d_render_defaults_on_and_a_local_overwrite_wins() {
+        apply_local_defaults();
+        let key = crate::config::keys::OPTION_ALLOW_D3D_RENDER;
+        assert_eq!(config::LocalConfig::get_option(key), "Y");
+        assert!(config::option2bool(key, &config::LocalConfig::get_option(key)));
+        config::OVERWRITE_LOCAL_SETTINGS
+            .write()
+            .unwrap()
+            .insert(key.to_owned(), "N".to_owned());
+        assert_eq!(config::LocalConfig::get_option(key), "N");
+        config::OVERWRITE_LOCAL_SETTINGS.write().unwrap().remove(key);
+        config::DEFAULT_LOCAL_SETTINGS.write().unwrap().remove(key);
+    }
+
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     #[test]
     fn desktop_view_style_defaults_to_adaptive() {
