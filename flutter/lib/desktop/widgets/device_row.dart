@@ -108,26 +108,31 @@ class DeviceRow extends StatelessWidget {
                               color: Colors.white,
                               size: 18)),
                       const SizedBox(width: UiSpace.rowIconGap),
-                      Flexible(
-                          child: Text(deviceName(peer),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: UiType.rowTitle)),
-                      if (local) ...[
-                        const SizedBox(width: UiSpace.rowBadgeGap),
-                        Container(
-                            height: UiSpace.tagHeight,
-                            alignment: Alignment.center,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: UiSpace.tagPaddingX),
-                            decoration: BoxDecoration(
-                                color: UiColor.primaryTint,
-                                borderRadius:
-                                    BorderRadius.circular(UiSpace.tagRadius)),
-                            child: Text(zh ? '本机' : 'This device',
-                                style: UiType.tag)),
-                      ],
-                      const Spacer(),
+                      // The name and its badge take the whole middle, so the
+                      // action icons land on the card's right edge instead of
+                      // drifting with the length of the name.
+                      Expanded(
+                          child: Row(children: [
+                        Flexible(
+                            child: Text(deviceName(peer),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: UiType.rowTitle)),
+                        if (local) ...[
+                          const SizedBox(width: UiSpace.rowBadgeGap),
+                          Container(
+                              height: UiSpace.tagHeight,
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: UiSpace.tagPaddingX),
+                              decoration: BoxDecoration(
+                                  color: UiColor.primaryTint,
+                                  borderRadius:
+                                      BorderRadius.circular(UiSpace.tagRadius)),
+                              child: Text(zh ? '本机' : 'This device',
+                                  style: UiType.tag)),
+                        ],
+                      ])),
                       SizedBox(
                           width: UiSpace.rowActionHitSize,
                           height: UiSpace.rowActionHitSize,
