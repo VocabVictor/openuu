@@ -21,8 +21,19 @@ is compared with afterwards:
   suite, not a selected file: a suite that is never run whole is a suite whose
   red is discovered by whoever happens to run it.
 
-Both are taken after `check.ps1 <branch> -Flutter`, which is what moves the
-worktree to the commit being measured.
+Both are taken **on the build machine**, after `check.ps1 <branch> -Flutter`,
+which is what moves that worktree to the commit being measured.
+
+Not in the shared working tree on the development machine, where the same
+commit measures 228. The six extra are calls to `mainImportConfigText` and
+its two neighbours, undefined because `flutter/lib/generated_bridge.dart` is
+generated, git-ignored, and stale there. `flutter analyze` reads a working
+directory, not a commit, and that directory holds files no commit contains.
+
+The general form is worth more than the instance: **when two machines
+disagree about the same commit, the difference is something outside version
+control** — a generated file, a cache, an environment variable, a local
+config. Chasing it in the diff finds nothing, because it is not in the diff.
 
 ## 1. Nothing is left outside the palette
 
