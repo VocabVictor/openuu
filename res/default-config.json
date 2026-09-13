@@ -1,0 +1,7 @@
+{
+  "_comment": "Placeholder only. The real values are injected at build time through OPENUU_DEFAULT_ID_SERVER / OPENUU_DEFAULT_RELAY_SERVER / OPENUU_DEFAULT_API_SERVER / OPENUU_DEFAULT_KEY (CI secrets or D:\\openuu-tools\\default-config.env); see docs/server-config-provisioning.md. Never commit real values here.",
+  "id_server": "",
+  "relay_server": "",
+  "api_server": "",
+  "key": ""
+}
