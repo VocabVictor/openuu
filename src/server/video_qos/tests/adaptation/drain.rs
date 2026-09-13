@@ -9,6 +9,8 @@ const SEEDS: std::ops::RangeInclusive<u64> = 1..=5;
 
 struct Drain {
     seed: u64,
+    /// When the bitrate first went below the preset it opened at.
+    first_cut_ms: Option<u32>,
     peak_queue_ms: u32,
     drained_at_ms: Option<u32>,
     /// Ratio once the backlog cleared, as a fraction of the ratio before it did.
@@ -24,6 +26,12 @@ fn measure(seed: u64) -> Drain {
         .expect("the thin relay scenario");
     sc.seed = seed;
     let report = sim::run(&sc);
+    let opened_at = report.trace.first().map(|(_, _, _, r)| *r).unwrap_or_default();
+    let first_cut_ms = report
+        .trace
+        .iter()
+        .find(|(_, _, _, r)| *r < opened_at * 0.99)
+        .map(|(t, ..)| *t);
     let peak_queue_ms = report.trace.iter().map(|(_, _, q, _)| *q).max().unwrap_or(0);
     let drained_at_ms = report
         .trace
@@ -49,6 +57,7 @@ fn measure(seed: u64) -> Drain {
         .unwrap_or(u32::MAX);
     Drain {
         seed,
+        first_cut_ms,
         peak_queue_ms,
         drained_at_ms,
         ratio_after,
@@ -59,20 +68,25 @@ fn measure(seed: u64) -> Drain {
 
 #[test]
 fn a_thin_link_drains_its_startup_backlog_and_then_uses_what_it_has() {
-    println!("| seed | peak queue ms | drained at ms | steady queue p95 ms | ratio after / floor | final fps |");
-    println!("|---:|---:|---:|---:|---:|---:|");
+    println!("| seed | first cut ms | peak queue ms | drained at ms | steady queue p95 ms | ratio after / floor | final fps |");
+    println!("|---:|---:|---:|---:|---:|---:|---:|");
     let mut unmet = Vec::new();
     for seed in SEEDS {
         let d = measure(seed);
         println!(
-            "| {} | {} | {:?} | {} | {:.2} | {} |",
-            d.seed, d.peak_queue_ms, d.drained_at_ms, d.steady_queue_p95_ms, d.ratio_after, d.final_fps
+            "| {} | {:?} | {} | {:?} | {} | {:.2} | {} |",
+            d.seed, d.first_cut_ms, d.peak_queue_ms, d.drained_at_ms, d.steady_queue_p95_ms,
+            d.ratio_after, d.final_fps
         );
-        // The backlog a cold start builds on a link at a third of the preset must be
-        // gone within about half a minute, not left to trickle away for the rest of the
-        // session.  The floor bounds how fast it can go: 240 kbps under a link carrying
-        // 1.2 Mbps drains a second of queue every 1.2 seconds.
-        if !d.drained_at_ms.is_some_and(|ms| ms <= 35_000) {
+        // The send path is backed up within the first second on a link like this, and
+        // that is evidence enough: the stream must not spend three seconds at a preset
+        // the link was never going to carry.
+        if !d.first_cut_ms.is_some_and(|ms| ms <= 3_000) {
+            unmet.push(format!("seed {}: first cut at {:?}", d.seed, d.first_cut_ms));
+        }
+        // The backlog a cold start builds on a link at a third of the preset is gone in
+        // the first ten seconds, not left to trickle away for the rest of the session.
+        if !d.drained_at_ms.is_some_and(|ms| ms <= 15_000) {
             unmet.push(format!("seed {}: drained at {:?}", d.seed, d.drained_at_ms));
         }
         // Once drained it must stay drained: the controller settled on what the link carries.
@@ -80,7 +94,7 @@ fn a_thin_link_drains_its_startup_backlog_and_then_uses_what_it_has() {
             unmet.push(format!("seed {}: steady queue {} ms", d.seed, d.steady_queue_p95_ms));
         }
         // The queue a thin link builds is bounded by how fast the controller reads it.
-        if d.peak_queue_ms > 25_000 {
+        if d.peak_queue_ms > 6_000 {
             unmet.push(format!("seed {}: peak queue {} ms", d.seed, d.peak_queue_ms));
         }
         // Draining is temporary. The bitrate comes back up once the queue is clear.

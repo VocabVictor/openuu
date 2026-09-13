@@ -41,6 +41,8 @@ pub(super) const ENCODER_CONFIGURED_FPS: f64 = 30.0;
 /// Log-normal spread of frame sizes around their budget.
 pub(super) const FRAME_SIZE_SIGMA: f64 = 0.35;
 pub(super) const TICK_MS: u32 = 10;
+/// Video a socket buffer holds before a send call blocks.
+pub(super) const SOCKET_BUFFER_MS: f64 = 250.0;
 /// Samples taken before this instant belong to the cold start, not the steady state.
 pub(super) const WARM_UP_MS: u32 = 15_000;
 /// A recovery counts once target and queue have held for this long.

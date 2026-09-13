@@ -89,6 +89,34 @@ impl VideoQoS {
         self.in_vbr_state() && !self.displays.is_empty() && self.ratio > self.min_ratio() * 1.02
     }
 
+    /// What the send path pushed out over a second it spent blocked on the link. Before
+    /// the first probe comes back this is the only evidence about the link there is, and
+    /// a session that opens at a preset the link cannot carry spends those seconds filling
+    /// a queue it then has to drain. A lower bound, acted on only downwards.
+    pub fn note_link_capacity(&mut self, kbps: u32) {
+        if kbps == 0 || !self.in_vbr_state() {
+            return;
+        }
+        let current = self.bitrate();
+        let floor = self.min_ratio();
+        if current == 0 || kbps >= current || self.ratio <= floor {
+            return;
+        }
+        let fit = self.ratio * kbps as f32 / current as f32 * LINK_FIT;
+        let next = fit.clamp(floor, self.ratio);
+        if next >= self.ratio {
+            return;
+        }
+        log::debug!(
+            "qos_trace t={} link={kbps} bitrate={current} ratio={:.3}->{next:.3}",
+            hbb_common::get_time(),
+            self.ratio,
+        );
+        self.ratio = next;
+        self.reset_send_counters();
+        self.adjust_ratio_instant = self.now();
+    }
+
     // A viewer whose queue has to be drained is not on the cooldown: the sooner the
     // bitrate goes under what the link carries, the less backlog there is to drain.
     pub(super) fn ratio_adjust_allowed(&self) -> bool {

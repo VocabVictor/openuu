@@ -74,6 +74,12 @@ const RESTORE_GUARD_SAMPLES: u8 = 5; // A restored level that congests this soon
 const DRAIN_DELAY_MS: u32 = 1_000;
 // The step that takes a preset straight to the drain floor; the clamp stops it there.
 const DRAIN_STEP: f32 = 0.15;
+// Fraction of a measured link the stream is aimed at: the measurement is a lower bound,
+// and a rate exactly at the link keeps whatever queue it already has.
+const LINK_FIT: f32 = 0.9;
+// A send path blocked for this much of a second was waiting for the link, not for frames,
+// so what it managed to push out in that second is the link.
+pub const BLOCKED_MS_FOR_CAPACITY: u32 = 500;
 
 mod user_delay;
 use user_delay::*;

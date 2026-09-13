@@ -31,6 +31,10 @@ pub fn run(sc: &Scenario) -> Report {
     let mut encode_phase = 0.0_f64;
     let mut encoded_this_second = 0_usize;
     let mut probe_sent: Option<u32> = None;
+    // What the send path would see: bits it got out this second, and how much of that
+    // second it spent with the path backed up rather than waiting for frames.
+    let mut drained_bits_this_second = 0.0_f64;
+    let mut blocked_ms_this_second = 0_u32;
     let mut replies: Vec<(u32, u32)> = Vec::new(); // (arrive_ms, delay_ms)
     let restore_ms = sc.link.restore_ms();
 
@@ -93,6 +97,7 @@ pub fn run(sc: &Scenario) -> Report {
                 head.bits -= take;
                 queued_bits -= take;
                 budget -= take;
+                drained_bits_this_second += take;
                 if head.bits <= 1e-9 {
                     if now >= WARM_UP_MS {
                         delivered += 1;
@@ -101,6 +106,12 @@ pub fn run(sc: &Scenario) -> Report {
                     queue.pop_front();
                 }
             }
+        }
+
+        // What a blocked send call means: the socket buffer is full, not that a frame is
+        // in flight.  A buffer holds about a quarter second of video.
+        if queued_bits / capacity_kbps.max(1.0) > SOCKET_BUFFER_MS {
+            blocked_ms_this_second += TICK_MS;
         }
 
         // Probe replies reach the controller.
@@ -123,6 +134,11 @@ pub fn run(sc: &Scenario) -> Report {
                 });
             }
             qos.user_delay_response_elapsed(1, (now - probe_sent.unwrap()) as u128);
+            if blocked_ms_this_second >= super::super::super::BLOCKED_MS_FOR_CAPACITY {
+                qos.note_link_capacity((drained_bits_this_second / 1000.0) as u32);
+            }
+            drained_bits_this_second = 0.0;
+            blocked_ms_this_second = 0;
             if sc.abr {
                 qos.update_display_data("sim", encoded_this_second);
             }
