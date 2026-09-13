@@ -456,23 +456,42 @@ Measurements and their limits are in `docs/perf-baseline-2026-09-13.md`
 
 ## Not verified, and why
 
+Each entry says what is missing, so that it can be struck when that thing
+arrives. An item with no release condition stops being a warning and becomes
+decoration; these are phrased as **what to go and get**.
+
 * **Cross-network smoke.** Both test peers share one public address, so the
   peer-initiated relay path and symmetric-NAT behaviour are still only
   covered by unit tests.
+  **Clears when:** one machine sits behind a different public egress and
+  `scripts/wan-smoke.ps1` has been run against it, with the result written
+  into that script's STATUS block. Needs a second network, not more code.
 * **Hardware-encoder numbers on a real machine.** They need a peer that has
   a GPU *and* composites a moving screen. The build machine has the GPU but
   is headless, so DXGI produces no frames; the VM composites but encodes in
-  software. An HDMI dummy plug on the build machine would settle it. This
-  blocks the before and after for the frame-rate lock, the recovery pace and
-  D3D decoding on the controller.
+  software. This blocks the before and after for the frame-rate lock, the
+  recovery pace and D3D decoding on the controller.
+  **Clears when:** an HDMI dummy plug is fitted to the build machine, so that
+  one host both composites and has the GPU. Costs a few currency units and a
+  reboot; nothing else is blocking.
 * **Capture pacing on a real machine** is flat for the structural reason
   above: the two-vCPU peer's encoder, not the link, is the bottleneck, so
   the wait path never approaches the ceiling the change addresses.
+  **Clears when:** the same dummy-plug host exists, or a peer with more than
+  two vCPUs. Same dependency as the entry above.
 * **A direct session to the VM peer** is impossible: it sits on the Hyper-V
   internal subnet, which the controller cannot route to. Relay only.
+  **Clears when:** the VM is given an external or bridged switch, or a
+  different peer is used for direct-path work. This one is a configuration
+  change, not a purchase.
 * **Remote-session screenshots** for the restyled window are still open.
+  **Clears when:** the user's own main window is closed, so that a portable
+  instance can take `--connect` without the IPC delivering it to theirs.
+  Waiting on a person, not on a machine.
 * **Start-up drain, P0-c and tokenising the file-transfer and terminal
   pages** have not been started.
+  **Clears when:** somebody starts them; they are ordinary queued work with
+  no external dependency. Tracked in `docs/backlog-order-2026-09-14.md`.
 
 ## Appendix: what went wrong in this session, and what it became
 

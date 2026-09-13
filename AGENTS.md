@@ -295,7 +295,12 @@ Files that only compile on macOS cannot be verified anywhere yet: OpenUU
 ships Windows builds only, and no macOS runner is planned until a macOS
 target exists. Linux-only files below are no longer deferred; they are split
 under the Linux check rule above. macOS-only files stay as they are; do not
-split them before a check exists:
+split them before a check exists.
+
+**This deferral clears when** a macOS runner can compile the crate — either a
+`macos-latest` job modelled on `linux-check.yml`, or a machine somebody owns.
+Until then the list below is not a backlog of work to do; it is a list of
+files nobody may split, and that is the whole of its purpose. The files:
 
 * `src/server/drm_capturer/` and `src/ipc/drm/` are split (Linux + `drm` feature,
   checked by the third step of the Linux workflow and `check-linux.ps1 -Drm`)
