@@ -186,6 +186,17 @@ do not automate the interaction.
 * Use `spawn_blocking` or dedicated threads for blocking work.
 * Do not use `std::thread::sleep()` in async code.
 
+## Commit messages and remote branches
+
+* A commit message carries no AI attribution: no `Co-Authored-By: Claude ...`,
+  `Claude-Session: ...`, `Generated with Claude Code` or similar trailer.
+  The author is the human account; tooling is not credited in history.
+* GitHub holds only `master`. Nobody pushes any other branch there; work in
+  progress lives in local branches and on the build machine's bare repository.
+  Linux verification runs through `C:uild\check-linux.ps1` (WSL Debian on
+  the build machine); the `linux-check.yml` workflow is only a backstop on
+  pushes to `master`.
+
 ## Documentation and test data
 
 * Documents, commit messages and test fixtures must not contain real IP
