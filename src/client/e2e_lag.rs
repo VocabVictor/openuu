@@ -5,7 +5,8 @@
 //! clock offset between the two machines. Only the distribution matters.
 //! Logged once a second as `qos_e2e`, gated like the server's `qos_*` lines.
 
-use hbb_common::{log, message_proto::{video_frame, VideoFrame}};
+use base::message_proto::{video_frame, VideoFrame};
+use hbb_common::log;
 use std::time::{Duration, Instant};
 
 fn verbose() -> bool {
