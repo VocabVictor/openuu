@@ -191,6 +191,12 @@ commit (dozens of files, thousands of changed lines) cannot be reviewed.
   whatever else is staged. A bare `git commit`, `git commit -a` or
   `git add -A` sweeps other people's staged work into your commit. Check
   `git show --stat HEAD` afterwards.
+* **File ownership exists to stop people overwriting each other, not to stop
+  the tree compiling.** When splitting a change along ownership lines would
+  leave master unbuildable between the two commits, one person makes it in one
+  commit, including the other's files, and says so. A broken intermediate
+  state costs everyone who pulls; a commit that reaches into someone else's
+  file costs one conversation.
 * **In a shared working tree `--amend` and `rebase` are never used, because HEAD
   may not be your commit.** Other sessions commit between your own commits, so
   by the time you amend, HEAD is somebody else's work and the amend rewrites
