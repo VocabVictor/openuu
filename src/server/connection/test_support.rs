@@ -4,6 +4,17 @@
 use super::*;
 use hbb_common::tokio::net::TcpListener;
 
+/// A `Connection` under test plus the receiving ends of its channels.
+pub(super) struct TestParts {
+    pub(super) conn: Connection,
+    /// The controller's end of the stream: replies can be read from it.
+    pub(super) controller: super::super::Stream,
+    /// Behind `inner.send`, what the message loop would drain into the stream.
+    pub(super) rx: mpsc::UnboundedReceiver<(Instant, Arc<Message>)>,
+    /// Behind `tx_input`, what the input thread would replay.
+    pub(super) rx_input: std_mpsc::Receiver<MessageInput>,
+}
+
 impl Connection {
     /// Build a connection over a loopback TCP pair. The returned stream is the
     /// controller's end: whatever the connection sends can be read from it.
@@ -12,12 +23,11 @@ impl Connection {
     /// nothing is spawned. Audit posts and CM messages go to channels whose
     /// receivers are dropped.
     pub(super) async fn for_test(id: i32) -> (Self, super::super::Stream) {
-        let (conn, controller, _rx) = Self::for_test_with_sender(id).await;
-        (conn, controller)
+        let parts = Self::for_test_parts(id).await;
+        (parts.conn, parts.controller)
     }
 
-    /// Like `for_test`, also returning the receiver behind `inner.send`, the
-    /// channel the message loop would drain into the stream.
+    /// Like `for_test`, also returning the receiver behind `inner.send`.
     pub(super) async fn for_test_with_sender(
         id: i32,
     ) -> (
@@ -25,6 +35,24 @@ impl Connection {
         super::super::Stream,
         mpsc::UnboundedReceiver<(Instant, Arc<Message>)>,
     ) {
+        let parts = Self::for_test_parts(id).await;
+        (parts.conn, parts.controller, parts.rx)
+    }
+
+    /// Mark the connection as an authorized session of `conn_type` without
+    /// going through the login flow (no services are subscribed).
+    pub(super) fn authorize_for_test(&mut self, conn_type: AuthConnType) {
+        self.authorized = true;
+        self.authed_conn_id = Some(raii::AuthedConnID::new(
+            self.inner.id(),
+            conn_type,
+            self.session_key(),
+            self.tx_from_authed.clone(),
+            self.lr.clone(),
+        ));
+    }
+
+    pub(super) async fn for_test_parts(id: i32) -> TestParts {
         let listener = TcpListener::bind("127.0.0.1:0")
             .await
             .expect("bind loopback");
@@ -42,7 +70,7 @@ impl Connection {
         let (tx_to_cm, _rx_to_cm) = mpsc::unbounded_channel::<ipc::Data>();
         let (tx, rx) = mpsc::unbounded_channel::<(Instant, Arc<Message>)>();
         let (tx_video, _rx_video) = mpsc::unbounded_channel::<(Instant, Arc<Message>)>();
-        let (tx_input, _rx_input) = std_mpsc::channel();
+        let (tx_input, rx_input) = std_mpsc::channel();
         let (tx_from_authed, _rx_from_authed) = mpsc::unbounded_channel::<ipc::Data>();
         let (tx_post_seq, _rx_post_seq) = mpsc::unbounded_channel();
         let control_permissions: Option<ControlPermissions> = None;
@@ -139,7 +167,12 @@ impl Connection {
             conn_audit_primary_auth: ConnAuditPrimaryAuth::None,
             conn_audit_two_factor: ConnAuditTwoFactor::None,
         };
-        (conn, controller, rx)
+        TestParts {
+            conn,
+            controller,
+            rx,
+            rx_input,
+        }
     }
 
     /// The `LoginRequest.password` a controller would send for `password`:

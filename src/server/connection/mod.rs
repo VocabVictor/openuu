@@ -193,5 +193,6 @@ mod test {
     mod scope_option_tests;
     mod login_tests;
     mod pre_auth_tests;
+    mod input_tests;
 
 }
