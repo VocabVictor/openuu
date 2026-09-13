@@ -168,8 +168,10 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   button never enabling), `ae9482116` (a fixed 352 minimum width overflowing a
   phone) and `741ca0d9b` (the action row not stacking when it does not fit)
   were each verified only by `flutter analyze`. They need one look on a real
-  screen. Precondition: the Android build works again
-  (`docs/android-build-restore-plan.md`).
+  screen. **Precondition met as of 2026-09-13**: the Android build is green and
+  produces an APK with both native libraries in it (`android-build.yml`, run
+  34755672904). What is still missing is a device: nobody has installed the
+  APK, so this item now needs someone with an Android phone, not more CI.
 * **Dark-mode tokens.** Dark is now a supported appearance and the naming and
   resolution mechanism are decided (`docs/dark-token-decision.md`,
   `UiPalette extends ThemeExtension`, `UiColor.of(context)`).
