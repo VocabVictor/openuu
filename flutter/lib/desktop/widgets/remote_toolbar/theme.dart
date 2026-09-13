@@ -222,17 +222,30 @@ class RemoteMenuEntry {
     );
   }
 
+  /// [enabled] false when the peer cannot accept the SAS: the entry is still
+  /// listed, greyed, and says why, because leaving it out reads as "no such
+  /// feature" (AGENTS.md).
   static insertCtrlAltDel(
     SessionID sessionId,
     EdgeInsets? padding, {
     DismissFunc? dismissFunc,
     DismissCallback? dismissCallback,
+    bool enabled = true,
   }) {
     return MenuEntryButton<String>(
-      childBuilder: (TextStyle? style) => Text(
-        translate("Insert Ctrl + Alt + Del"),
-        style: style,
-      ),
+      enabled: enabled.obs,
+      childBuilder: (TextStyle? style) {
+        final label = Text(
+          translate("Insert Ctrl + Alt + Del"),
+          style: style,
+        );
+        return enabled
+            ? label
+            : Tooltip(
+                message: translate('ctrl-alt-del-unavailable-tip'),
+                child: label,
+              );
+      },
       proc: () {
         bind.sessionCtrlAltDel(sessionId: sessionId);
         if (dismissFunc != null) {

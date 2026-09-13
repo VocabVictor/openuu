@@ -133,10 +133,9 @@ extension _ConnectionTabMenu on _ConnectionTabPageState {
       menu.add(RemoteMenuEntry.insertLock(sessionId, padding,
           dismissFunc: cancelFunc));
 
-      if (pi.platform == kPeerPlatformLinux || pi.sasEnabled) {
-        menu.add(RemoteMenuEntry.insertCtrlAltDel(sessionId, padding,
-            dismissFunc: cancelFunc));
-      }
+      menu.add(RemoteMenuEntry.insertCtrlAltDel(sessionId, padding,
+          dismissFunc: cancelFunc,
+          enabled: pi.platform == kPeerPlatformLinux || pi.sasEnabled));
     }
 
     menu.addAll([
