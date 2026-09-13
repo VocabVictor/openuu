@@ -99,6 +99,28 @@ class _AboutState extends State<_About> {
                 info('Build Date', buildDate),
                 info('Fingerprint', fingerprint),
                 info('ID', myId),
+                Obx(() {
+                  final url = stateGlobal.updateUrl.value;
+                  if (url.isEmpty) {
+                    return _settingRow(
+                        context,
+                        'Check for updates',
+                        _Button('Check for updates',
+                            () => bind.mainGetSoftwareUpdateUrl()),
+                        description: translate('Up to date'));
+                  }
+                  final installed = bind.mainIsInstalled();
+                  return _settingRow(
+                      context,
+                      'Check for updates',
+                      _Button(
+                          installed ? 'Update' : 'Download',
+                          () => installed
+                              ? handleUpdate(url)
+                              : launchUrlString(url)),
+                      description:
+                          '${translate("new-version-of-{${bind.mainGetAppNameSync()}}-tip")} (${bind.mainGetNewVersion()})');
+                }),
                 _settingRow(
                     context,
                     'Website',

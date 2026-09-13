@@ -768,5 +768,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Not logged in", "未登录"),
         ("pinned-windows-session-tip", "即使其他用户通过 RDP 登录，被控画面也保持在该用户的会话。需要安装为服务并开启 RDP 会话共享。"),
         ("pinned-windows-session-service-tip", "需安装为服务后才能固定会话。"),
+        ("Check for updates", "检查更新"),
+        ("Up to date", "已是最新版本"),
     ].iter().cloned().collect();
 }

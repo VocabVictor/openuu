@@ -271,5 +271,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("port-forward-mux-tip", "Carry every connection of a port-forward mapping over a single connection to the peer, instead of connecting and logging in again for each one."),
         ("pinned-windows-session-tip", "Incoming connections stay on this user's session even when someone else logs in over RDP. Requires the service and RDP session sharing."),
         ("pinned-windows-session-service-tip", "Install as a service to pin the session."),
+        ("Check for updates", ""),
+        ("Up to date", ""),
     ].iter().cloned().collect();
 }
