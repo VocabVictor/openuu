@@ -185,3 +185,49 @@ class UiType {
   static final TextStyle button =
       _base.copyWith(fontSize: 13, fontWeight: FontWeight.w500);
 }
+
+/// Session windows (remote control, file transfer, terminal, port forward,
+/// camera): docs/session-window-restyle.md. Sizes only; colours and type come
+/// from [UiColor] / [UiType].
+class UiSession {
+  // tab bar of a session window (the main window keeps the DesktopTab defaults)
+  static const double tabBarHeight = 36;
+  static const double tabPaddingX = UiSpace.s3;
+  static const double tabIconSize = 16;
+  static const double tabIconGap = UiSpace.s2;
+  static const double tabIndicator = 2;
+  static const double tabCloseSize = 16;
+  static const double tabCloseHitSize = 24;
+  static const double tabActionHitSize = 36;
+  static const double tabActionIconSize = 14;
+  static const double tabMaxLabelWidth = 200;
+
+  // floating toolbar
+  static const double toolbarRadius = 8;
+  static const double toolbarPaddingX = UiSpace.s2;
+  static const double toolbarButtonSize = 28;
+  static const double toolbarIconSize = 16;
+  static const double toolbarButtonGap = UiSpace.s1;
+  static const double toolbarButtonRadius = 6;
+  static const double toolbarHandleThickness = 20;
+  static const double toolbarHandleIconSize = 14;
+  static const double toolbarMenuMinWidth = 200;
+  static const Color toolbarShadow = Color(0x1a000000);
+  static const Offset toolbarShadowOffset = Offset(0, 4);
+  static const double toolbarShadowBlur = 16;
+
+  // inline status bar at the top of the canvas
+  static const double statusBarHeight = 28;
+  static const double statusBarPaddingX = UiSpace.s3;
+  static const double statusBarHotZone = 8;
+  static const Duration statusBarAutoHide = Duration(seconds: 3);
+  static const Duration statusBarFade = Duration(milliseconds: 150);
+
+  // session dialogs (password, 2FA, waiting, relay hint, restart)
+  static const double dialogWidth = UiSpace.dialogContentWidth;
+  static const double dialogPadding = UiSpace.s6;
+  static const double dialogIconSize = 16;
+  static const double dialogFieldGap = UiSpace.s4;
+  static const double dialogButtonGap = UiSpace.s2;
+  static const double dialogControlHeight = UiSpace.controlHeight;
+}
