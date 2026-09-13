@@ -20,10 +20,10 @@ class _CmControlPanel extends StatelessWidget {
       children: [
         Expanded(
             child: buildButton(context,
-                color: UiColor.primary,
+                color: UiColor.of(context).primaryFill,
                 onClick: handleClose,
                 text: 'Close',
-                textColor: Colors.white)),
+                textColor: UiColor.of(context).onPrimary)),
       ],
     ).marginOnly(bottom: buttonBottomMargin);
   }
@@ -40,7 +40,8 @@ class _CmControlPanel extends StatelessWidget {
       children: [
         Offstage(
           offstage: !showElevation || !showAccept,
-          child: buildButton(context, color: UiColor.warning, onClick: () {
+          child: buildButton(context, color: UiColor.of(context).warning,
+              onClick: () {
             handleAccept(context);
             handleElevate(context);
             windowManager.minimize();
@@ -48,10 +49,10 @@ class _CmControlPanel extends StatelessWidget {
               text: 'Accept and Elevate',
               icon: Icon(
                 Icons.security_rounded,
-                color: Colors.white,
+                color: UiColor.of(context).onWarning,
                 size: UiCm.controlIconSize,
               ),
-              textColor: Colors.white,
+              textColor: UiColor.of(context).onWarning,
               tooltip: 'accept_and_elevate_btn_tooltip'),
         ),
         Row(
@@ -63,13 +64,13 @@ class _CmControlPanel extends StatelessWidget {
                   children: [
                     buildButton(
                       context,
-                      color: UiColor.primary,
+                      color: UiColor.of(context).primaryFill,
                       onClick: () {
                         handleAccept(context);
                         windowManager.minimize();
                       },
                       text: 'Accept',
-                      textColor: Colors.white,
+                      textColor: UiColor.of(context).onPrimary,
                     ),
                   ],
                 ),
@@ -77,11 +78,14 @@ class _CmControlPanel extends StatelessWidget {
             Expanded(
               child: buildButton(
                 context,
-                color: Colors.white,
-                border: Border.all(color: UiColor.inputBorder),
+                // The affirmative is filled and this one is outlined: the
+                // pair stays distinguishable with the colour removed
+                // (AGENTS.md, consent surfaces).
+                color: UiColor.of(context).surface,
+                border: Border.all(color: UiColor.of(context).inputBorder),
                 onClick: handleDisconnect,
                 text: 'Cancel',
-                textColor: UiColor.text,
+                textColor: UiColor.of(context).text,
               ),
             ),
           ],
