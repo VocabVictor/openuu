@@ -462,8 +462,23 @@ settles it. This is the one piece of evidence here that no `grep` can reach.
 
 When nobody claims a commit, record that it is unclaimed rather than crediting
 or retiring anything on its behalf. On 2026-09-13 a toolbar refactor appeared
-that did exactly what a backlog entry asked for, and no session would claim it;
-the entry stayed open, which is the correct outcome.
+that did exactly what a backlog entry asked for; three sessions searched the
+history and none could tell who wrote it, and one of them was about to retire
+the entry anyway. Asking the session that assigned the work settled it in one
+question, and the entry was retired on that basis, not on the search.
+
+### An assignment names the paths and who owns them
+
+Work is handed out by scope ("these six part files") and divided by area
+("`remote_toolbar/` belongs to 8f"). **Those are two coordinate systems over
+the same files, and nothing links them**: whoever follows the assignment never
+meets the division, and whoever follows the division never sees the assignment.
+On 2026-09-13 a refactor reached into another session's area that way; the two
+edits happened not to collide, and **luck and isolation look identical until
+the day they do**. An assignment says which paths it covers *and* who owns them
+today; when it crosses into someone else's area, say so in the assignment, and
+name who tells them. The defect here belongs to whoever writes the assignment,
+not to whoever follows it.
 
 ### Say which step you actually reached
 
