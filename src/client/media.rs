@@ -42,6 +42,7 @@ pub fn start_video_thread<F, T>(
         let mut count = 0;
         let mut duration = std::time::Duration::ZERO;
         let mut skip_beginning = 0;
+        let mut e2e_lag = super::e2e_lag::E2eLag::default();
         loop {
             if let Ok(data) = video_receiver.recv() {
                 match data {
@@ -83,8 +84,10 @@ pub fn start_video_thread<F, T>(
                             let mut pixelbuffer = true;
                             let mut tmp_chroma = None;
                             let format_changed = handler.decoder.format() != format;
+                            let pts = super::e2e_lag::frame_pts(&vf);
                             match handler.handle_frame(vf, &mut pixelbuffer, &mut tmp_chroma) {
                                 Ok(true) => {
+                                    e2e_lag.observe(display, pts);
                                     video_callback(
                                         display,
                                         &mut handler.rgb,

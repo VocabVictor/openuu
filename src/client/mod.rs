@@ -192,6 +192,7 @@ mod login_peer;
 mod login_msg;
 mod media;
 pub use media::*;
+mod e2e_lag;
 mod input;
 pub use input::*;
 mod login_error;
