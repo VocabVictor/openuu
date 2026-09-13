@@ -3,7 +3,6 @@ import '../../common.dart';
 import '../../models/online_presence.dart';
 import '../../models/peer_model.dart';
 import '../pages/desktop_devices_page.dart' show deviceName;
-import 'ui_palette.dart';
 import 'ui_tokens.dart';
 
 /// A collapsible group title: chevron and text share the page's left edge
@@ -218,7 +217,7 @@ class DeviceRow extends StatelessWidget {
                           width: UiSpace.rowActionHitSize,
                           child: local
                               ? null
-                              : const Icon(Icons.chevron_right,
+                              : Icon(Icons.chevron_right,
                                   size: UiSpace.rowActionIconSize,
                                   color: ui.faint)),
                     ])))));
