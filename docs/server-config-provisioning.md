@@ -116,7 +116,7 @@ needs no separate vocabulary and the parser validates against those lists.
 | --- | --- | --- |
 | `<exe dir>/openuu-config.json` | every start of the service and of the UI process; skipped when its SHA-256 equals the stored `imported-config-hash` local option | Rust `core_main` |
 | `--import-config <path>` | as today for `.toml`; a `.json` path takes the new parser (the MSI-generated temp service keeps working) | Rust |
-| MSI | `msiexec … OPENUU_CONFIG=<path>`; when both a `.json` and the legacy `.toml` import path are present the `.json` wins and the conflict is logged as `event=config_import_conflict` copies the file to the install dir as `openuu-config.json` (so the exe-dir rule picks it up) and passes it to the existing `--import-config` custom action; a `openuu-config.json` placed in the dist dir is bundled the way `custom.txt` is (`preprocess.py` per-customer file) | MSI + Rust |
+| MSI | `msiexec … OPENUU_CONFIG=<path>` copies the file to the install dir as `openuu-config.json` (so the exe-dir rule picks it up) and passes it to the existing `--import-config` custom action; a `openuu-config.json` placed in the dist dir is bundled the way `custom.txt` is (`preprocess.py` per-customer file). When both a `.json` and the legacy `.toml` import path are present the `.json` wins and the conflict is logged as `event=config_import_conflict` | MSI + Rust |
 | settings page → "导入配置文件 / 从剪贴板导入" | manual | Flutter calls `main_import_config_text` (new FFI, one-line forward) |
 | QR / deep link | see §4 | Flutter → same FFI |
 
