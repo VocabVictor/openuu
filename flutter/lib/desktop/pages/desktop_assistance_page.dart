@@ -70,7 +70,7 @@ class _DesktopAssistancePageState extends State<DesktopAssistancePage> {
         onAssistance: () {},
         onFavorites: widget.onFavorites,
         onSettings: widget.onSettings,
-        header: Text(t('远程协助', 'Remote assistance'),
+        header: Text(t('开始协助', 'Start assistance'),
             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600)),
         content: LayoutBuilder(builder: (context, bounds) {
           final inset = (bounds.maxWidth * .055).clamp(20.0, 48.0);
