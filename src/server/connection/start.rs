@@ -137,7 +137,7 @@ impl Connection {
                     let bits = 8 * value.compute_size();
                     let send_begin = Instant::now();
                     let whole = conn.stream.writer().is_none();
-                    if let Err(err) = conn.stream.send_video(instant, value).await {
+                    if let Err(err) = conn.stream.send_video(instant.into(), value).await {
                         conn.on_close(&err.to_string(), false).await;
                         break;
                     }

@@ -104,6 +104,14 @@ impl ConnWriter {
         }
     }
 
+    /// Bytes that are already an encoded message: they still get the length header and
+    /// the encryption `send` would have applied.
+    pub async fn send_raw(&mut self, bytes: Vec<u8>) -> ResultType<()> {
+        match self {
+            ConnWriter::Tcp(w) => w.send_raw(bytes).await,
+        }
+    }
+
     pub async fn send_bytes(&mut self, bytes: bytes::Bytes) -> ResultType<()> {
         match self {
             ConnWriter::Tcp(w) => w.send_bytes(bytes).await,
