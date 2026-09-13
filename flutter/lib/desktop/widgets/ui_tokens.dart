@@ -101,6 +101,7 @@ class UiSpace {
   static const double settingsControlHeight = 28;
   static const double settingsDropdownPaddingLeft = 10;
   static const double settingsDropdownPaddingRight = s2;
+  static const double settingsStatusBarHeight = 44;
 }
 
 class UiColor {
@@ -119,6 +120,8 @@ class UiColor {
   static const Color settingsRowHover = Color(0xfff7f8fa);
   static const Color settingsSwitchOff = Color(0xffc9cdd4);
   static const Color inputBorder = Color(0xffdcdfe6);
+  static const Color statusRunningBg = Color(0xfff2f8f2);
+  static const Color statusStoppedBg = Color(0xfffff7e8);
 }
 
 class UiType {

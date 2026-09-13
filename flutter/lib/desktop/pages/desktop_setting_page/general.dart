@@ -17,6 +17,23 @@ class _GeneralState extends State<_General> {
   @override
   Widget build(BuildContext context) {
     final scrollController = ScrollController();
+    if (isWindows && !bind.isIncomingOnly()) {
+      final zh = Localizations.localeOf(context).languageCode == 'zh';
+      return ListView(
+        controller: scrollController,
+        children: [
+          service(),
+          _group(zh ? '外观' : 'Appearance', [
+            theme(),
+            _settingRow(context, 'Language', language()),
+          ]),
+          _mediaGroup(context, zh),
+          record(context),
+          WaylandCard(),
+          other()
+        ],
+      ).marginOnly(bottom: _kListViewBottomMargin);
+    }
     return ListView(
       controller: scrollController,
       children: [
@@ -44,15 +61,16 @@ extension _GeneralTheme on _GeneralState {
 
     final isOptFixed = isOptionFixed(kCommConfKeyTheme);
     if (isWindows && !bind.isIncomingOnly()) {
-      return _Card(title: 'Theme', children: [
-        SettingsDropdown(
+      return _settingRow(
+          context,
+          'Theme',
+          SettingsDropdown(
           keys: const ['light', 'dark', 'system'],
           values: ['Light', 'Dark', 'Follow System'].map(translate).toList(),
           current: current,
           enabled: !isOptFixed,
           onChanged: onChanged,
-        ),
-      ]);
+        ));
     }
     return _Card(title: 'Theme', children: [
       _Radio<String>(context,
@@ -86,6 +104,20 @@ extension _GeneralTheme on _GeneralState {
         return const Offstage();
       }
 
+      onToggle() {
+        () async {
+          serviceBtnEnabled.value = false;
+          await start_service(serviceStop.value);
+          // enable the button after 1 second
+          Future.delayed(const Duration(seconds: 1), () {
+            serviceBtnEnabled.value = true;
+          });
+        }();
+      }
+
+      if (isWindows && !bind.isIncomingOnly()) {
+        return _serviceBar(context, onToggle);
+      }
       return _Card(title: 'Service', children: [
         _Button(serviceStop.value ? 'Start' : 'Stop', () {
           () async {

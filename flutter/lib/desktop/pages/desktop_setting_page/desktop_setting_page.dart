@@ -39,6 +39,7 @@ part 'display.dart';
 part 'display_quality.dart';
 part 'display_style.dart';
 part 'general.dart';
+part 'general_desktop.dart';
 part 'general_other.dart';
 part 'general_record.dart';
 part 'network.dart';
