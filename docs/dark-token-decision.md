@@ -111,6 +111,13 @@ The tell is an argument about what a value "should" be where both sides have a
 real reason. That argument has no answer as long as the two usages share a
 name.
 
+Nothing about this is particular to colour. A timeout that one caller needs
+short and another needs long, a config key that means two things to two
+subsystems, a function whose callers want opposite defaults: the same
+argument, the same answer. Whenever tuning a single value has a real case on
+both sides, the name is carrying two responsibilities, and no number settles
+it.
+
 ## What the palette must satisfy
 
 The dark values are not the light ones inverted. Two rules from AGENTS.md bind
