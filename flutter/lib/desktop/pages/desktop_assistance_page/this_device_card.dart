@@ -95,7 +95,75 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                       child: Text(_copied
                           ? t('已复制', 'Copied')
                           : t('复制并分享', 'Copy and share'))))),
+          const SizedBox(width: UiSpace.s2),
+          Padding(
+              padding: const EdgeInsets.only(top: 18 + UiSpace.s2),
+              child: SizedBox(
+                  width: UiSpace.controlHeight,
+                  height: UiSpace.controlHeight,
+                  child: IconButton(
+                      padding: EdgeInsets.zero,
+                      iconSize: 18,
+                      tooltip: t('二维码分享', 'Share as QR code'),
+                      onPressed: !widget.enabled
+                          ? null
+                          : () => _shareQrDialog(context, t, temporary),
+                      icon: const Icon(Icons.qr_code_2_outlined,
+                          color: UiColor.textSecondary)))),
         ]));
+  }
+
+  /// An openuu://config QR code with the server settings and, when a
+  /// one-time password is showing, a connect{id,password} entry so the
+  /// phone that scans it lands straight on this device.
+  Future<void> _shareQrDialog(BuildContext context,
+      String Function(String, String) t, bool temporary) async {
+    final reply = await bind.mainEncodeShareConfigWithConnect(
+        optionKeys: [],
+        id: widget.deviceId,
+        password: temporary ? widget.password : '');
+    Map<String, dynamic> json = {};
+    try {
+      json = jsonDecode(reply) as Map<String, dynamic>;
+    } catch (_) {}
+    if (json['ok'] != true) {
+      showToast(json['error']?.toString() ?? t('无法生成二维码', 'Cannot build the QR code'));
+      return;
+    }
+    final payload = json['payload'].toString();
+    gFFI.dialogManager.show((setState, close, context) => CustomAlertDialog(
+        titlePadding: EdgeInsets.zero,
+        contentBoxConstraints: const BoxConstraints(minWidth: 352, maxWidth: 352),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          SizedBox(
+              height: 48,
+              child: Row(children: [
+                Expanded(
+                    child: Text(t('二维码分享', 'Share as QR code'),
+                        style: UiType.sectionTitle.copyWith(fontSize: 16))),
+                IconButton(
+                    iconSize: 16,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    icon: const Icon(Icons.close, color: UiColor.muted),
+                    onPressed: close),
+              ])),
+          const SizedBox(height: UiSpace.s2),
+          Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(UiSpace.s2),
+              child: QrImageView(data: payload, version: QrVersions.auto, size: 200, gapless: false)),
+          const SizedBox(height: UiSpace.s3),
+          Text(
+              temporary
+                  ? t('手机 OpenUU 扫码后会直接连接本设备；二维码含本次一次性密码，请勿转发。',
+                      'Scanning with OpenUU on a phone connects to this device; the code carries the current one-time password, do not forward it.')
+                  : t('手机 OpenUU 扫码后会连接本设备。', 'Scanning with OpenUU on a phone connects to this device.'),
+              style: UiType.caption,
+              textAlign: TextAlign.center),
+          const SizedBox(height: UiSpace.s6),
+        ]),
+        onCancel: close));
   }
 
   Widget _passwordColumn(String Function(String, String) t, bool temporary) =>

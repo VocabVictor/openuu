@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import '../../../common.dart';
 import '../../../models/peer_model.dart';
+import '../../../models/platform_model.dart';
 import '../../widgets/device_row.dart';
 import '../../widgets/ui_tokens.dart';
 import '../desktop_welcome_page.dart';
