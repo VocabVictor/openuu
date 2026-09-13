@@ -419,7 +419,9 @@ steps, all of them:
   `$server` holding a path. PowerShell variable names are case-insensitive, so
   the two were one variable and the assignment overwrote the switch with a
   string. Reading the code does not show it; the first run printed
-  `looked in C:uild\wt-e9srv and True` and the cause was in the message.
+  `looked in ...\wt-e9srv and True` and the cause was in the message.
+  Writing this very sentence lost its backslash-b to a shell heredoc
+  twice, which is the rule above it.
 * **Say in the group which script you changed**, so the next person to hit an
   oddity knows where to look.
 
