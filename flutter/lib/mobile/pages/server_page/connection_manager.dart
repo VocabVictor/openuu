@@ -48,7 +48,8 @@ class ConnectionManager extends StatelessWidget {
                         ).marginOnly(bottom: 5),
                   client.authorized
                       ? _buildDisconnectButton(client)
-                      : _buildNewConnectionHint(serverModel, client),
+                      : _buildNewConnectionHint(
+                          context, serverModel, client),
                   if (client.incomingVoiceCall && !client.inVoiceCall)
                     ..._buildNewVoiceCallHint(context, serverModel, client),
                 ])))
@@ -95,8 +96,10 @@ class ConnectionManager extends StatelessWidget {
     }
   }
 
-  Widget _buildNewConnectionHint(ServerModel serverModel, Client client) {
+  Widget _buildNewConnectionHint(
+      BuildContext context, ServerModel serverModel, Client client) {
     return _trustControls(
+      context,
       onReject: () => serverModel.sendLoginResponse(client, false),
       onAccept: serverModel.approveMode != 'password'
           ? () => serverModel.sendLoginResponse(client, true)
@@ -109,22 +112,24 @@ class ConnectionManager extends StatelessWidget {
   /// same 48-high, equally wide hit area as accept, so the permissive choice
   /// is never the easier one to hit; on a touch screen that matters more than
   /// on the desktop. Reject is never a bare text link.
-  Widget _trustControls(
+  Widget _trustControls(BuildContext context,
       {required VoidCallback onReject,
       VoidCallback? onAccept,
       String rejectText = "Dismiss",
       String acceptText = "Accept"}) {
+    final pal = UiColor.of(context);
+    final type = UiType.of(context);
     final shape = RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(UiCm.controlRadius));
     final reject = SizedBox(
       height: _kTrustControlHeight,
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
-            foregroundColor: UiColor.text,
-            backgroundColor: Colors.white,
-            side: const BorderSide(color: UiColor.inputBorder),
+            foregroundColor: pal.text,
+            backgroundColor: pal.surface,
+            side: BorderSide(color: pal.inputBorder),
             shape: shape,
-            textStyle: UiType.button),
+            textStyle: type.button),
         onPressed: onReject,
         child: Text(translate(rejectText)),
       ),
@@ -136,11 +141,11 @@ class ConnectionManager extends StatelessWidget {
       height: _kTrustControlHeight,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-            backgroundColor: UiColor.primary,
-            foregroundColor: Colors.white,
+            backgroundColor: pal.primaryFill,
+            foregroundColor: pal.onPrimary,
             elevation: 0,
             shape: shape,
-            textStyle: UiType.button),
+            textStyle: type.button),
         onPressed: onAccept,
         child: Text(translate(acceptText)),
       ),
@@ -160,6 +165,7 @@ class ConnectionManager extends StatelessWidget {
         style: Theme.of(context).textTheme.bodyMedium,
       ).marginOnly(bottom: 5),
       _trustControls(
+        context,
         onReject: () => serverModel.handleVoiceCall(client, false),
         onAccept: serverModel.approveMode != 'password'
             ? () => serverModel.handleVoiceCall(client, true)
