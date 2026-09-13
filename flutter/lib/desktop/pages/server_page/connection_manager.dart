@@ -88,7 +88,7 @@ class ConnectionManagerState extends State<ConnectionManager>
               showClose: true,
               onWindowCloseButton: handleWindowCloseButton,
               controller: serverModel.tabController,
-              selectedBorderColor: MyTheme.accent,
+              selectedBorderColor: UiColor.primary,
               maxLabelWidth: 100,
               tail: null, //buildScrollJumper(),
               tabBuilder: (key, icon, label, themeConf) {

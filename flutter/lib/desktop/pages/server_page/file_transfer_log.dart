@@ -18,7 +18,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.all(
-          Radius.circular(15.0),
+          Radius.circular(UiCm.controlRadius),
         ),
       ),
       child: child,
@@ -82,7 +82,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
     return PreferredSize(
       preferredSize: const Size(200, double.infinity),
       child: Container(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(UiSpace.s3),
           child: Obx(
             () {
               final jobTable = gFFI.cmFileModel.currentJobTable;
@@ -120,7 +120,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
                                             '${translate("Total")} ${readableFileSize(item.totalSize.toDouble())}',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: MyTheme.darkGray,
+                                              color: UiColor.muted,
                                             ),
                                           ),
                                         if (item.totalSize > 0)
@@ -131,7 +131,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
                                               '${translate("Speed")} ${readableFileSize(item.speed)}/s',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: MyTheme.darkGray,
+                                                color: UiColor.muted,
                                               ),
                                             ),
                                           ),
@@ -145,7 +145,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
                                             ),
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: MyTheme.darkGray,
+                                              color: UiColor.muted,
                                             ),
                                           ),
                                         ),
@@ -160,10 +160,10 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
                                               center: Text(
                                                 '${(item.finishedSize / item.totalSize * 100).toStringAsFixed(0)}%',
                                               ),
-                                              barRadius: Radius.circular(15),
+                                              barRadius: Radius.circular(UiCm.controlRadius),
                                               percent: item.finishedSize /
                                                   item.totalSize,
-                                              progressColor: MyTheme.accent,
+                                              progressColor: UiColor.primary,
                                               backgroundColor:
                                                   Theme.of(context).hoverColor,
                                               lineHeight:
@@ -197,7 +197,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
                               "assets/transfer.svg",
                               colorFilter: svgColor(
                                   Theme.of(context).tabBarTheme.labelColor),
-                              height: 40,
+                              height: UiCm.logRowHeight,
                             ).paddingOnly(bottom: 10),
                             Text(
                               translate("No transfers in progress"),
