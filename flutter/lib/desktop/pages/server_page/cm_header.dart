@@ -21,10 +21,10 @@ class _CloseButton extends StatelessWidget {
       onPressed: () {
         windowManager.close();
       },
-      icon: const Icon(
+      icon: Icon(
         IconFont.close,
         size: UiCm.titleBarIconSize,
-        color: UiColor.textSecondary,
+        color: UiColor.of(context).textSecondary,
       ),
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,
@@ -91,9 +91,9 @@ class _CmHeaderState extends State<_CmHeader>
     final kind = _sessionKind();
     return Container(
       decoration: BoxDecoration(
-        color: UiColor.panelBg,
+        color: UiColor.of(context).panelBg,
         borderRadius: BorderRadius.circular(UiCm.controlRadius),
-        border: Border.all(color: UiColor.border),
+        border: Border.all(color: UiColor.of(context).border),
       ),
       margin: const EdgeInsets.symmetric(
           horizontal: UiSpace.s1, vertical: UiSpace.s2),
@@ -110,20 +110,20 @@ class _CmHeaderState extends State<_CmHeader>
               children: [
                 Text(
                   client.name,
-                  style: UiType.sectionTitle,
+                  style: UiType.of(context).sectionTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   "(${client.peerId})",
-                  style: UiType.caption,
+                  style: UiType.of(context).caption,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (kind != null)
                   Text(
                     kind,
-                    style: UiType.caption,
+                    style: UiType.of(context).caption,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -137,7 +137,7 @@ class _CmHeaderState extends State<_CmHeader>
                                 ? translate("Disconnected")
                                 : translate("Connected")
                             : "${translate("Request access to your device")}...",
-                        style: UiType.rowTitle,
+                        style: UiType.of(context).rowTitle,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ).marginOnly(right: UiSpace.s2),
@@ -148,7 +148,7 @@ class _CmHeaderState extends State<_CmHeader>
                           formatDurationToTime(
                             Duration(seconds: _time.value),
                           ),
-                          style: UiType.caption,
+                          style: UiType.of(context).caption,
                         ),
                       )
                   ],
@@ -207,6 +207,9 @@ class _CmHeaderState extends State<_CmHeader>
         client.name.isNotEmpty ? client.name[0] : '?',
         style: const TextStyle(
           fontWeight: FontWeight.w600,
+          // The avatar's fill is derived from the peer's name (str2color),
+          // not from the palette, so its ink is not a palette member either:
+          // it has to be legible on whatever hue that function returns.
           color: Colors.white,
           fontSize: UiCm.avatarInitialSize,
         ),

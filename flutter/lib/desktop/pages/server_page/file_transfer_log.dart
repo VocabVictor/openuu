@@ -120,7 +120,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
                                             '${translate("Total")} ${readableFileSize(item.totalSize.toDouble())}',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: UiColor.muted,
+                                              color: UiColor.of(context).muted,
                                             ),
                                           ),
                                         if (item.totalSize > 0)
@@ -131,7 +131,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
                                               '${translate("Speed")} ${readableFileSize(item.speed)}/s',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: UiColor.muted,
+                                                color: UiColor.of(context).muted,
                                               ),
                                             ),
                                           ),
@@ -145,7 +145,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
                                             ),
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: UiColor.muted,
+                                              color: UiColor.of(context).muted,
                                             ),
                                           ),
                                         ),
@@ -163,7 +163,7 @@ class __FileTransferLogPageState extends State<_FileTransferLogPage> {
                                               barRadius: Radius.circular(UiCm.controlRadius),
                                               percent: item.finishedSize /
                                                   item.totalSize,
-                                              progressColor: UiColor.primary,
+                                              progressColor: UiColor.of(context).primary,
                                               backgroundColor:
                                                   Theme.of(context).hoverColor,
                                               lineHeight:

@@ -20,10 +20,14 @@ class _PrivilegeBoardState extends State<_PrivilegeBoard> {
       child: Container(
         decoration: BoxDecoration(
           color: enabled
-              ? (canModify ? UiColor.primary : UiColor.primaryDisabled)
-              : Colors.white,
+              ? (canModify
+                  ? UiColor.of(context).primaryFill
+                  : UiColor.of(context).primaryDisabled)
+              // Withheld is an outlined tile, granted is a filled one: the
+              // state survives the colour being removed (AGENTS.md).
+              : UiColor.of(context).surface,
           borderRadius: BorderRadius.circular(UiCm.controlRadius),
-          border: enabled ? null : Border.all(color: UiColor.inputBorder),
+          border: enabled ? null : Border.all(color: UiColor.of(context).inputBorder),
         ),
         padding: const EdgeInsets.all(UiSpace.s2),
         child: InkWell(
@@ -38,7 +42,9 @@ class _PrivilegeBoardState extends State<_PrivilegeBoard> {
                 child: Icon(
                   iconData,
                   size: UiCm.boardIconSize,
-                  color: enabled ? Colors.white : UiColor.muted,
+                  color: enabled
+                      ? UiColor.of(context).onPrimary
+                      : UiColor.of(context).muted,
                 ),
               ),
             ],
@@ -62,15 +68,15 @@ class _PrivilegeBoardState extends State<_PrivilegeBoard> {
       padding: const EdgeInsets.all(UiCm.boardPadding),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(UiCm.controlRadius),
-        color: UiColor.panelBg,
-        border: Border.all(color: UiColor.border),
+        color: UiColor.of(context).panelBg,
+        border: Border.all(color: UiColor.of(context).border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             translate("Permissions"),
-            style: UiType.sectionTitle,
+            style: UiType.of(context).sectionTitle,
             textAlign: TextAlign.center,
           ).marginOnly(bottom: UiSpace.s2),
           Expanded(
