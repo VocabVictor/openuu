@@ -94,8 +94,9 @@ accepts a punch port only from the rendezvous server's own reply.
   endpoint is contacted without the user asking for it.** The two that could
   be reached automatically are off by default, and the update check is either
   skipped for this build or off.
-* The exception is a **manual** update check, which contacts upstream and
-  includes a device fingerprint.
+* A rebranded build never asks upstream for a version, on any path, so the
+  device fingerprint in that request is not sent. Before today it was sent if
+  the user ticked Windows' Auto update switch.
 * To use peer-to-peer transports without public STUN, set `ice-servers` to
   the deployment's own STUN/TURN; that replaces the built-in list.
 
