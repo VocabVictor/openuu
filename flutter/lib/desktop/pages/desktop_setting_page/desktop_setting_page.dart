@@ -191,18 +191,23 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
   Widget build(BuildContext context) {
     super.build(context);
     if (isWindows && !bind.isIncomingOnly()) {
-      final theme = MyTheme.lightTheme;
+      // The ambient theme, not MyTheme.lightTheme: starting from the light
+      // one pinned this whole window to the light appearance, and every
+      // migrated value under it resolved against the light palette no matter
+      // what the user had chosen.
+      final theme = Theme.of(context);
+      final ui = UiColor.of(context);
       return Theme(
           data: theme.copyWith(
-            scaffoldBackgroundColor: const Color(0xfff8fbfd),
+            scaffoldBackgroundColor: ui.panelBg,
             textTheme: theme.textTheme.apply(fontFamily: 'Microsoft YaHei'),
-            cardTheme: const CardTheme(
-                color: Colors.white,
+            cardTheme: CardTheme(
+                color: ui.surface,
                 surfaceTintColor: Colors.transparent,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5)),
-                    side: BorderSide(color: Color(0xffdfe4e8)))),
+                    borderRadius: const BorderRadius.all(Radius.circular(5)),
+                    side: BorderSide(color: ui.border))),
           ),
           child: DesktopWelcomePage(
             settingsSelected: true,
