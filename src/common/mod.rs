@@ -55,6 +55,7 @@ mod messages;
 mod crypto;
 mod interval;
 mod custom_client;
+pub mod provision;
 mod ipv6;
 mod udp_punch;
 pub use {process::*, version::*, key_utils::*, audio::*, audio_rechannel::*, nat::*, server_url::*, app::*, post::*, http_request::*, messages::*, crypto::*, interval::*, custom_client::*, ipv6::*, udp_punch::*};

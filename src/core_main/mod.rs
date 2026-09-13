@@ -43,7 +43,7 @@ pub fn core_main() -> Option<Vec<String>> {
     if !crate::common::global_init() {
         return None;
     }
-    base::config::builtin::apply();
+    crate::common::provision::at_startup();
     crate::load_custom_client();
     #[cfg(windows)]
     if !crate::platform::windows::bootstrap() {
@@ -420,7 +420,7 @@ pub fn core_main() -> Option<Vec<String>> {
                 } else {
                     filepath = path.to_str().unwrap().to_string();
                 }
-                import_config(&filepath);
+                crate::common::provision::import_config_path(&filepath, import_config);
             }
             return None;
         } else if args[0] == "--password" {
