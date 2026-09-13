@@ -9,6 +9,8 @@ import 'desktop_device_page.dart';
 import 'desktop_devices_page.dart';
 import 'desktop_tab_page.dart';
 import 'desktop_welcome_page.dart';
+import '../widgets/device_row.dart';
+import '../widgets/ui_tokens.dart';
 
 /// 「收藏设备」: the favourite ids, shown with the same grouped cards as the
 /// all-devices page inside the signed-in home shell.
@@ -122,12 +124,15 @@ class _DesktopFavoritesPageState extends State<DesktopFavoritesPage> {
       onAssistance: () => DesktopTabPage.showHome(assistance: true),
       onFavorites: () {},
       content: peers.isEmpty
-          ? Center(
-              child: Text(
-                  zh
-                      ? '暂无收藏设备，在设备的操作菜单中收藏后会显示在这里。'
-                      : 'No favourites yet. Devices you favourite will show up here.',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey)))
+          ? Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: UiSpace.pagePaddingX),
+              child: Column(children: [
+                EmptyRow(
+                    text: zh
+                        ? '暂无收藏设备，在设备卡片上点击星标后会显示在这里。'
+                        : 'No favourites yet. Star a device to see it here.'),
+              ]))
           : DeviceGroups(
               peers: peers,
               localId: _localId,

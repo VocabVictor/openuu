@@ -9,6 +9,8 @@ import '../../models/platform_model.dart';
 import 'desktop_device_page.dart';
 import 'desktop_tab_page.dart';
 import 'desktop_welcome_page.dart';
+import '../widgets/device_row.dart';
+import '../widgets/ui_tokens.dart';
 
 class DesktopDevicesPage extends StatefulWidget {
   const DesktopDevicesPage({super.key});
@@ -124,7 +126,7 @@ class DeviceGroups extends StatefulWidget {
   final List<Peer> peers;
   final String localId;
   final ValueChanged<Peer> onOpen;
-  /// Favourite ids; when null the cards show no star.
+  /// Favourite ids; when null the rows show no star.
   final Set<String>? favorites;
   final ValueChanged<Peer>? onToggleFavorite;
   const DeviceGroups(
@@ -144,80 +146,45 @@ class _DeviceGroupsState extends State<DeviceGroups> {
   Widget build(BuildContext context) {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
     final groups = {
-      zh ? '电脑' : 'Computers': widget.peers.where((p) => !DeviceCard.mobile(p)).toList(),
-      zh ? '手机/平板' : 'Phones / tablets': widget.peers.where(DeviceCard.mobile).toList(),
+      zh ? '电脑' : 'Computers':
+          widget.peers.where((p) => !DeviceRow.mobile(p)).toList(),
+      zh ? '手机/平板' : 'Phones / tablets':
+          widget.peers.where(DeviceRow.mobile).toList(),
     };
-    return LayoutBuilder(builder: (context, bounds) => ListView(
-      padding: EdgeInsets.symmetric(horizontal: (bounds.maxWidth * .05).clamp(20.0, 48.0), vertical: 12),
-      children: [for (final group in groups.entries) ...[
-        TextButton(onPressed: () => setState(() {
-          if (!_collapsed.remove(group.key)) _collapsed.add(group.key);
-        }), style: TextButton.styleFrom(foregroundColor: const Color(0xff20262d), alignment: Alignment.centerLeft),
-          child: Row(children: [Icon(_collapsed.contains(group.key) ? Icons.chevron_right : Icons.expand_more, size: 20),
-            const SizedBox(width: 10), Text('${group.key} ${group.value.length}', style: const TextStyle(fontSize: 16))])),
-        if (!_collapsed.contains(group.key)) ...[
-          if (group.value.isEmpty) Padding(padding: const EdgeInsets.all(16),
-            child: Text(zh ? '暂无设备' : 'No devices', style: const TextStyle(color: Colors.grey))),
-          for (final peer in group.value)
-            DeviceCard(
-                peer: peer,
-                local: peer.id == widget.localId,
-                onOpen: widget.onOpen,
-                favorite: widget.favorites?.contains(peer.id),
-                onToggleFavorite: widget.onToggleFavorite),
-        ],
-        const SizedBox(height: 18),
-      ]],
-    ));
-  }
-}
-
-/// One device row, shared by the grouped overview and other device lists.
-class DeviceCard extends StatelessWidget {
-  final Peer peer;
-  final bool local;
-  final ValueChanged<Peer> onOpen;
-  /// Whether the peer is in the favourites; null hides the star.
-  final bool? favorite;
-  final ValueChanged<Peer>? onToggleFavorite;
-  const DeviceCard(
-      {super.key,
-      required this.peer,
-      required this.local,
-      required this.onOpen,
-      this.favorite,
-      this.onToggleFavorite});
-
-  static bool mobile(Peer p) => ['android', 'ios', 'ipados'].contains(p.platform.toLowerCase());
-
-  @override
-  Widget build(BuildContext context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
-    return Padding(padding: const EdgeInsets.only(bottom: 5), child: Material(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: const BorderSide(color: Color(0xffdfe3e6))),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(width: 36, height: 36,
-          decoration: BoxDecoration(color: const Color(0xff3979ff), borderRadius: BorderRadius.circular(5)),
-          child: Icon(mobile(peer) ? Icons.phone_android : Icons.desktop_windows_outlined, color: Colors.white, size: 24)),
-        title: Row(children: [Flexible(child: Text(deviceName(peer), maxLines: 1, overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 16, color: Color(0xff20262d)))),
-          if (local) Container(margin: const EdgeInsets.only(left: 10), padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-            decoration: BoxDecoration(color: const Color(0xffe5f1ff), borderRadius: BorderRadius.circular(3)),
-            child: Text(zh ? '本机' : 'This device', style: const TextStyle(fontSize: 12, color: Color(0xff3979ff)))),
-        ]),
-        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-          if (favorite != null && !local)
-            IconButton(
-              tooltip: favorite! ? (zh ? '取消收藏' : 'Remove from favourites') : (zh ? '收藏' : 'Add to favourites'),
-              icon: Icon(favorite! ? Icons.star : Icons.star_border, size: 20,
-                color: favorite! ? const Color(0xfff5a623) : const Color(0xff9aa3ad)),
-              onPressed: onToggleFavorite == null ? null : () => onToggleFavorite!(peer)),
-          SizedBox(width: 24, child: local ? null : const Icon(Icons.chevron_right, size: 20)),
-        ]),
-        onTap: local ? null : () => onOpen(peer),
-      ),
-    ));
+    final children = <Widget>[];
+    var first = true;
+    for (final group in groups.entries) {
+      if (!first) {
+        children.add(const SizedBox(height: UiSpace.groupHeaderMarginTop));
+      }
+      first = false;
+      final collapsed = _collapsed.contains(group.key);
+      children.add(GroupHeader(
+          title: group.key,
+          count: group.value.length,
+          collapsed: collapsed,
+          onTap: () => setState(() {
+                if (!_collapsed.remove(group.key)) _collapsed.add(group.key);
+              })));
+      if (collapsed) continue;
+      children.add(const SizedBox(height: UiSpace.groupHeaderMarginBottom));
+      if (group.value.isEmpty) {
+        children.add(EmptyRow(text: zh ? '暂无设备' : 'No devices'));
+      }
+      for (var i = 0; i < group.value.length; i++) {
+        if (i > 0) children.add(const SizedBox(height: UiSpace.rowCardGap));
+        final peer = group.value[i];
+        children.add(DeviceRow(
+            peer: peer,
+            local: peer.id == widget.localId,
+            onOpen: widget.onOpen,
+            favorite: widget.favorites?.contains(peer.id),
+            onToggleFavorite: widget.onToggleFavorite));
+      }
+    }
+    return ListView(
+        padding: const EdgeInsets.fromLTRB(UiSpace.pagePaddingX, 0,
+            UiSpace.pagePaddingX, UiSpace.pagePaddingBottom),
+        children: children);
   }
 }

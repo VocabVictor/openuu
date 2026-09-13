@@ -14,7 +14,7 @@ extension _RecentCard on _DesktopAssistancePageState {
               child: _caption(t('暂无最近连接', 'No recent connections')))
           : Column(children: [
               for (final peer in widget.recentPeers)
-                DeviceCard(
+                DeviceRow(
                     peer: peer, local: false, onOpen: widget.onOpenRecent),
             ]));
 }

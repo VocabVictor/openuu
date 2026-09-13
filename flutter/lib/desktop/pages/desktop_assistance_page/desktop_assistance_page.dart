@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../models/peer_model.dart';
-import '../desktop_devices_page.dart';
+import '../../widgets/device_row.dart';
 import '../desktop_welcome_page.dart';
 
 part 'this_device_card.dart';
