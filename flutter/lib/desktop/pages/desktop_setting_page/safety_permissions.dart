@@ -62,6 +62,17 @@ extension _SafetyPermissions on _SafetyState {
           title_suffix: desktop ? [preset] : null,
           children: [
         if (!desktop) preset,
+        if (desktop && mode != _AccessMode.custom)
+          Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: UiSpace.settingsRowPaddingX,
+                  vertical: UiSpace.s2),
+              color: UiColor.primaryTint,
+              child: Text(
+                  Localizations.localeOf(context).languageCode == 'zh'
+                      ? '当前使用「${presetValues[presetKeys.indexOf(initialKey)]}」预设，下列权限由预设决定；改为「自定义」后可单独调整。'
+                      : 'The "${presetValues[presetKeys.indexOf(initialKey)]}" preset decides the permissions below; switch to "Custom" to adjust them one by one.',
+                  style: UiType.caption.copyWith(color: UiColor.primary))),
         Column(
           children: [
             _OptionCheckBox(
