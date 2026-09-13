@@ -9,6 +9,10 @@ class ActionIcon extends StatefulWidget {
   final double iconSize;
   final double boxSize;
 
+  /// Session-window look: 14px grey glyph, row hover, close hover in a
+  /// danger tint with a danger glyph instead of the red block.
+  final bool session;
+
   const ActionIcon(
       {Key? key,
       this.message,
@@ -17,7 +21,8 @@ class ActionIcon extends StatefulWidget {
       this.onTapDown,
       this.isClose = false,
       this.iconSize = _kActionIconSize,
-      this.boxSize = _kTabBarHeight - 1})
+      this.boxSize = _kTabBarHeight - 1,
+      this.session = false})
       : super(key: key);
 
   @override
@@ -29,13 +34,19 @@ class _ActionIconState extends State<ActionIcon> {
 
   @override
   Widget build(BuildContext context) {
+    final session = widget.session;
+    final iconSize = session ? UiSession.tabActionIconSize : widget.iconSize;
     return Tooltip(
       message: widget.message != null ? translate(widget.message!) : "",
       waitDuration: const Duration(seconds: 1),
       child: InkWell(
-        hoverColor: widget.isClose
-            ? const Color.fromARGB(255, 196, 43, 28)
-            : MyTheme.tabbar(context).hoverColor,
+        hoverColor: session
+            ? (widget.isClose
+                ? UiColor.danger.withOpacity(.12)
+                : UiColor.settingsRowHover)
+            : widget.isClose
+                ? const Color.fromARGB(255, 196, 43, 28)
+                : MyTheme.tabbar(context).hoverColor,
         onHover: (value) => hover.value = value,
         onTap: widget.onTap,
         onTapDown: widget.onTapDown,
@@ -45,16 +56,20 @@ class _ActionIconState extends State<ActionIcon> {
           child: widget.onTap == null
               ? Icon(
                   widget.icon,
-                  color: Colors.grey,
-                  size: widget.iconSize,
+                  color: session ? UiColor.faint : Colors.grey,
+                  size: iconSize,
                 )
               : Obx(
                   () => Icon(
                     widget.icon,
-                    color: hover.value && widget.isClose
-                        ? Colors.white
-                        : MyTheme.tabbar(context).unSelectedIconColor,
-                    size: widget.iconSize,
+                    color: session
+                        ? (hover.value && widget.isClose
+                            ? UiColor.danger
+                            : UiColor.textSecondary)
+                        : hover.value && widget.isClose
+                            ? Colors.white
+                            : MyTheme.tabbar(context).unSelectedIconColor,
+                    size: iconSize,
                   ),
                 ),
         ),

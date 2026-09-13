@@ -53,6 +53,7 @@ class WindowActionPanelState extends State<WindowActionPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final session = _isSessionTab(widget.tabController.tabType);
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -82,6 +83,7 @@ class WindowActionPanelState extends State<WindowActionPanel> {
                     }
                   },
                   isClose: false,
+                  session: session,
                 ),
               if (widget.showMaximize && !isMacOS)
                 Obx(() => ActionIcon(
@@ -95,6 +97,7 @@ class WindowActionPanelState extends State<WindowActionPanel> {
                           ? null
                           : _toggleMaximize,
                       isClose: false,
+                      session: session,
                     )),
               if (widget.showClose && !isMacOS)
                 ActionIcon(
@@ -116,6 +119,7 @@ class WindowActionPanelState extends State<WindowActionPanel> {
                     }
                   },
                   isClose: true,
+                  session: session,
                 )
             ],
           ),
