@@ -77,4 +77,3 @@ use super::*;
             "upstream's own build may still ask its own server"
         );
     }
-}
