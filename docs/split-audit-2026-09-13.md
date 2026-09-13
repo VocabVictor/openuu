@@ -218,7 +218,8 @@ Verdicts:
 
 ## Follow-ups
 
-* `2a15de7` mixed a restyle into a split; the author should confirm the dropped captions
-  and busy-state lines were replaced on purpose.
+* `2a15de7` (desktop_assistance_page): reviewed with the author; the 52 lines are dartfmt
+  re-wrapping and the private renames an extension split needs (`caption` -> `_caption`,
+  `setState` forwarded). No line or style was dropped. Known exemption, nothing to fix.
 * Run `split_audit.py` on the next batch of splits before landing; a per-commit result of
   0 lines and 0 arms is the expected outcome of a mechanical move.
