@@ -97,14 +97,11 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
           subtitle: Text(status, style: const TextStyle(fontSize: 11)),
           selected: true, onTap: () {})),
       header: Row(children: [
-        // Literal until there is a token for it: a near-black pill would
-        // disappear into a dark window, and no palette pair means "a chip that
-        // inverts the surface".
         Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(color: const Color(0xff20262d), borderRadius: BorderRadius.circular(20)),
+          decoration: BoxDecoration(color: ui.inverseSurface, borderRadius: BorderRadius.circular(20)),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.circle, size: 8, color: online ? ui.ready : ui.muted),
-            const SizedBox(width: 5), Text(status, style: const TextStyle(color: Colors.white, fontSize: 12))])),
+            const SizedBox(width: 5), Text(status, style: TextStyle(color: ui.onInverseSurface, fontSize: 12))])),
         const SizedBox(width: 12),
         Expanded(child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600))),
