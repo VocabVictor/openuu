@@ -74,3 +74,15 @@ doing and what it can break.
   first, so both windows can agree on one button. Impact if changed early:
   the CM window's accept/reject controls inherit a hover and radius chosen
   for a file toolbar, which the CM plan explicitly protects.
+
+* **Clear the test residue on the Hyper-V peer at its next boot.** The VM was
+  shut down on 2026-09-13 to free memory while a measurement fixture was still
+  installed, so none of the following could be removed remotely: a local
+  administrator account `openuutest`, automatic logon enabled for it with the
+  password stored in clear text under the Winlogon key (`AutoAdminLogon`,
+  `DefaultUserName`, `DefaultPassword`), an inbound firewall rule
+  `OpenUU-perf`, the machine variable `RUSTDESK_QOS_VERBOSE=1`, and helper
+  scripts under the shared Public folder. The machine logs into that
+  administrator account automatically on boot and the stored password is
+  readable by anyone who can read that registry key, so clear this before the
+  VM is used for anything else.
