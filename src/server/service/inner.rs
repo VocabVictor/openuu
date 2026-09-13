@@ -41,6 +41,7 @@ impl<T: Subscriber + From<ConnInner>> Service for ServiceTmpl<T> {
         } else {
             lock.subscribes.insert(sub.id(), sub.into());
         }
+        lock.wakeup.notify();
     }
 
     fn on_unsubscribe(&self, id: i32) {
@@ -48,10 +49,15 @@ impl<T: Subscriber + From<ConnInner>> Service for ServiceTmpl<T> {
         if let None = lock.subscribes.remove(&id) {
             lock.new_subscribes.remove(&id);
         }
+        lock.wakeup.notify();
     }
 
     fn join(&self) {
-        self.0.write().unwrap().active = false;
+        {
+            let mut lock = self.0.write().unwrap();
+            lock.active = false;
+            lock.wakeup.notify();
+        }
         let handle = self.0.write().unwrap().handle.take();
         if let Some(handle) = handle {
             if let Err(e) = handle.join() {

@@ -36,6 +36,41 @@ impl<T: Subscriber + From<ConnInner>> ServiceTmpl<T> {
         self.0.read().unwrap().has_subscribes()
     }
 
+    /// Sleep until there is something to do. A subscriber arriving or the service being
+    /// stopped ends it at once; anything else waits out [`IDLE_TIMEOUT`].
+    fn hibernate(&self) {
+        let (wakeup, wakeups) = {
+            let lock = self.0.read().unwrap();
+            (lock.wakeup.clone(), lock.wakeups.clone())
+        };
+        wakeups.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        // Read the generation before looking at the state: a subscriber arriving between
+        // the two changes the generation, so the wait below returns at once.
+        let since = wakeup.generation();
+        if self.has_subscribes() || !self.active() {
+            return;
+        }
+        wakeup.wait(since, time::Duration::from_millis(IDLE_TIMEOUT));
+    }
+
+    /// Times the loop has come round, idle or not.
+    pub fn wakeups(&self) -> u64 {
+        self.0
+            .read()
+            .unwrap()
+            .wakeups
+            .load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    #[inline]
+    fn note_wakeup(&self) {
+        self.0
+            .read()
+            .unwrap()
+            .wakeups
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
+
     pub fn snapshot<F>(&self, callback: F) -> ResultType<()>
     where
         F: FnMut(ServiceSwap<T>) -> ResultType<()>,
@@ -113,8 +148,17 @@ impl<T: Subscriber + From<ConnInner>> ServiceTmpl<T> {
             let mut state = S::default();
             let mut may_reset = false;
             while sp.active() {
+                if !sp.has_subscribes() {
+                    if may_reset {
+                        state.reset();
+                        may_reset = false;
+                    }
+                    sp.hibernate();
+                    continue;
+                }
+                sp.note_wakeup();
                 let now = time::Instant::now();
-                if sp.has_subscribes() {
+                {
                     if !may_reset {
                         may_reset = true;
                         state.init();
@@ -125,9 +169,6 @@ impl<T: Subscriber + From<ConnInner>> ServiceTmpl<T> {
                         #[cfg(windows)]
                         crate::platform::windows::try_change_desktop();
                     }
-                } else if may_reset {
-                    state.reset();
-                    may_reset = false;
                 }
                 let elapsed = now.elapsed();
                 if elapsed < interval {
@@ -149,7 +190,12 @@ impl<T: Subscriber + From<ConnInner>> ServiceTmpl<T> {
         let thread = thread::spawn(move || {
             let mut error_timeout = HIBERNATE_TIMEOUT;
             while sp.active() {
-                if sp.has_subscribes() {
+                if !sp.has_subscribes() {
+                    sp.hibernate();
+                    continue;
+                }
+                sp.note_wakeup();
+                {
                     log::debug!("Enter {} service inner loop", sp.name());
                     let tm = time::Instant::now();
                     if let Err(err) = callback(sp.clone()) {
