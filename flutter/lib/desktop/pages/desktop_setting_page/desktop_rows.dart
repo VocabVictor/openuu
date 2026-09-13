@@ -25,6 +25,23 @@ Widget _secondaryButton(String label, VoidCallback? onPressed) => SizedBox(
         onPressed: onPressed,
         child: Text(translate(label))));
 
+/// The primary button, 28 high, for a panel's Save.
+Widget _primaryButton(String label, VoidCallback? onPressed) => SizedBox(
+    height: UiSpace.settingsControlHeight,
+    child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            backgroundColor: UiColor.primary,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: UiColor.primaryDisabled,
+            disabledForegroundColor: Colors.white,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: UiSpace.s4),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(UiSpace.buttonRadius)),
+            textStyle: UiType.button),
+        onPressed: onPressed,
+        child: Text(translate(label))));
+
 /// A secret shown as "set" / "not set" with a Set / Change button; the value
 /// itself never appears on the page.
 Widget _secretRow(BuildContext context, String label, bool isSet,

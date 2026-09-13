@@ -1,6 +1,7 @@
 import 'package:flutter_hbb/common/widgets/brand_icon.dart';
 import '../desktop_welcome_page.dart';
 import '../../widgets/settings_dropdown.dart';
+import '../../widgets/settings_panel.dart';
 import '../../widgets/settings_row.dart';
 import '../../widgets/ui_tokens.dart';
 import 'dart:async';
@@ -45,6 +46,7 @@ part 'general_other.dart';
 part 'general_record.dart';
 part 'network.dart';
 part 'network_desktop.dart';
+part 'network_server_panel.dart';
 part 'page_tabs.dart';
 part 'safety.dart';
 part 'safety_network.dart';

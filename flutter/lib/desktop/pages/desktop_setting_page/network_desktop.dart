@@ -53,8 +53,14 @@ extension _NetworkDesktop on _NetworkState {
       if (!hideServer || !hideProxy)
         _group(zh ? '服务器' : 'Server', [
           if (!hideServer)
-            navRow('ID/Relay Server', serverSummary(),
-                () => showServerSettings(gFFI.dialogManager, _setState)),
+            futureBuilder(
+                future: serverSummary(),
+                hasData: (summary) => SettingsExpandPanel(
+                    label: translate('ID/Relay Server'),
+                    summary: summary.toString(),
+                    enabled: !locked,
+                    panel: (context, close) => _ServerPanel(
+                        close: close, onSaved: () => _setState(() {})))),
           if (!hideProxy)
             navRow('Socks5/Http(s) Proxy', proxySummary(), changeSocks5Proxy),
         ]),

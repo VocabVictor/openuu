@@ -106,6 +106,18 @@ class UiSpace {
   static const double settingsBrandIconSize = 48;
   static const double settingsNumberFieldWidth = 56;
   static const double settingsSliderWidth = 160;
+
+  // Expand panels (design-review-settings.md §2.6).
+  static const double panelPaddingLeft = s8;
+  static const double panelPaddingRight = s4;
+  static const double panelPaddingY = s4;
+  static const double panelFieldGap = s4;
+  static const double panelFieldWidth = 320;
+  static const double panelFooterGap = s4;
+  static const double panelErrorHeight = 16;
+  static const double panelTextAreaHeight = 64;
+  static const Duration panelDuration = Duration(milliseconds: 180);
+  static const Duration panelFadeDuration = Duration(milliseconds: 120);
 }
 
 class UiColor {
@@ -126,6 +138,9 @@ class UiColor {
   static const Color inputBorder = Color(0xffdcdfe6);
   static const Color statusRunningBg = Color(0xfff2f8f2);
   static const Color statusStoppedBg = Color(0xfffff7e8);
+  static const Color panelBg = Color(0xfffafbfc);
+  static const Color danger = Color(0xfff53f3f);
+  static const Color primaryDisabled = Color(0xffb8d0ff);
 }
 
 class UiType {
