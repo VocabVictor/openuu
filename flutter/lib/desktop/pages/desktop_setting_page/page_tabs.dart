@@ -54,6 +54,30 @@ extension _DesktopSettingPageTabs on _DesktopSettingPageState {
     return children;
   }
 
+  /// A tab label: 14/500, selected 600 in the primary colour with a 2px
+  /// underline as wide as the text, tabs 24 apart.
+  Widget _tabLabel(_TabInfo tab, bool active, VoidCallback onTap) => InkWell(
+      onTap: onTap,
+      child: Padding(
+          padding: const EdgeInsets.only(right: UiSpace.settingsTabGap),
+          child: IntrinsicWidth(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Spacer(),
+                    Text(translate(tab.label),
+                        style: UiType.rowTitle.copyWith(
+                            fontWeight:
+                                active ? FontWeight.w600 : FontWeight.w500,
+                            color: active
+                                ? UiColor.primary
+                                : UiColor.textSecondary)),
+                    const SizedBox(height: UiSpace.s2),
+                    Container(
+                        height: 2,
+                        color: active ? UiColor.primary : Colors.transparent),
+                  ]))));
+
   Widget _buildBlock({required List<Widget> children}) {
     // check both mouseMoveTime and videoConnCount
     return Obx(() {

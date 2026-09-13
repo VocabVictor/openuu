@@ -83,10 +83,7 @@ extension _DisplayOther on _DisplayState {
       return _settingRow(
           context,
           label,
-          Switch(
-              value: value,
-              activeColor: DesktopWelcomePage.blue,
-              onChanged: isOptFixed ? null : onChanged),
+          SettingsSwitch(value: value, onChanged: isOptFixed ? null : onChanged),
           enabled: !isOptFixed);
     }
     return GestureDetector(

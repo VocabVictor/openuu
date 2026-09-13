@@ -207,57 +207,40 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
             content: _buildBlock(children: [
               Expanded(
                   child: Column(children: [
-                SizedBox(
-                    height: 52,
-                    width: double.infinity,
-                    child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                            children: _settingTabs()
-                                .map((tab) => Obx(() {
-                                      final active =
-                                          selectedTab.value == tab.key;
-                                      return InkWell(
-                                          onTap: () {
-                                            controller.jumpToPage(
-                                                DesktopSettingPage.tabKeys
-                                                    .indexOf(tab.key));
-                                            selectedTab.value = tab.key;
-                                          },
-                                          child: Container(
-                                              margin: const EdgeInsets.only(
-                                                  left: 24, right: 8),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 12,
-                                                      horizontal: 5),
-                                              decoration: BoxDecoration(
-                                                  border: Border(
-                                                      bottom: BorderSide(
-                                                          width: 3,
-                                                          color: active
-                                                              ? DesktopWelcomePage
-                                                                  .blue
-                                                              : Colors
-                                                                  .transparent))),
-                                              child: Text(translate(tab.label),
-                                                  style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: active
-                                                          ? const Color(
-                                                              0xff172333)
-                                                          : const Color(
-                                                              0xff73808c)))));
-                                    }))
-                                .toList()))),
-                const SizedBox(height: 8),
+                Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: UiSpace.pagePaddingX),
+                    child: SizedBox(
+                        height: UiSpace.settingsTabBarHeight,
+                        width: double.infinity,
+                        child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(children: [
+                              for (final tab in _settingTabs())
+                                Obx(() => _tabLabel(tab,
+                                    selectedTab.value == tab.key, () {
+                                      controller.jumpToPage(DesktopSettingPage
+                                          .tabKeys
+                                          .indexOf(tab.key));
+                                      selectedTab.value = tab.key;
+                                    })),
+                            ])))),
+                const SizedBox(height: UiSpace.s4),
                 Expanded(
-                    child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: PageView(
-                            controller: controller,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: _children()))),
+                    child: Align(
+                        alignment: Alignment.topLeft,
+                        child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                                maxWidth: UiSpace.settingsContentMaxWidth +
+                                    2 * UiSpace.pagePaddingX),
+                            child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: UiSpace.pagePaddingX),
+                                child: PageView(
+                                    controller: controller,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    children: _children()))))),
               ]))
             ]),
           ));
