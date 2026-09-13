@@ -104,9 +104,8 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   controls, `8ae053ef2`, are the first and only exception). Bringing mobile
   onto the shared language is comparable in size to the three desktop rounds.
   Precondition: mobile builds, otherwise the work cannot be seen.
-* **Three tidy-ups with no precondition**: `AGENTS.md` still records
-  `mobile/pages/settings_page/settings_state.dart` as "~770 lines" where it is
-  now 1020; fourteen files under `flutter/lib/common/` import
+* **Two tidy-ups with no precondition**: fourteen files under
+  `flutter/lib/common/` import
   `'../../consts.dart'` with one `..` too many (it resolves — a package URI
   absorbs the extra segment — so this is style, not breakage); and the config
   preview/confirm flow is implemented twice, in

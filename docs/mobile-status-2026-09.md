@@ -166,11 +166,12 @@ Cancel 是白底加 `UiColor.inputBorder` 边框，两者包在 `Expanded` 里�
 `desktop_setting_page/network_provision.dart:97` 自己又写了一份预览逻辑，调的是同一个 FFI。
 两端各实现一次同样的预览/确认流程，是可以合并的重复，不影响功能。
 
-### 3.4 文件尺寸规则的记录已过时
+### 3.4 文件尺寸规则的记录是准确的（订正：此处原写"已过时"，是我算错了）
 
-`mobile/pages/settings_page/settings_state.dart` 现在 **1020 行**，而 `AGENTS.md` 的 Tracked
-exceptions 里记的是"单个 `_SettingsState.build` 约 770 行"。今天的 `92ec5cee0`（把
-`_SettingsState` 移进该文件）与 `6216f50b2`（折掉 Web 分支）之后没回头更新那一行。
+初稿说 `mobile/pages/settings_page/settings_state.dart` 现在 1020 行而 `AGENTS.md` 记的是
+"约 770 行"、记录已过时。**这是错的**：我把文件行数当成了方法行数。逐字符数括号层级量过，
+`_SettingsState.build` 实际跨 221–991 行，**771 行**，与 Tracked exceptions 记的"~770"吻合。
+文件 1020 行里另外 249 行是该类的字段与其它方法。记录无需更新。
 
 ### 3.5 其它未 token 化的移动端界面
 
