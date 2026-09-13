@@ -6,7 +6,7 @@ fn every_open_precedes_its_own_channels_first_data() {
         let (ours, mut peer) = stream_pair().await;
         let t = Tunnel::new();
         assert!(matches!(t.claim(), Claim::Claimed));
-        let h = t.set_muxed(ours, NoUi::default());
+        let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
         // Twenty channels, each with one byte of pipelined data behind
         // its open. An open on the control queue can lose the loop's
         // random tie-break to a data frame, so one channel would be a
@@ -46,7 +46,7 @@ fn failed_open_closes_the_local_socket() {
         let (ours, mut peer) = stream_pair().await;
         let t = Tunnel::new();
         t.claim();
-        let h = t.set_muxed(ours, NoUi::default());
+        let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
         let (mut app, sock) = local_pair().await;
         h.open("localhost", 1, sock, vec![]).unwrap();
         let id = match recv_frame(&mut peer).await.union {
@@ -66,7 +66,7 @@ fn a_refused_channel_is_reported_once_per_reason() {
         let t = Tunnel::new();
         assert!(matches!(t.claim(), Claim::Claimed));
         let ui = NoUi::default();
-        let h = t.set_muxed(ours, ui.clone());
+        let h = t.set_muxed_checking(ours, ui.clone(), ok_login());
         for reason in ["unreachable", "unreachable", "no permission"] {
             let (mut app, sock) = local_pair().await;
             h.open("localhost", 1, sock, vec![]).unwrap();
@@ -93,7 +93,7 @@ fn a_refused_reason_is_reported_again_after_a_quiet_spell() {
         let (ours, _peer) = stream_pair().await;
         let t = Tunnel::new();
         t.claim();
-        let h = t.set_muxed(ours, NoUi::default());
+        let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
         let t0 = Instant::now();
         let at = |secs: u64| t0 + std::time::Duration::from_secs(secs);
         let down = || "down".to_owned();
@@ -122,7 +122,7 @@ fn an_over_window_frame_drops_the_channel_at_once() {
         let (ours, mut peer) = stream_pair().await;
         let t = Tunnel::new();
         t.claim();
-        let h = t.set_muxed(ours, NoUi::default());
+        let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
         let (_app, sock) = local_pair().await;
         h.open("localhost", 1, sock, vec![]).unwrap();
         let id = match recv_frame(&mut peer).await.union {
@@ -150,7 +150,7 @@ fn tunnel_death_closes_channels_and_resets_state() {
         let (ours, peer) = stream_pair().await;
         let t = Tunnel::new();
         t.claim();
-        let h = t.set_muxed(ours, NoUi::default());
+        let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
         let (mut app_a, sock_a) = local_pair().await;
         let (mut app_b, sock_b) = local_pair().await;
         h.open("localhost", 1, sock_a, vec![]).unwrap();
@@ -165,7 +165,7 @@ fn tunnel_death_closes_channels_and_resets_state() {
         // The next accept establishes again on the same `Tunnel`.
         assert!(matches!(t.claim(), Claim::Claimed));
         let (ours, mut peer) = stream_pair().await;
-        let h = t.set_muxed(ours, NoUi::default());
+        let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
         let (_app_c, sock_c) = local_pair().await;
         h.open("localhost", 1, sock_c, vec![]).unwrap();
         assert!(matches!(

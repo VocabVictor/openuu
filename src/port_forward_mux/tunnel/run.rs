@@ -16,12 +16,14 @@ pub(super) async fn tunnel_loop(
     interface: impl Interface,
     state: watch::Sender<TunnelState>,
     mut lifetime: watch::Receiver<()>,
+    login_check: LoginCheck,
 ) {
+    // The first tick is immediate, so a tunnel is checked the moment it exists.
     let mut account_timer = tokio::time::interval(std::time::Duration::from_secs(1));
     let err = loop {
         tokio::select! {
             _ = account_timer.tick() => {
-                if crate::account::require_login().await.is_err() { break "OpenUU login expired".to_owned(); }
+                if login_check().await.is_err() { break "OpenUU login expired".to_owned(); }
             }
             Some(msg) = control_rx.recv() => {
                 if let Err(e) = stream.send(&msg).await {

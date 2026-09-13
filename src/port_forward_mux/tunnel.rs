@@ -3,6 +3,24 @@ use super::*;
 mod handle;
 mod run;
 use run::tunnel_loop;
+
+/// How a tunnel asks whether the account is still signed in.
+///
+/// A tunnel ends itself when the answer is no. It is handed in rather than called
+/// directly so that the ending can be tested: the real check needs an account server and
+/// a token, and without them it refuses immediately, which killed every tunnel in the
+/// tests before they could show any behaviour of their own.
+pub type LoginCheck = std::sync::Arc<
+    dyn Fn() -> std::pin::Pin<
+            Box<dyn std::future::Future<Output = hbb_common::ResultType<()>> + Send>,
+        > + Send
+        + Sync,
+>;
+
+/// The check production uses.
+pub fn account_login_check() -> LoginCheck {
+    std::sync::Arc::new(|| Box::pin(crate::account::require_login()))
+}
 use crate::client::Interface;
 use hbb_common::{
     config::READ_TIMEOUT,
@@ -63,7 +81,23 @@ impl Tunnel {
         }
     }
 
-    pub fn set_muxed(&self, mut stream: Stream, interface: impl Interface) -> Arc<TunnelHandle> {
+    pub fn set_muxed(&self, stream: Stream, interface: impl Interface) -> Arc<TunnelHandle> {
+        self.set_muxed_checking(stream, interface, account_login_check())
+    }
+
+    /// `set_muxed` with the account check handed in.
+    ///
+    /// The tunnel ends itself when the account is no longer signed in, and that is a
+    /// behaviour worth testing rather than only shipping: with the check wired directly to
+    /// the account module it could not be exercised at all, because a test has no account
+    /// and the tunnel died before any of its own behaviour could be observed. Production
+    /// calls `set_muxed`, which passes the real check, so that path is unchanged.
+    pub fn set_muxed_checking(
+        &self,
+        mut stream: Stream,
+        interface: impl Interface,
+        login_check: LoginCheck,
+    ) -> Arc<TunnelHandle> {
         cap_packet_size(&mut stream);
         let (data_tx, data_rx) = mpsc::channel(DATA_QUEUE_FRAMES);
         let (control_tx, control_rx) = mpsc::unbounded_channel();
@@ -87,6 +121,7 @@ impl Tunnel {
             interface,
             state,
             self.lifetime.subscribe(),
+            login_check,
         ));
         handle
     }

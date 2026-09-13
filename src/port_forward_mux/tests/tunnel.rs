@@ -13,6 +13,13 @@ use hbb_common::{
 
 /// A loopback TCP pair wrapped as two `Stream`s: one for the tunnel,
 /// one for the fake peer.
+/// An account check that always says yes. The tunnel ends itself when the account is
+/// gone, and a test has no account, so without this every tunnel died before it could
+/// show any behaviour of its own. The ending itself is tested separately.
+pub fn ok_login() -> crate::port_forward_mux::LoginCheck {
+    std::sync::Arc::new(|| Box::pin(async { Ok(()) }))
+}
+
 async fn stream_pair() -> (Stream, Stream) {
     let l = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = l.local_addr().unwrap();
@@ -139,6 +146,6 @@ async fn muxed_tunnel() -> (Tunnel, Arc<TunnelHandle>, u16) {
     fake_controlled(theirs, format!("127.0.0.1:{}", port));
     let t = Tunnel::new();
     t.claim();
-    let h = t.set_muxed(ours, NoUi::default());
+    let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
     (t, h, port)
 }

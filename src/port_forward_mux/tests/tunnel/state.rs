@@ -8,7 +8,7 @@ fn a_packet_declared_over_the_cap_ends_the_tunnel_before_it_arrives() {
         let addr = ours.peer_addr().unwrap();
         let t = Tunnel::new();
         t.claim();
-        let _h = t.set_muxed(Stream::Tcp(FramedStream::from(ours, addr)), NoUi::default());
+        let _h = t.set_muxed_checking(Stream::Tcp(FramedStream::from(ours, addr)), NoUi::default(), ok_login());
         assert!(matches!(t.claim(), Claim::Muxed(_)));
         // The codec's three-byte header form, declaring one byte more
         // than the cap, and nothing behind it: an uncapped codec waits
@@ -39,7 +39,7 @@ fn an_id_still_live_when_the_counter_comes_round_is_skipped() {
         let (ours, mut peer) = stream_pair().await;
         let t = Tunnel::new();
         t.claim();
-        let h = t.set_muxed(ours, NoUi::default());
+        let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
         let id_of = |ch: &PortForwardChannel| match &ch.union {
             Some(port_forward_channel::Union::Open(o)) => o.channel_id,
             other => panic!("expected open, got {:?}", other),
@@ -65,7 +65,7 @@ fn open_sends_open_then_pipelined_data_and_relays_replies() {
         let (ours, mut peer) = stream_pair().await;
         let t = Tunnel::new();
         assert!(matches!(t.claim(), Claim::Claimed));
-        let h = t.set_muxed(ours, NoUi::default());
+        let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
         let (mut app, sock) = local_pair().await;
         h.open("localhost", 80, sock, b"GET / HTTP/1.0\r\n\r\n".to_vec()).unwrap();
         let open = recv_frame(&mut peer).await;
@@ -97,7 +97,7 @@ fn dropping_the_tunnel_ends_the_peer_connection() {
         let (ours, mut peer) = stream_pair().await;
         let t = Tunnel::new();
         assert!(matches!(t.claim(), Claim::Claimed));
-        let h = t.set_muxed(ours, NoUi::default());
+        let h = t.set_muxed_checking(ours, NoUi::default(), ok_login());
         let (app, sock) = local_pair().await;
         h.open("localhost", 80, sock, Vec::new()).unwrap();
         let id = match recv_frame(&mut peer).await.union {
