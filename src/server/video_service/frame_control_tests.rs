@@ -72,3 +72,77 @@ fn a_connection_notified_by_id_reaches_the_display_it_watches() {
     assert_eq!(fetched, HashSet::from([3]));
     DISPLAY_CONN_IDS.lock().unwrap().remove(&display);
 }
+
+#[test]
+fn the_ack_window_follows_the_frame_period_or_the_round_trip_within_a_slice() {
+    let spf = Duration::from_millis(33);
+    assert_eq!(ack_wait_window(spf, None), Duration::from_millis(66));
+    assert_eq!(ack_wait_window(spf, Some(10)), Duration::from_millis(66));
+    assert_eq!(ack_wait_window(spf, Some(50)), Duration::from_millis(150));
+    assert_eq!(ack_wait_window(spf, Some(400)), Duration::from_millis(300));
+    assert_eq!(ack_wait_window(Duration::from_millis(10), None), Duration::from_millis(50));
+}
+
+#[test]
+fn a_fetched_frame_lets_the_next_encode_go_at_once() {
+    let display = 9_005;
+    notifier_for(display);
+    let mut fc = VideoFrameController::new(display);
+    let mut hold = FetchHold::new();
+    fc.set_send(Instant::now(), HashSet::from([1]));
+    notify_video_frame_fetched(display, 1, None);
+    hold.after_send(&mut fc, Duration::from_millis(300), || Ok(())).unwrap();
+    let started = Instant::now();
+    assert!(hold.may_encode(&mut fc, Duration::from_millis(300), || Ok(())).unwrap());
+    assert!(started.elapsed() < Duration::from_millis(50));
+    assert!(hold.last_wait_ms() < 100);
+}
+
+#[test]
+fn an_unfetched_frame_holds_the_next_encode_until_it_is_fetched() {
+    let display = 9_006;
+    notifier_for(display);
+    let mut fc = VideoFrameController::new(display);
+    let mut hold = FetchHold::new();
+    fc.set_send(Instant::now(), HashSet::from([1, 2]));
+    notify_video_frame_fetched(display, 1, None);
+    let window = Duration::from_millis(60);
+    hold.after_send(&mut fc, window, || Ok(())).unwrap();
+    assert!(!hold.may_encode(&mut fc, window, || Ok(())).unwrap(), "2 has not fetched");
+    notify_video_frame_fetched(display, 2, None);
+    assert!(hold.may_encode(&mut fc, window, || Ok(())).unwrap());
+    assert!(hold.last_wait_ms() >= 100, "{}", hold.last_wait_ms());
+}
+
+#[test]
+fn a_viewer_that_never_fetches_is_given_up_on_after_the_limit() {
+    let display = 9_007;
+    notifier_for(display);
+    let mut fc = VideoFrameController::new(display);
+    let mut hold = FetchHold::with_limit(Duration::from_millis(150));
+    fc.set_send(Instant::now(), HashSet::from([1]));
+    let window = Duration::from_millis(60);
+    hold.after_send(&mut fc, window, || Ok(())).unwrap();
+    let mut rounds = 0;
+    while !hold.may_encode(&mut fc, window, || Ok(())).unwrap() {
+        rounds += 1;
+        assert!(rounds < 10, "the hold limit must end the hold");
+    }
+    assert!(hold.last_wait_ms() >= 150);
+}
+
+#[test]
+fn the_tick_runs_between_slices_and_its_error_ends_the_wait() {
+    let display = 9_008;
+    notifier_for(display);
+    let mut fc = VideoFrameController::new(display);
+    let mut hold = FetchHold::new();
+    fc.set_send(Instant::now(), HashSet::from([1]));
+    let mut ticks = 0;
+    let err = hold.after_send(&mut fc, Duration::from_millis(300), || {
+        ticks += 1;
+        hbb_common::bail!("privacy mode changed")
+    });
+    assert!(err.is_err());
+    assert_eq!(ticks, 1);
+}

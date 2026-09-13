@@ -131,6 +131,7 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
     // a round waited for the previous frame to be picked up, so a blocked write
     // shows up here as capture stalling rather than as a slow network.
     let (mut sent_counter, mut wait_max_ms) = (0usize, 0u32);
+    let mut fetch_hold = FetchHold::new();
 
     while sp.ok() {
         #[cfg(windows)]
@@ -195,6 +196,17 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
             try_broadcast_display_changed(&sp, display_idx, &c, false)?;
         }
 
+        let ack_window = ack_wait_window(spf, VIDEO_QOS.lock().unwrap().rtt_baseline_ms());
+        // The previous frame is still with a slow connection: capture again next round
+        // rather than queue another encoded frame behind it.
+        if !fetch_hold.may_encode(&mut frame_controller, ack_window, || {
+            if vs.source.is_monitor() {
+                check_privacy_mode_changed(&sp, display_idx, &c)?;
+            }
+            Ok(())
+        })? {
+            continue;
+        }
         frame_controller.reset();
 
         let time = now - start;
@@ -356,21 +368,13 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
             }
         }
 
-        let mut fetched_conn_ids = HashSet::new();
-        let timeout_millis = 3_000u64;
-        let wait_begin = Instant::now();
-        while wait_begin.elapsed().as_millis() < timeout_millis as _ {
+        fetch_hold.after_send(&mut frame_controller, ack_window, || {
             if vs.source.is_monitor() {
                 check_privacy_mode_changed(&sp, display_idx, &c)?;
             }
-            frame_controller.try_wait_next(&mut fetched_conn_ids, 300);
-            // break if all connections have received current frame
-            if fetched_conn_ids.len() >= frame_controller.send_conn_ids.len() {
-                break;
-            }
-        }
-        wait_max_ms = wait_max_ms.max(wait_begin.elapsed().as_millis() as u32);
-        DISPLAY_CONN_IDS.lock().unwrap().remove(&display_idx);
+            Ok(())
+        })?;
+        wait_max_ms = wait_max_ms.max(fetch_hold.last_wait_ms());
 
         let elapsed = now.elapsed();
         // may need to enable frame(timeout)

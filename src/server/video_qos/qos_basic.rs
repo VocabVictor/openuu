@@ -27,6 +27,14 @@ impl VideoQoS {
         Duration::from_secs_f32(1. / (self.fps() as f32))
     }
 
+    /// The slowest viewer's path round trip, as its probes have established it.
+    pub fn rtt_baseline_ms(&self) -> Option<u32> {
+        self.users
+            .values()
+            .filter_map(|u| u.delay.rtt_calculator.get_rtt())
+            .max()
+    }
+
     // Get current FPS within valid range
     pub fn fps(&self) -> u32 {
         let fps = self.fps;
