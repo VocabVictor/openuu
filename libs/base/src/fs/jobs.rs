@@ -48,7 +48,7 @@ pub async fn handle_read_jobs<S: MsgSink + ?Sized>(
             match job.read().await {
                 Err(err) => {
                     stream
-                        .send(&new_error(job.id(), err, job.file_num()))
+                        .send_msg(new_error(job.id(), err, job.file_num()))
                         .await?;
                 }
                 Ok(Some(block)) => {
@@ -74,7 +74,7 @@ pub async fn handle_read_jobs<S: MsgSink + ?Sized>(
                             Some(err) => {
                                 job_log = serialize_transfer_job(job, false, false, &err);
                                 stream
-                                    .send(&new_error(job.id(), err, job.file_num()))
+                                    .send_msg(new_error(job.id(), err, job.file_num()))
                                     .await?
                             }
                             None => stream.send_msg(new_done(job.id(), job.file_num())).await?,
