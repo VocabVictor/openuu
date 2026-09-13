@@ -1,19 +1,38 @@
 use super::*;
 
 pub fn check_software_update() {
-    if is_custom_client() {
-        return;
-    }
     let opt = LocalConfig::get_option(keys::OPTION_ENABLE_CHECK_UPDATE);
     if config::option2bool(keys::OPTION_ENABLE_CHECK_UPDATE, &opt) {
         std::thread::spawn(move || allow_err!(do_check_software_update()));
     }
 }
 
+/// Whether this build may ask upstream's server for a version.
+///
+/// A rebranded build must not: the request carries a device fingerprint, and
+/// upstream is a third party to whoever deployed this. The check lives here,
+/// at the one entry point every caller goes through, rather than at the call
+/// sites; `check_software_update` used to hold it while the manual path
+/// reached `do_check_software_update` directly and sent the fingerprint
+/// anyway. See the endpoint audit in docs/third-party-endpoints.md.
+pub fn may_check_upstream_version() -> bool {
+    !is_custom_client()
+}
+
 // No need to check `danger_accept_invalid_cert` for now.
 // Because the url is always `https://api.rustdesk.com/version/latest`.
 #[tokio::main(flavor = "current_thread")]
 pub async fn do_check_software_update() -> hbb_common::ResultType<()> {
+    if !may_check_upstream_version() {
+        // Not an error and not silent: the caller has asked a question whose
+        // answer is "this build is not distributed by upstream".
+        log::info!(
+            "event=update_check_skipped reason=custom_client app={}",
+            get_app_name()
+        );
+        *SOFTWARE_UPDATE_URL.lock().unwrap() = "".to_string();
+        return Ok(());
+    }
     let (request, url) =
         hbb_common::version_check_request(hbb_common::VER_TYPE_RUSTDESK_CLIENT.to_string());
     let proxy_conf = Config::get_socks();
@@ -231,3 +250,31 @@ pub fn is_valid_untrusted_peer_id(id: &str) -> bool {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The version request carries a device fingerprint and goes to upstream's
+    /// server, so a rebranded build must not send it however the check was
+    /// started. The manual path used to reach `do_check_software_update`
+    /// directly and bypass the guard that only `check_software_update` held.
+    #[test]
+    fn a_rebranded_build_does_not_ask_upstream() {
+        assert_ne!(get_app_name(), "RustDesk", "this fork is rebranded");
+        assert!(is_custom_client());
+        assert!(
+            !may_check_upstream_version(),
+            "a rebranded build must not query upstream's version endpoint"
+        );
+
+        // the manual path goes through the same gate, so it makes no request
+        // and leaves no update on offer
+        *SOFTWARE_UPDATE_URL.lock().unwrap() = "stale".to_string();
+        do_check_software_update().expect("the gate is not an error path");
+        assert!(
+            SOFTWARE_UPDATE_URL.lock().unwrap().is_empty(),
+            "a skipped check must not leave an update URL behind"
+        );
+    }
+}
