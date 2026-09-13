@@ -151,6 +151,26 @@ link, i.e. a hardware-encoder peer on a throttled link, which is the same
 compositing-GPU peer that section 8 says is unavailable. The capture-pacing
 change therefore rests on its unit tests.
 
+## Taking this again
+
+`scripts/perf-baseline.ps1` takes every measurement above that a command line can
+take, in one run, and writes a table to compare against:
+
+```
+pwsh -File scripts/perf-baseline.ps1 -Peer <id> -PeerKind vm -PeerSsh user@host
+```
+
+`-PeerKind` records what the peer can do (`gpu`, `nogpu`, `vm`, `headless`), because
+that decides which rows mean anything: a headless peer captures nothing and a peer
+without a GPU is its own bottleneck rather than the link's. Rows that cannot be taken
+come out as `skipped` with the reason -- no password for the peer, no diagnostic lines
+in a log, no way into the machine, or the fixture not being on the captured desktop --
+rather than being left out, so a short table is visibly short rather than quietly wrong.
+
+What it does not do: apply the bandwidth cap (that is on the Hyper-V host, section 8),
+start the peer's fixture, or set `RUSTDESK_QOS_VERBOSE` and restart the peer's service.
+Those need the peer's own machine and are listed in the skip reasons when missing.
+
 ## 10. Open
 
 * Setting `codec-preference` for a measurement means editing that peer's own
