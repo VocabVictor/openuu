@@ -1,5 +1,8 @@
 part of 'server_page.dart';
 
+/// Touch targets on the trust controls: 48, not the desktop's 32.
+const double _kTrustControlHeight = UiSpace.s12;
+
 class ConnectionManager extends StatelessWidget {
   const ConnectionManager({Key? key}) : super(key: key);
 
@@ -93,19 +96,59 @@ class ConnectionManager extends StatelessWidget {
   }
 
   Widget _buildNewConnectionHint(ServerModel serverModel, Client client) {
-    return Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-      TextButton(
-          child: Text(translate("Dismiss")),
-          onPressed: () {
-            serverModel.sendLoginResponse(client, false);
-          }).marginOnly(right: 15),
-      if (serverModel.approveMode != 'password')
-        ElevatedButton.icon(
-            icon: const Icon(Icons.check),
-            label: Text(translate("Accept")),
-            onPressed: () {
-              serverModel.sendLoginResponse(client, true);
-            }),
+    return _trustControls(
+      onReject: () => serverModel.sendLoginResponse(client, false),
+      onAccept: serverModel.approveMode != 'password'
+          ? () => serverModel.sendLoginResponse(client, true)
+          : null,
+    );
+  }
+
+  /// The accept / reject pair of a connection request. This is a trust
+  /// decision (docs/cm-restyle-plan.md): reject keeps a real border and the
+  /// same 48-high, equally wide hit area as accept, so the permissive choice
+  /// is never the easier one to hit; on a touch screen that matters more than
+  /// on the desktop. Reject is never a bare text link.
+  Widget _trustControls(
+      {required VoidCallback onReject,
+      VoidCallback? onAccept,
+      String rejectText = "Dismiss",
+      String acceptText = "Accept"}) {
+    final shape = RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(UiCm.controlRadius));
+    final reject = SizedBox(
+      height: _kTrustControlHeight,
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+            foregroundColor: UiColor.text,
+            backgroundColor: Colors.white,
+            side: const BorderSide(color: UiColor.inputBorder),
+            shape: shape,
+            textStyle: UiType.button),
+        onPressed: onReject,
+        child: Text(translate(rejectText)),
+      ),
+    );
+    if (onAccept == null) {
+      return Row(mainAxisAlignment: MainAxisAlignment.end, children: [reject]);
+    }
+    final accept = SizedBox(
+      height: _kTrustControlHeight,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            backgroundColor: UiColor.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: shape,
+            textStyle: UiType.button),
+        onPressed: onAccept,
+        child: Text(translate(acceptText)),
+      ),
+    );
+    return Row(children: [
+      Expanded(child: reject),
+      const SizedBox(width: UiCm.controlGap),
+      Expanded(child: accept),
     ]);
   }
 
@@ -116,20 +159,12 @@ class ConnectionManager extends StatelessWidget {
         translate("android_new_voice_call_tip"),
         style: Theme.of(context).textTheme.bodyMedium,
       ).marginOnly(bottom: 5),
-      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-        TextButton(
-            child: Text(translate("Dismiss")),
-            onPressed: () {
-              serverModel.handleVoiceCall(client, false);
-            }).marginOnly(right: 15),
-        if (serverModel.approveMode != 'password')
-          ElevatedButton.icon(
-              icon: const Icon(Icons.check),
-              label: Text(translate("Accept")),
-              onPressed: () {
-                serverModel.handleVoiceCall(client, true);
-              }),
-      ])
+      _trustControls(
+        onReject: () => serverModel.handleVoiceCall(client, false),
+        onAccept: serverModel.approveMode != 'password'
+            ? () => serverModel.handleVoiceCall(client, true)
+            : null,
+      )
     ];
   }
 }
