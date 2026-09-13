@@ -1,0 +1,127 @@
+# What to run the next time the Hyper-V peer is up
+
+Six verifications were blocked on 2026-09-13 when the virtual machine was powered off to
+give its 8 GB back. They are written here in the order to run them, so that whoever has
+the machine next runs them without arranging anything first.
+
+One machine, one session at a time: the order below is what keeps that from becoming a
+queue. The expensive step is swapping the peer's bundle, so everything that needs the old
+one comes first and everything that needs the new one follows in one group.
+
+**If the machine goes away again before the list is done**, the three that are otherwise
+permanently blocked are 3, 5 and 6: the DXGI verification (no other machine reproduces the
+condition), and the standby and teardown "after" numbers (the "before" ones can be taken
+any time from a bundle that is kept). Everything else has another way to be believed.
+
+## Before anything
+
+| What | How |
+| --- | --- |
+| The peer auto-logs on and has an interactive desktop | Section 8 of `docs/perf-baseline-2026-09-13.md`: without one it captures nothing and half this list measures a still screen |
+| An inbound firewall rule exists for the peer executable | Otherwise every session falls back to the relay and the connection rows are meaningless (section 1 of the baseline) |
+| The installed bundle is known | Swap with the hash-verifying script, and record which commit the build tree was at; a bundle that cannot be named cannot be compared against |
+
+Where a change has a string of its own, grep the built `libopenuu.dll` for it as a second
+check that the bundle really contains what the run is about. The DXGI item below has one;
+the others are identified by the commit the build came from.
+
+## The list
+
+### 1. Standby, before (old bundle) — e9, 10 min
+
+* **Needs**: the pre-2026-09-13-evening bundle installed, no session connected, nothing
+  else running on the machine.
+* **Run**: `pwsh -File scripts/perf-baseline.ps1 -PeerKind vm -PeerSsh <peer>` and keep the
+  `standby` rows, or the two counters by hand: `\Process(openuu*)\% Processor Time` and
+  `\Thread(openuu*)\Context Switches/sec`, 6 samples at 5 s.
+* **Decides**: the baseline the five standby commits are measured against.
+
+### 2. Mouse movement, before (old controller bundle) — 52, 10 min
+
+* **Needs**: the peer can stay on whichever bundle it has; this measures what the
+  controller sends. A window on the peer to drag over.
+* **Run**: a fixed drag pattern for 30 s, counting input messages. 52 owns the counting
+  method; if it is a log line, say which, so the after run counts the same thing.
+* **Decides**: the before half of the coalescing comparison.
+
+### 3. Swap the peer to a build of current master — e9, 5 min
+
+Everything below needs it. One swap, not one per item.
+
+### 4. Standby, after — e9, 10 min
+
+* **Needs**: same conditions as item 1, nothing connected.
+* **Decides**: `de195fc4d` (services sleep until subscribed), `5ee0db0b5` (the child reaper
+  waits to be woken), `94b4a7b84` (the service hears about session changes), `970c15fa6`
+  (the heartbeat collects only when it can upload), `76ff65ed8` (the tray asks every three
+  seconds). Expected direction: context switches per second down by most of what they
+  were; about 217 timer wake-ups a second of accounted-for polling became about 6.
+* **Note**: this is a peer-side measurement, so the controller bundle does not matter.
+
+### 5. Session teardown — e9, 10 min
+
+* **Needs**: the new bundle, the fixture running so the session does real work.
+* **Run**: three samples of threads, handles and private bytes for the three `openuu`
+  processes: 60 s idle, 60 s connected, 60 s after disconnecting.
+* **Decides**: whether a session gives back what it took. Reading the code says it should
+  (the capture loop exits within a frame of the last unsubscribe, the capturer and encoder
+  go with it, the audio device is released in the service's reset, per-connection threads
+  end with their channels, the connection manager is a separate process that exits). The
+  open question is only whether the DXGI and hardware-encoder handles and memory come back,
+  which is why this is measured rather than argued. **If it is clean, say so and change
+  nothing.**
+
+### 6. DXGI desktop surface mapping — e9 runs it, f0 reads it, 10 min
+
+* **Needs**: the new bundle (grep `libopenuu.dll` for `cannot be mapped` to confirm
+  `9bdbca7e4` is in it). Three sessions of about 20 s each, then the peer log.
+* **Background**: this peer logged `dxgi error, fall back to gdi` with
+  `Kind(InvalidData)` 28 times, every one of them within 0.08–0.55 s of a session
+  starting, which means it spent whole sessions on GDI's full-frame compare and copy. The
+  candidate cause is `MapDesktopSurface` being refused because the desktop image is no
+  longer in system memory, which a Hyper-V synthetic adapter is exactly the machine to do.
+* **Decides**, and all three outcomes are reportable:
+  * `dxgi: the desktop surface cannot be mapped` appears **and** `fall back to gdi` is
+    gone: confirmed. The peer stays on the duplication for whole sessions from now on, its
+    capture CPU should drop, and anything else measured on this peer that day has a second
+    variable in it — say so when reporting those numbers.
+  * the new line does **not** appear and `fall back to gdi` still does: the cause is
+    something else, the change is inert, and f0 goes back to the frame-release path.
+  * the new line appears **and** `fall back to gdi` still does: there is a third branch;
+    send the surrounding log lines.
+
+### 7. Mouse movement, after — 52, 10 min
+
+* **Needs**: the controller bundle with the coalescing change; the same drag pattern and
+  the same counting method as item 2.
+* **Decides**: message count down, and the drag still feels continuous — the risk is losing
+  intermediate positions, which matters for drawing applications.
+
+### 8. Hole punching, before and after — e9, 20 min
+
+* **Needs**: whether the peer needs a new bundle depends on where the change lands. If the
+  default is only read on the controller, this rides on the controller bundle and can be
+  taken at any point after item 3; if the peer reads it too, fold the build into item 3
+  rather than swapping twice.
+* **Run**: sessions with the defaults as they ship, then with the change, reading the
+  controller log for `Hole Punched` and `used to establish`.
+* **Decides**: whether "default on, fall back when the probe fails" reaches direct where
+  "off unless the server is public" reached the relay.
+
+### 9. Connection manager and session window, screenshots — 52 or 8f, 15 min
+
+* **Needs**: the new bundle and a live session; a person to look at them.
+* **Run**: one screenshot per surface, as the restyle work has been doing.
+* **Decides**: whether the restyled surfaces look right against a real session rather than
+  a mock. Last, because it is interactive and holds the machine.
+
+## Running order, and why
+
+1 and 2 first because they are the only two that want the old bundle. Then one swap (3),
+then everything else. Within the new-bundle group, the measurements that need **no**
+session (4) come before the ones that need one (5, 6, 7, 9), so that a session left open
+by mistake cannot contaminate a standby number. Item 8 sits where its build lands.
+
+About 1 hour 40 minutes of machine time in total, including the swap and the settling
+between runs. None of the items may run at the same time as another: this peer has two
+virtual processors, and a second workload changes every number on this page.
