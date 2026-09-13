@@ -10,20 +10,6 @@ extension _NetworkDesktop on _NetworkState {
       required bool hideWebSocket}) {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
 
-    Widget navRow(String label, Future<String> summary, VoidCallback onTap) =>
-        futureBuilder(
-            future: summary,
-            hasData: (value) => SettingsRow(
-                label: translate(label),
-                enabled: !locked,
-                onTap: onTap,
-                control: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(value.toString(), style: UiType.caption),
-                  const SizedBox(width: UiSpace.s2),
-                  const Icon(Icons.chevron_right,
-                      size: 16, color: UiColor.muted),
-                ])));
-
     Future<String> serverSummary() async {
       Map<String, dynamic> options = {};
       try {
@@ -62,7 +48,14 @@ extension _NetworkDesktop on _NetworkState {
                     panel: (context, close) => _ServerPanel(
                         close: close, onSaved: () => _setState(() {})))),
           if (!hideProxy)
-            navRow('Socks5/Http(s) Proxy', proxySummary(), changeSocks5Proxy),
+            futureBuilder(
+                future: proxySummary(),
+                hasData: (summary) => SettingsExpandPanel(
+                    label: translate('Socks5/Http(s) Proxy'),
+                    summary: summary.toString(),
+                    enabled: !locked,
+                    panel: (context, close) => _ProxyPanel(
+                        close: close, onSaved: () => _setState(() {})))),
         ]),
       futureBuilder(
           future: bind.mainIsUsingPublicServer(),
