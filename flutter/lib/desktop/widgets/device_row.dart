@@ -3,6 +3,7 @@ import '../../common.dart';
 import '../../models/online_presence.dart';
 import '../../models/peer_model.dart';
 import '../pages/desktop_devices_page.dart' show deviceName;
+import 'ui_palette.dart';
 import 'ui_tokens.dart';
 
 /// A collapsible group title: chevron and text share the page's left edge
@@ -20,19 +21,23 @@ class GroupHeader extends StatelessWidget {
       required this.onTap});
 
   @override
-  Widget build(BuildContext context) => InkWell(
+  Widget build(BuildContext context) {
+    final ui = UiColor.of(context);
+    final type = UiType.of(context);
+    return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(UiSpace.s1),
       child: SizedBox(
           height: UiSpace.groupHeaderHeight,
           child: Row(children: [
             Icon(collapsed ? Icons.chevron_right : Icons.expand_more,
-                size: UiSpace.groupChevronSize, color: UiColor.muted),
+                size: UiSpace.groupChevronSize, color: ui.muted),
             const SizedBox(width: UiSpace.groupChevronGap),
-            Text(title, style: UiType.groupTitle),
+            Text(title, style: type.groupTitle),
             const SizedBox(width: UiSpace.groupCountGap),
-            Text('$count', style: UiType.groupCount),
+            Text('$count', style: type.groupCount),
           ])));
+  }
 }
 
 /// The empty state of a group: a row-high placeholder on the card's edge.
@@ -41,14 +46,17 @@ class EmptyRow extends StatelessWidget {
   const EmptyRow({super.key, required this.text});
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) {
+    final ui = UiColor.of(context);
+    return Container(
       height: UiSpace.emptyStateHeight,
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: UiSpace.rowCardPaddingX),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(UiSpace.rowCardRadius),
-          border: Border.all(color: UiColor.border)),
-      child: Text(text, style: UiType.caption));
+          border: Border.all(color: ui.border)),
+      child: Text(text, style: UiType.of(context).caption));
+  }
 }
 
 /// Whether a device is up, drawn so the three states are told apart without
@@ -61,23 +69,24 @@ class PresenceDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const size = UiSpace.statusDotSize;
+    final ui = UiColor.of(context);
     final Widget mark;
     switch (presence) {
       case PeerPresence.online:
         mark = Container(
             width: size,
             height: size,
-            decoration: const BoxDecoration(
-                color: UiColor.ready, shape: BoxShape.circle));
+            decoration: BoxDecoration(
+                color: ui.ready, shape: BoxShape.circle));
       case PeerPresence.offline:
         mark = Container(
             width: size,
             height: size,
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: UiColor.faint, width: 1)));
+                border: Border.all(color: ui.faint, width: 1)));
       case PeerPresence.unknown:
-        mark = Container(width: size, height: 1, color: UiColor.faint);
+        mark = Container(width: size, height: 1, color: ui.faint);
     }
     return Tooltip(
         message: translate(switch (presence) {
@@ -122,18 +131,20 @@ class DeviceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final ui = UiColor.of(context);
+    final type = UiType.of(context);
     final canFavorite = favorite != null && !local;
     return Material(
-        color: Colors.white,
+        color: ui.surface,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(UiSpace.rowCardRadius),
             side: bordered
-                ? const BorderSide(color: UiColor.border)
+                ? BorderSide(color: ui.border)
                 : BorderSide.none),
         child: InkWell(
             onTap: local ? null : () => onOpen(peer),
             borderRadius: BorderRadius.circular(UiSpace.rowCardRadius),
-            hoverColor: UiColor.surfaceHover,
+            hoverColor: ui.surfaceHover,
             child: SizedBox(
                 height: UiSpace.rowCardHeight,
                 child: Padding(
@@ -144,14 +155,14 @@ class DeviceRow extends StatelessWidget {
                           width: UiSpace.rowIconSize,
                           height: UiSpace.rowIconSize,
                           decoration: BoxDecoration(
-                              color: UiColor.primary,
+                              color: ui.primary,
                               borderRadius:
                                   BorderRadius.circular(UiSpace.rowIconRadius)),
                           child: Icon(
                               mobile(peer)
                                   ? Icons.phone_android
                                   : Icons.desktop_windows_outlined,
-                              color: Colors.white,
+                              color: ui.onPrimary,
                               size: 18)),
                       const SizedBox(width: UiSpace.rowIconGap),
                       if (!local) ...[
@@ -167,7 +178,7 @@ class DeviceRow extends StatelessWidget {
                             child: Text(deviceName(peer),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: UiType.rowTitle)),
+                                style: type.rowTitle)),
                         if (local) ...[
                           const SizedBox(width: UiSpace.rowBadgeGap),
                           Container(
@@ -176,11 +187,11 @@ class DeviceRow extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: UiSpace.tagPaddingX),
                               decoration: BoxDecoration(
-                                  color: UiColor.primaryTint,
+                                  color: ui.primaryTint,
                                   borderRadius:
                                       BorderRadius.circular(UiSpace.tagRadius)),
                               child: Text(zh ? '本机' : 'This device',
-                                  style: UiType.tag)),
+                                  style: type.tag)),
                         ],
                       ])),
                       SizedBox(
@@ -196,8 +207,8 @@ class DeviceRow extends StatelessWidget {
                                   icon: Icon(
                                       favorite! ? Icons.star : Icons.star_border,
                                       color: favorite!
-                                          ? UiColor.favorite
-                                          : UiColor.faint),
+                                          ? ui.favorite
+                                          : ui.faint),
                                   onPressed: onToggleFavorite == null
                                       ? null
                                       : () => onToggleFavorite!(peer))
@@ -209,7 +220,7 @@ class DeviceRow extends StatelessWidget {
                               ? null
                               : const Icon(Icons.chevron_right,
                                   size: UiSpace.rowActionIconSize,
-                                  color: UiColor.faint)),
+                                  color: ui.faint)),
                     ])))));
   }
 }
