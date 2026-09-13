@@ -73,12 +73,25 @@ Three mechanical steps, and nothing else in the file changes:
    `final type = UiType.of(context);` when the file uses `UiType`.
 2. `UiColor.x` becomes `ui.x`, `UiType.y` becomes `type.y`.
 3. Drop the `const` that the value is now inside. Only 30 of the 227
-   references sit in a `const` expression, and the compiler names every one.
+   references sit in a `const` expression, and the compiler names every one
+   — but it names the constructor, not the colour, and a line can hold both
+   a palette colour and a `static const` size, so the error reads as though
+   the whole widget were at fault. `grep -n "const .*ui\."` over the file
+   after the swap finds them faster than one analyze run per mistake.
 
 A file with no `BuildContext` where the colour is needed (a top-level helper,
 a `static` builder) takes the context as a parameter rather than reaching for
 a global; if that is not practical, it keeps the `UiColor.x` constant and is
 listed as unmigrated rather than being half-converted.
+
+## Where it is now
+
+`UiPalette` exists (`flutter/lib/desktop/widgets/ui_palette.dart`), is
+registered in both themes, and `UiColor.of` / `UiType.of` resolve it.
+`flutter/lib/desktop/widgets/device_row.dart` is migrated and is the worked
+example to copy: the palette taken once at the top of each `build`, the same
+names read from it, two literal `Colors.white` replaced by `surface` (a card
+face) and `onPrimary` (a label on the primary fill).
 
 ## What the palette must satisfy
 
