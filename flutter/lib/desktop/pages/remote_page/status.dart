@@ -5,6 +5,7 @@ part of 'remote_page.dart';
 /// a direct session from a relayed one.
 extension _RemotePageStatus on _RemotePageState {
   void _initStatusBar() {
+    SessionStatusRegistry.register(widget.id, _statusController);
     _statusWorkers.addAll([
       ever(_ffi.ffiModel.pi.isSet, (_) => _refreshStatus()),
       ever(_ffi.ffiModel.waitForFirstImage, (_) => _refreshStatus()),
@@ -18,7 +19,9 @@ extension _RemotePageStatus on _RemotePageState {
     final connected = _ffi.ffiModel.pi.isSet.isTrue &&
         _ffi.ffiModel.waitForFirstImage.isFalse;
     if (!connected) {
-      if (_statusController.phase.value != SessionPhase.connecting) {
+      // A drop sets the disconnected phase with its countdown; peer info
+      // going away afterwards must not wipe it.
+      if (_statusController.phase.value == SessionPhase.connected) {
         _statusController.connecting();
       }
       return;
@@ -33,6 +36,7 @@ extension _RemotePageStatus on _RemotePageState {
   }
 
   void _disposeStatusBar() {
+    SessionStatusRegistry.unregister(widget.id);
     for (final worker in _statusWorkers) {
       worker.dispose();
     }

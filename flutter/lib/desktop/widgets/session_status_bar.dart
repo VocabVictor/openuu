@@ -72,6 +72,19 @@ class SessionStatusController {
   }
 }
 
+/// The status bars of the open remote sessions, by peer id, so the session
+/// models can report a drop without reaching into the widget tree.
+class SessionStatusRegistry {
+  static final _bars = <String, SessionStatusController>{};
+
+  static void register(String peerId, SessionStatusController controller) =>
+      _bars[peerId] = controller;
+
+  static void unregister(String peerId) => _bars.remove(peerId);
+
+  static SessionStatusController? find(String peerId) => _bars[peerId];
+}
+
 /// The 28-high status strip at the top of a session canvas: a status dot,
 /// a 12px caption, an optional read-only tag and, while disconnected, the
 /// reconnect / disconnect buttons. Sits in a Stack; fills the width.

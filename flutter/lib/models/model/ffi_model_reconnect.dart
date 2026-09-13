@@ -20,6 +20,11 @@ extension FfiModelReconnect on FfiModel {
     bind.sessionReconnect(sessionId: sessionId, forceRelay: forceRelay);
     clearPermissions();
     dialogManager.dismissAll();
+    final statusBar = SessionStatusRegistry.find(parent.target?.id ?? '');
+    if (statusBar != null) {
+      statusBar.connecting();
+      return;
+    }
     dialogManager.showLoading(translate('Connecting...'),
         onCancel: closeConnection);
   }

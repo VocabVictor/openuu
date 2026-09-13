@@ -181,6 +181,18 @@ extension FfiModelMsgBox on FfiModel {
   showMsgBox(SessionID sessionId, String type, String title, String text,
       String link, bool hasRetry, OverlayDialogManager dialogManager,
       {bool? hasCancel}) async {
+    // A session window with a status bar counts the reconnect down in the bar
+    // instead of opening a dialog over the last frame.
+    final statusBar = SessionStatusRegistry.find(parent.target?.id ?? '');
+    if (hasRetry && statusBar != null) {
+      _timer?.cancel();
+      _timer = null;
+      statusBar.disconnected(
+          seconds: _reconnects,
+          onTimeout: () => reconnect(dialogManager, sessionId, false));
+      _reconnects *= 2;
+      return;
+    }
     final noteAllowed = parent.target != null &&
         allowAskForNoteAtEndOfConnection(parent.target, false) &&
         (title == "Connection Error" || type == "restarting");
