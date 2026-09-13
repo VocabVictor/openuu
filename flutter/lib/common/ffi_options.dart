@@ -42,10 +42,18 @@ String translate(String name) {
     // The table lives behind the bridge, which a widget test does not have.
     // A key is its own English text (AGENTS.md), so the key is the answer
     // rather than a placeholder, and a widget under test renders as it does
-    // in English instead of throwing.
+    // in English instead of throwing. Outside a test this means the bridge
+    // is missing, which is worth a trace: once, or it would follow every
+    // word on the screen.
+    if (!_warnedAboutMissingBridge) {
+      _warnedAboutMissingBridge = true;
+      debugPrint('translate: no bridge, falling back to the English keys');
+    }
     return name;
   }
 }
+
+bool _warnedAboutMissingBridge = false;
 
 // This function must be kept the same as the one in rust and sciter code.
 // rust: libs/hbb_common/src/config.rs -> option2bool()
