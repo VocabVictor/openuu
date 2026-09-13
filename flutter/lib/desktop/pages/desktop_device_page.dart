@@ -107,7 +107,7 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
             const SizedBox(height: 22),
             Text(t('快速启动', 'Quick launch'), style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 10),
-            if (onQuickLaunch != null) QuickLaunchPanel(peer: id, onOpen: onQuickLaunch!),
+            if (onQuickLaunch != null) QuickLaunchPanel(peer: id, onOpen: onQuickLaunch),
           ]));
       }),
     );

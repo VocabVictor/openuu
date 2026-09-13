@@ -11,7 +11,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       var connections = 0;
       await tester.pumpWidget(MaterialApp(home: DesktopDevicePage(
-        name: 'DESKTOP-A-VERY-LONG-DEVICE-NAME-123456789', id: '123456789', online: true,
+        name: 'DESKTOP-A-VERY-LONG-DEVICE-NAME-123456789', id: '123456789',
         onBack: () {}, onLogin: () {}, onSettings: () {}, onAssistance: () {}, onFavorites: () {},
         onWatch: () => connections++, onConnect: () => connections++, onFiles: () {}, onTerminal: () {}, onTunnel: () {})));
       expect(tester.takeException(), isNull);
