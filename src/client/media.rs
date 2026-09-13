@@ -47,17 +47,22 @@ pub fn start_video_thread<F, T>(
             if let Ok(data) = video_receiver.recv() {
                 match data {
                     MediaData::VideoFrame(_) | MediaData::VideoQueue => {
-                        let vf = match data {
+                        // Frames with a newer one already queued are decoded
+                        // for the references the newer one needs, but never
+                        // displayed: showing them would only walk the picture
+                        // through a backlog the user has no use for.
+                        let (vf, render) = match data {
                             MediaData::VideoFrame(vf) => {
                                 *discard_queue.write().unwrap() = false;
-                                *vf
+                                (*vf, true)
                             }
                             MediaData::VideoQueue => {
                                 if let Some(vf) = video_queue.pop() {
                                     if discard_queue.read().unwrap().clone() {
                                         continue;
                                     }
-                                    vf
+                                    let is_newest = video_queue.is_empty();
+                                    (vf, is_newest)
                                 } else {
                                     continue;
                                 }
@@ -87,13 +92,18 @@ pub fn start_video_thread<F, T>(
                             let pts = super::e2e_lag::frame_pts(&vf);
                             match handler.handle_frame(vf, &mut pixelbuffer, &mut tmp_chroma) {
                                 Ok(true) => {
-                                    e2e_lag.observe(display, pts);
-                                    video_callback(
-                                        display,
-                                        &mut handler.rgb,
-                                        handler.texture.texture,
-                                        pixelbuffer,
-                                    );
+                                    if render {
+                                        // The lag is of what reaches the
+                                        // screen, so a frame that is only
+                                        // decoded does not count.
+                                        e2e_lag.observe(display, pts);
+                                        video_callback(
+                                            display,
+                                            &mut handler.rgb,
+                                            handler.texture.texture,
+                                            pixelbuffer,
+                                        );
+                                    }
 
                                     // chroma
                                     if tmp_chroma.is_some() && last_chroma != tmp_chroma {

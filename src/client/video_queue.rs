@@ -232,6 +232,36 @@ mod tests {
         assert!(decoded.len() < 300);
     }
 
+    /// The decode thread's policy: decode everything, show a frame only
+    /// when no newer one is queued (media.rs). What reaches the screen must
+    /// then always be the newest frame that arrived.
+    #[test]
+    fn only_the_newest_queued_frame_is_shown() {
+        let q = VideoFrameQueue::new();
+        q.set_target_fps(30);
+        let mut decoded = Vec::new();
+        let mut shown = Vec::new();
+        for burst in 0..10 {
+            // Three frames arrive while the decoder is busy elsewhere.
+            let newest = burst * 3 + 2;
+            for i in burst * 3..=newest {
+                q.push(frame(i));
+            }
+            // One token per queued frame, as peer_msg.rs sends them.
+            for _ in 0..3 {
+                if let Some(vf) = q.pop() {
+                    decoded.push(vf.display);
+                    if q.is_empty() {
+                        shown.push(vf.display);
+                    }
+                }
+            }
+            assert_eq!(shown.last(), Some(&newest));
+        }
+        assert_eq!(decoded.len(), 30, "every frame is decoded");
+        assert_eq!(shown, (0..10).map(|b| b * 3 + 2).collect::<Vec<_>>());
+    }
+
     /// With the decoder keeping up, nothing is dropped and every frame is
     /// seen in order.
     #[test]
