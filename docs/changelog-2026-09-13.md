@@ -134,3 +134,164 @@ a84c5c4d1 (bundle EC16A4976D69) is installed on the three test machines.
 
 See docs/backlog.md and the "Known limitations" sections of the two relay
 ticket designs in openuu-server.
+
+---
+
+# 2026-09-13, afternoon and evening
+
+Everything below landed after the entry above. Client hashes are 9
+characters, server hashes 7. Both repositories had their history rewritten
+twice during this period, so any hash quoted before those rewrites no longer
+resolves; the hashes here are the current ones.
+
+## Defects
+
+* A cached hardware-codec probe from an earlier boot was still trusted, so
+  every VRAM decode context named an adapter that no longer existed and D3D
+  decoding fell back to the CPU path with `Failed to get decode context`; the
+  probe now records the boot it ran in. `bbb5a0a9d`, scrap unit test, and
+  `cargo check --lib --features flutter,hwcodec,vram` clean.
+* A WebRTC offer this side cannot answer no longer skips the TCP punch.
+  `fb362d3bf`, verified on the LAN peer: direct in about 1.4 ms over
+  UDP+TCP punch with no relay fallback.
+* hbbs ignored `TestNatRequest` over UDP, which the OSS server never handled,
+  so the client's NAT probe always failed and UDP punching could not start.
+  `19bcbd0`, deployed, client then logs `success=true` and the punch mode
+  becomes `UDP+TCP punch`.
+* hbbs closed a TCP registration connection after answering one-shot
+  requests. `58f3891`, `cfce1dc`, test `8e2b6ee`.
+* A remote window ignored the generic saved frame when its own peer had
+  none, fitted to the logical work area, and only remembers a frame after a
+  real user resize. `99acc702b`, `9aa881fa6`, `a759a73ed`, log-verified.
+* The end-to-end lag instrument imported `message_proto` from the wrong
+  crate and mis-detected a sender restart. `0d197948c`, `09d6c2c88`.
+
+## Features
+
+* The end-to-end video lag is measurable for the first time: the client
+  reads the sender's `pts`, calibrates on the first decoded frame and logs
+  `qos_e2e` once a second as the excess over the best lag seen, gated by the
+  existing diagnostics variable. `ec010b0b7`, `b8940747a`, 4 unit tests.
+* Windows clients default to `allow-d3d-render=Y` and every client to
+  `enable-udp-punch=Y`, installed in the layer a user value still overrides.
+  `628ce9ef2`, `202cec560`, 4 unit tests; the private-server rule that forced
+  punching off only applies to an empty value, so the default takes effect.
+* This device can be shared from the assistance page as a QR code.
+  `c8eb34ab7`.
+* A generic dialog shell and the dialogs moved onto it: login, connect
+  password, 2FA, wait-for-acceptance and relay hint. `4306fd8f9`,
+  `f6bb1fa01`, `9bcbfcbc5`, `e05471593`, `f266873bf`.
+* A session status bar with its controller and a countdown for a dropped
+  session. `d2f925cb4`, `641982bc2`, `d84c98abe`, `a18401c4a`.
+* `--page login` opens the login dialog directly. `f069c861c`.
+* Settings work: collapsible groups, the licence row with the fingerprint
+  under Advanced, Advanced folds on Display and Security, grouped connection
+  defaults, and warning styling while the insecure TLS fallback is on.
+  `5c8de42c7`, `7541fb2c4`, `bbac9c555`, `f68aef858`, `1a5a8a82c`,
+  `35653f5d7`, `c1d7963ce`.
+* Session windows, toolbar, tab items and the port-forward, file-transfer
+  and terminal pages moved onto the design tokens. `7ea84b1ad`, `5853f5319`,
+  `39e12ebf6`, `5980a0f9a`, `cd9a8f279`, `ea6beb38f`, `4242def67`,
+  `0ec0a3088`, `50fdcf0b0`. flutter analyze stayed at or below the baseline
+  on every step.
+
+## Refactoring and splits
+
+* `Client::_start_inner` gave up its RelayResponse arm and its punch loop and
+  is now under 300 lines, so its exception row is gone. `9a48f6289`,
+  `ea649aa10`, tests `321a82fc1`, `13101c122`, `b3f944001`.
+* `drm_capturer.rs` split in nine steps (`9e3bddb83` to `d77baff59`) and
+  `ipc/drm.rs` in seven (`1082eefff` to `3d285e12a`), each step checked on
+  the build machine's WSL Debian with the `flutter` and `flutter,drm`
+  features at the 22-warning baseline; `recv_thread` stays as a tracked
+  exception. `3cb42f672`.
+* `split_audit.py` now checks that a split commit loses no code, and running
+  it before landing a split is a rule; the audit of the 09-12/13 splits found
+  no functional loss, with the assistance-page split recorded as a reviewed
+  exemption. `be8b42a70`, `0fc4c54e2`, `7778ff8f2`, `755175bcf`.
+* hbbs UDP RegisterPeer/RegisterPk handling split into transport-free
+  helpers, with the refusal paths now covered. `227edaf`, `38673a2`.
+
+## Performance
+
+Measurements and their limits are in `docs/perf-baseline-2026-09-13.md`
+(`23fb8ecbd`, `b9aafc583`, `b45b10a3f`, `40d12b808`, `3854ac04c`).
+
+* The single most valuable number of the day: sessions to the LAN peer had
+  always gone through the relay at about 1.3 s, because the peer was
+  registered by hand and had no inbound firewall rule, so the successful
+  punch could not be accepted. With a rule it is 11 to 20 ms, direct.
+* Hardware encoders now follow the frame rate QoS actually paces the capture
+  at, instead of a hardcoded 30. `a6ad433d2`, `cfecf0155`, `593b91cda`,
+  `64f9f9ea1`, unit tests plus the `video_qos` simulation.
+* The bitrate recovers exponentially after a cut, with the rejected 1.5x
+  headroom written down. `6fc67873d`, `c86ed869e`, 73 `video_qos` tests.
+* `Auto` skips software AV1 on machines with at most four cores.
+  `34ab5730d`, 6 unit tests; confirmed on the two-vCPU peer, which now
+  negotiates VP9.
+* Frame fetches wait on a plain channel rather than a fresh runtime per
+  frame, and the wait is paced by the link with the encode held instead of
+  queued. `b56219d25`, `0337e147a`, 9 unit tests. A real-machine before and
+  after was run twice and is flat within noise; the reason is structural and
+  is recorded in the baseline.
+* A bitrate base table matching what screens need, and the client video
+  queue holds half a second and shows only the newest decoded frame.
+  `cfc4dc9c1`, `32710affb`, `5d6628558`, `9a82cf100`.
+
+## Infrastructure
+
+* **Both repositories are public.** History was rewritten twice with
+  `git filter-repo`: first to replace real hosts, keys, account names and
+  cloud ids with placeholders, then to strip AI attribution trailers from
+  every commit message. Each rewrite was verified tree by tree against the
+  pre-rewrite commits, the commit and tag counts were unchanged, and the
+  result was force-pushed to GitHub and to the build machine.
+  `45e780e4b`, `c4541d285`, `3955428`, `dfd67d1`.
+* A `commit-msg` hook rejects any AI attribution trailer, installed from
+  `tools/git-hooks/install.ps1` into the shared hooks directory so every
+  worktree runs it; it must not be bypassed with `--no-verify`.
+  `6401378a9`, `a78b681`.
+* GitHub keeps only `master`; all `ci/*` branches were deleted and Linux
+  verification moved to the build machine's WSL Debian. `bd8887f18`,
+  `3fa0fe646`.
+* The Windows build is green on master and its artifact carries the portable
+  zip, the MSI and the checksum list. A shared script now asserts all three
+  are present and that `sha256sum -c` passes, in both the build and the
+  release workflow, because `if-no-files-found` only fires when every glob
+  misses; `*.sh` is pinned to LF so the script survives checkout on the
+  Windows runner. `98d439287`, `25a1f4974`.
+* The MSI was validated on the VM by silent install, twice: a plain install
+  and one carrying the configuration environment variable, which imported
+  two settings and locked four. The service, its two firewall rules, the
+  four server settings and the registration log were all checked, and the
+  device id is unchanged. `53d706b2c`. One non-fatal warning is open: the
+  first round logged `CreateStartService: Failed to start service:
+  OpenUUConfigImport, error: 0x41D` (a 1053 timeout) before the one-shot
+  import service was removed; configuration and registration were correct
+  and the second round did not reproduce it.
+* The server was deployed again for the UDP NAT fix, with the usual backup,
+  health check and rollback path.
+* A restyle plan for the session window was written before the work started.
+  `3c3e1649e`.
+
+## Not verified, and why
+
+* **Cross-network smoke.** Both test peers share one public address, so the
+  peer-initiated relay path and symmetric-NAT behaviour are still only
+  covered by unit tests.
+* **Hardware-encoder numbers on a real machine.** They need a peer that has
+  a GPU *and* composites a moving screen. The build machine has the GPU but
+  is headless, so DXGI produces no frames; the VM composites but encodes in
+  software. An HDMI dummy plug on the build machine would settle it. This
+  blocks the before and after for the frame-rate lock, the recovery pace and
+  D3D decoding on the controller.
+* **Capture pacing on a real machine** is flat for the structural reason
+  above: the two-vCPU peer's encoder, not the link, is the bottleneck, so
+  the wait path never approaches the ceiling the change addresses.
+* **A direct session to the VM peer** is impossible: it sits on the Hyper-V
+  internal subnet, which the controller cannot route to. Relay only.
+* **The `OpenUUConfigImport` one-shot service start timeout** seen once
+  during MSI validation has not been chased.
+* **Remote-session screenshots** for the restyled window are still open.
+* **Start-up drain, P0-c and tokenising the file-transfer and terminal
+  pages** have not been started.
