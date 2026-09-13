@@ -172,6 +172,8 @@ use transport::*;
 mod start;
 mod webrtc_bridge;
 mod start_inner;
+mod start_relay;
+use start_relay::*;
 mod connect;
 mod secure;
 mod clipboard_sync;
