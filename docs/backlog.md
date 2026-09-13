@@ -215,6 +215,37 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   five literal colours for the dark appearance (the active hover tint, two
   danger tints, the dark icon colour, the dark bar background); those are the
   ones the palette should absorb, not the light values beside them.
+* **The new desktop home pages never joined the token layer.** The route map
+  above covers the session-window and dialog files. The pages written for the
+  new home are a separate set, and several of them use no token at all: they
+  hard-code colours and carry their display text in a file-local
+  `t(cn, en)` helper instead of the translation table, so neither the palette
+  nor a third language can reach them.
+
+  **What is missing: these files have to be hooked up to `UiColor`/`UiType`
+  and to `src/lang/`, and until they are, dark is incomplete no matter how
+  good the palette is** — a device page in dark would keep its light
+  `Color(0xffe2e8ec)` panels and its hard-coded white card faces. Counted on
+  the master of this entry:
+
+  | hard-coded colours | file-local `t(cn, en)` | token refs | file (under `flutter/lib/desktop/`) |
+  | ---: | ---: | ---: | --- |
+  | 12 | 3 | 0 | `widgets/device_action_bar.dart` |
+  | 9 | 2 | 0 | `widgets/desktop_preview.dart` |
+  | 5 | 1 | 0 | `pages/desktop_device_page.dart` |
+  | 2 | 3 | 0 | `widgets/quick_launch.dart` |
+  | 2 | 5 | 6 | `pages/desktop_assistance_page/partner_card.dart` |
+  | 2 | 22 | 19 | `pages/desktop_assistance_page/this_device_card.dart` |
+  | 2 | 1 | 14 | `widgets/device_row.dart` |
+  | 1 | 1 | 4 | `pages/desktop_assistance_page/desktop_assistance_page.dart` |
+  | 0 | 3 | 2 | `pages/desktop_assistance_page/recent_card.dart` |
+
+  The first four are the ones with no token at all; the rest are partly
+  migrated and need the remaining literals swapped. `desktop_devices_page.dart`,
+  `desktop_favorites_page.dart` and `desktop_welcome_page.dart` are clean of
+  both and need nothing. The translation half is the bigger job in
+  `this_device_card.dart`, which carries 22 bilingual literals.
+
 * **Mobile has no design tokens at all.** Zero files under `flutter/lib/mobile/`
   reference `UiColor`/`UiSpace`/`UiType` (the connection manager's trust
   controls, `8ae053ef2`, are the first and only exception). Bringing mobile
