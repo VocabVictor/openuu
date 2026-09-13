@@ -5,9 +5,6 @@ extension _DesktopHomeLeftPane on _DesktopHomePageState {
     final isIncomingOnly = bind.isIncomingOnly();
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
-      if (_showLegacyFavorites)
-        TextButton.icon(onPressed: () => _setState(() => _showLegacyFavorites = false),
-          icon: const Icon(Icons.arrow_back, size: 18), label: Text(translate('Back'))),
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
       if (bind.isCustomClient())
         Align(

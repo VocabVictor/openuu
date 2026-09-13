@@ -188,10 +188,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
             },
             onDevices: () => DesktopTabPage.showHome(),
             onAssistance: () => DesktopTabPage.showHome(assistance: true),
-            onFavorites: () {
-              gFFI.peerTabModel.setCurrentTab(1);
-              DesktopTabPage.showHome(assistance: true);
-            },
+            onFavorites: () => DesktopTabPage.showHome(favorites: true),
             onSettings: () {},
             content: _buildBlock(children: [
               Expanded(

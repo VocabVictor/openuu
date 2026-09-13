@@ -16,6 +16,7 @@ import '../../common/shared_state.dart';
 import '../../common/widgets/login.dart';
 import 'desktop_welcome_page.dart';
 import 'desktop_devices_page.dart';
+import 'desktop_favorites_page.dart';
 
 class DesktopTabPage extends StatefulWidget {
   const DesktopTabPage({Key? key}) : super(key: key);
@@ -23,10 +24,13 @@ class DesktopTabPage extends StatefulWidget {
   @override
   State<DesktopTabPage> createState() => _DesktopTabPageState();
 
-  static void showHome({bool assistance = false}) {
-    if (assistance && !gFFI.userModel.isLogin) { loginDialog(); return; }
+  static void showHome({bool assistance = false, bool favorites = false}) {
+    if ((assistance || favorites) && !gFFI.userModel.isLogin) {
+      loginDialog();
+      return;
+    }
     final page = Get.find<_DesktopTabPageState>();
-    page.showHome(assistance);
+    page.showHome(assistance, favorites);
   }
 
   static void onAddSetting(
@@ -51,10 +55,14 @@ class DesktopTabPage extends StatefulWidget {
 class _DesktopTabPageState extends State<DesktopTabPage> {
   final tabController = DesktopTabController(tabType: DesktopTabType.main);
   bool _showAssistance = false;
+  bool _showFavorites = false;
   final _wol = WolModel();
 
-  void showHome(bool assistance) {
-    setState(() => _showAssistance = assistance);
+  void showHome(bool assistance, bool favorites) {
+    setState(() {
+      _showAssistance = assistance;
+      _showFavorites = favorites;
+    });
     tabController.jumpTo(0);
   }
 
@@ -127,30 +135,32 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
                     !bind.isIncomingOnly() &&
                     !signedIn &&
                     homeSelected;
+                final showFavorites = isWindows &&
+                    !bind.isIncomingOnly() &&
+                    signedIn &&
+                    homeSelected &&
+                    _showFavorites;
                 final showDevices = isWindows &&
                     !bind.isIncomingOnly() &&
                     signedIn &&
                     homeSelected &&
-                    !_showAssistance;
+                    !_showAssistance &&
+                    !_showFavorites;
                 return Stack(children: [
                   // Keep the existing home mounted: it owns remote-window event handlers.
                   Offstage(
-                      offstage: showWelcome || showDevices, child: pageView),
+                      offstage: showWelcome || showDevices || showFavorites,
+                      child: pageView),
                   if (showDevices) const DesktopDevicesPage(),
+                  if (showFavorites) const DesktopFavoritesPage(),
                   if (showWelcome)
                     DesktopWelcomePage(
                       onLogin: () {
                         loginDialog();
                       },
                       onAssistance: () => loginDialog(),
-                      onFavorites: () {
-                        if (!gFFI.userModel.isLogin) {
-                          loginDialog();
-                          return;
-                        }
-                        gFFI.peerTabModel.setCurrentTab(1);
-                        setState(() => _showAssistance = true);
-                      },
+                      onFavorites: () =>
+                          DesktopTabPage.showHome(favorites: true),
                       onSettings: bind.isDisableSettings()
                           ? null
                           : () => DesktopTabPage.onAddSetting(),

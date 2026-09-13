@@ -58,7 +58,7 @@ class _DesktopDevicesPageState extends State<DesktopDevicesPage> {
       onBack: () => setState(() => _opened = null), onLogin: () => loginDialog(),
       onSettings: () => leave(() => DesktopTabPage.onAddSetting()),
       onAssistance: () => leave(() => DesktopTabPage.showHome(assistance: true)),
-      onFavorites: () => leave(() { gFFI.peerTabModel.setCurrentTab(1); DesktopTabPage.showHome(assistance: true); }),
+      onFavorites: () => leave(() => DesktopTabPage.showHome(favorites: true)),
       onConnect: () => connectInPeerTab(context, peer, PeerTabIndex.recent),
       onWatch: () => connectInPeerTab(context, peer, PeerTabIndex.recent, viewOnly: true),
       onFiles: () => connectInPeerTab(context, peer, PeerTabIndex.recent, isFileTransfer: true),
@@ -92,7 +92,7 @@ class _DesktopDevicesPageState extends State<DesktopDevicesPage> {
       onLogin: () => loginDialog(), onDevices: () {},
       onSettings: () => DesktopTabPage.onAddSetting(),
       onAssistance: () => DesktopTabPage.showHome(assistance: true),
-      onFavorites: () { gFFI.peerTabModel.setCurrentTab(1); DesktopTabPage.showHome(assistance: true); },
+      onFavorites: () => DesktopTabPage.showHome(favorites: true),
       content: DeviceGroups(peers: peers, localId: _localId, onOpen: _open),
     );
   }

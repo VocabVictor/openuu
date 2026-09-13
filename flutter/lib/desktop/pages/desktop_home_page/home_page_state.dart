@@ -7,7 +7,6 @@ class _DesktopHomePageState extends State<DesktopHomePage>
 
   @override
   bool get wantKeepAlive => true;
-  bool _showLegacyFavorites = false;
   var systemError = '';
   StreamSubscription? _uniLinksSubscription;
   var svcStopped = false.obs;
@@ -26,7 +25,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (isWindows && !bind.isIncomingOnly() && !bind.isOutgoingOnly() && !_showLegacyFavorites) {
+    if (isWindows && !bind.isIncomingOnly() && !bind.isOutgoingOnly()) {
       return _buildBlock(child: AnimatedBuilder(animation: gFFI.serverModel,
         builder: (context, _) {
           final model = gFFI.serverModel;
@@ -39,7 +38,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             onRefresh: () => bind.mainUpdateTemporaryPassword(),
             onSecurity: () => DesktopSettingPage.switch2page(SettingsTabKey.safety),
             onDevices: () => DesktopTabPage.showHome(),
-            onFavorites: () { gFFI.peerTabModel.setCurrentTab(1); setState(() => _showLegacyFavorites = true); },
+            onFavorites: () => DesktopTabPage.showHome(favorites: true),
             onSettings: DesktopTabPage.onAddSetting, onAccount: () => loginDialog());
         }));
     }

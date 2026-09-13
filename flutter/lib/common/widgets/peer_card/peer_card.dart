@@ -107,7 +107,7 @@ class _PeerCardState extends State<_PeerCard>
         onLogin: () => loginDialog(),
         onSettings: () => leave(() => DesktopTabPage.onAddSetting()),
         onAssistance: () => leave(() => DesktopTabPage.showHome(assistance: true)),
-        onFavorites: () => leave(() { gFFI.peerTabModel.setCurrentTab(1); }),
+        onFavorites: () => leave(() => DesktopTabPage.showHome(favorites: true)),
         onConnect: () => widget.connect(context, peer.id),
         onQuickLaunch: (app) => connectInPeerTab(context, peer, widget.tab, quickLaunch: app),
         onWatch: () => connectInPeerTab(context, peer, widget.tab, viewOnly: true),
