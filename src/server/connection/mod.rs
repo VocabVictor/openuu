@@ -153,6 +153,7 @@ mod login_scope;
 mod on_message;
 mod login_msg;
 mod delay_switch_msg;
+mod clipboard_msg;
 mod media_msg;
 mod misc_msg;
 mod input_msg;
