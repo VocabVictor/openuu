@@ -6,8 +6,8 @@ part 'this_device_card.dart';
 part 'partner_card.dart';
 
 class DesktopAssistancePage extends StatefulWidget {
-  final String deviceId, password, verification, verificationMethod;
-  final bool enabled, temporaryPassword;
+  final String deviceId, deviceName, password, verification, verificationMethod;
+  final bool enabled, temporaryPassword, online;
   final Future<void> Function(bool) onEnable;
   final ValueChanged<String> onConnect, onVerificationChanged;
   final VoidCallback onRefresh,
@@ -19,6 +19,8 @@ class DesktopAssistancePage extends StatefulWidget {
   const DesktopAssistancePage(
       {super.key,
       required this.deviceId,
+      required this.deviceName,
+      required this.online,
       required this.password,
       required this.verification,
       required this.verificationMethod,

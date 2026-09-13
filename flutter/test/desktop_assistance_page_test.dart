@@ -18,6 +18,8 @@ void main() {
       await tester.pumpWidget(MaterialApp(
           home: DesktopAssistancePage(
               deviceId: '123 456 789',
+              deviceName: 'TEST-PC',
+              online: true,
               password: 'test-only',
               verification: 'Temporary password',
               verificationMethod: 'use-temporary-password',

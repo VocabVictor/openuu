@@ -31,6 +31,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           final model = gFFI.serverModel;
           return DesktopAssistancePage(
             deviceId: model.serverId.text, password: model.serverPasswd.text,
+            deviceName: Platform.localHostname, online: model.connectStatus > 0,
             verification: model.approveMode == 'click' ? translate('Accept sessions via click') : translate(_verificationLabel(model.verificationMethod)),
             verificationMethod: model.verificationMethod,
             onVerificationChanged: (method) => model.setVerificationMethod(method),

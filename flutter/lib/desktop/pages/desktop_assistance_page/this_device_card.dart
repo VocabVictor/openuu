@@ -10,9 +10,28 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
             spacing: 20,
             runSpacing: 8,
             children: [
-              Text(t('本设备', 'This device'),
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w600)),
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(t('本设备', 'This device'),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w600)),
+                const SizedBox(width: 14),
+                Text(widget.deviceName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 14, color: _muted)),
+                const SizedBox(width: 10),
+                Icon(Icons.circle,
+                    size: 8,
+                    color: widget.online
+                        ? const Color(0xff18dfa0)
+                        : Colors.grey),
+                const SizedBox(width: 5),
+                Text(
+                    widget.online
+                        ? t('在线', 'Online')
+                        : t('未就绪', 'Not ready'),
+                    style: const TextStyle(fontSize: 13, color: _muted)),
+              ]),
               Row(mainAxisSize: MainAxisSize.min, children: [
                 Text(t('允许他人远程协助', 'Allow remote assistance'),
                     style: const TextStyle(fontSize: 14)),
