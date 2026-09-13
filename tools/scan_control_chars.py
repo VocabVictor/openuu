@@ -31,6 +31,19 @@ The scan was not missing a check so much as missing a dimension: it knew which
 bytes were allowed and not how many of them may stand together. A doubled
 carriage return is now reported, and that is an exact match rather than a
 guess -- no line-ending convention produces two in a row.
+
+Three hosts met the same damage and none of them complained:
+
+    PowerShell  ran the script with the doubled return in it; the build passed
+    Python      parsed tools/split/split_audit.py; py_compile was happy
+    git         stored that file verbatim rather than normalising it, because
+                the stray returns made it decide the file was not text -- so
+                every change to it showed in review with no line-level diff
+
+A single tolerant host reads as a quirk. Three, in three languages, is the
+rule: a host has no reason to complain about bytes it can get past, and the
+cost lands somewhere else entirely -- on the reviewer, on the next patch, on
+whoever inherits the file.
 """
 
 import os
