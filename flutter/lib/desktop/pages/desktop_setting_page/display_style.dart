@@ -4,10 +4,15 @@ extension _DisplayStyle on _DisplayState {
   Widget _choiceCard(BuildContext context, String title, String current,
       Map<String, String> options, void Function(String) onChanged,
       {bool enabled = true, Widget? detail, double width = 200}) {
-    return _group(null, [
+    // The rows sit in the "defaults for new connections" group, so the
+    // "Default" prefix of the legacy keys is dropped from the label (V7).
+    final label = translate(title)
+        .replaceFirst(RegExp(r'^(Default |默认)'), '');
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       _settingRow(
           context,
           title,
+          labelText: label,
           SettingsDropdown(
             keys: options.keys.toList(),
             values: options.values.map(translate).toList(),

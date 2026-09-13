@@ -138,10 +138,10 @@ String _settingDescription(BuildContext context, String label) {
 }
 
 Widget _settingRow(BuildContext context, String label, Widget control,
-    {bool enabled = true, String? description}) {
+    {bool enabled = true, String? description, String? labelText}) {
   final detail = description ?? _settingDescription(context, label);
   return SettingsRow(
-      label: translate(label),
+      label: labelText ?? translate(label),
       subtitle: detail,
       control: control,
       enabled: enabled);

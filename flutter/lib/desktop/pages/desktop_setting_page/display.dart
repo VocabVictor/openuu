@@ -12,6 +12,20 @@ class _DisplayState extends State<_Display> {
   @override
   Widget build(BuildContext context) {
     final scrollController = ScrollController();
+    if (isWindows && !bind.isIncomingOnly()) {
+      final zh = Localizations.localeOf(context).languageCode == 'zh';
+      return ListView(controller: scrollController, children: [
+        _group(zh ? '新建连接的默认值' : 'Defaults for new connections', [
+          viewStyle(context),
+          scrollStyle(context),
+          imageQuality(context),
+          codec(context),
+          privacyModeImpl(context),
+        ]),
+        trackpadSpeed(context),
+        other(context),
+      ]).marginOnly(bottom: _kListViewBottomMargin);
+    }
     return ListView(controller: scrollController, children: [
       viewStyle(context),
       scrollStyle(context),
