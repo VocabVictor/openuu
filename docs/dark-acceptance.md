@@ -42,6 +42,20 @@ config. Chasing it in the diff finds nothing, because it is not in the diff.
 
 ## 1. Nothing is left outside the palette
 
+**These commands read more than this round touched.** They cover all of
+`flutter/lib/desktop` and `flutter/lib/common/widgets`, while the round
+covered the home, the settings area, the session window, the connection
+manager and the assistance page. That is deliberate: a command scoped to the
+round could only confirm what the round already claims. It is also why the
+output has to be read against the exclusions below rather than taken as a
+list of defects — a first run prints around ninety-five lines for the first
+command alone.
+
+**Do not narrow the commands to make the output smaller.** Adapting a
+measurement to its result destroys the only thing it was for. Exclusions are
+listed here, where a reader can tick them off one at a time and see what was
+left out and why.
+
 Three commands. Each should print nothing, and each line it does print is a
 place the appearance cannot reach.
 
@@ -66,7 +80,32 @@ Known and accepted exceptions, which those commands will print:
 * `flutter/lib/mobile/` is outside this round (backlog: mobile has no tokens
   at all).
 
-Anything else the commands print is a finding.
+**Files the palette round never touched.** These last changed in the earlier
+light-token round; the palette round did not open them, so their literals are
+not regressions of this work and not accepted by this list either. They are
+their own backlog entry:
+
+* all of `desktop/pages/server_page/` (the connection manager's control
+  panels, header and file-transfer log)
+* `desktop/widgets/tabbar_widget/tabbar_theme.dart`
+* `common/widgets/overlay/chat_window.dart`, `common/widgets/chat_page.dart`
+* `common/widgets/login/login_dialog.dart`, `common/widgets/login/oidc.dart`
+* `common/widgets/address_book/tag_widget.dart`,
+  `common/widgets/my_group/my_group_state.dart`
+* `common/widgets/dialog/two_factor_dialogs.dart`,
+  `desktop/widgets/button.dart`, `desktop/widgets/account_action.dart`
+
+**Literals that are not surfaces**, and stay whatever the appearance:
+
+* a QR code's quiet zone (`network_provision.dart`) — part of what a scanner
+  reads, not a themed surface
+* a scrim (`page_tabs.dart`, `desktop_preview`'s overlay) — it darkens what is
+  under it rather than being a surface of its own
+* an illustration's own palette (`desktop_welcome_page/devices_painter.dart`)
+  — art with no context to read a theme from
+
+Anything the commands print that is not on one of these lists, or in the
+three known exceptions above, is a finding.
 
 ## 2. Contrast has a number, not an opinion
 
