@@ -70,7 +70,7 @@ class _DesktopDevicesPageState extends State<DesktopDevicesPage> {
   Widget _devicePage(Peer peer) {
     void leave(VoidCallback action) { setState(() => _opened = null); action(); }
     return DesktopDevicePage(
-      name: deviceName(peer), id: peer.id, online: peer.online,
+      name: deviceName(peer), id: peer.id,
       onBack: () => setState(() => _opened = null), onLogin: () => loginDialog(),
       onSettings: () => leave(() => DesktopTabPage.onAddSetting()),
       onAssistance: () => leave(() => DesktopTabPage.showHome(assistance: true)),

@@ -78,7 +78,6 @@ class _DesktopFavoritesPageState extends State<DesktopFavoritesPage> {
     return DesktopDevicePage(
       name: deviceName(peer),
       id: peer.id,
-      online: peer.online,
       onBack: () => setState(() => _opened = null),
       onLogin: () => loginDialog(),
       onSettings: () => leave(() => DesktopTabPage.onAddSetting()),

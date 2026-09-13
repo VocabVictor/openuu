@@ -102,7 +102,7 @@ class _PeerCardState extends State<_PeerCard>
       reverseTransitionDuration: Duration.zero,
       pageBuilder: (pageContext, _, __) => DesktopDevicePage(
         name: peer.alias.isNotEmpty ? peer.alias : (peer.hostname.isNotEmpty ? peer.hostname : peer.id),
-        id: peer.id, online: peer.online,
+        id: peer.id,
         onBack: () => navigator.pop(),
         onLogin: () => loginDialog(),
         onSettings: () => leave(() => DesktopTabPage.onAddSetting()),
