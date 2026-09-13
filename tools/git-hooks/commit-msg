@@ -1,10 +1,41 @@
 #!/bin/sh
-# Rejects commit messages carrying an AI attribution trailer (AGENTS.md, "Commit messages
-# and remote branches"). Installed by tools/git-hooks/install.ps1 into .git/hooks, which
-# every worktree of the repository shares.
+# Installed by tools/git-hooks/install.ps1 into .git/hooks, which every worktree shares.
+#
+# Two checks, both about damage that happens before git sees the message.
+
+# 1. AI attribution trailers (AGENTS.md, "Commit messages and remote branches").
 if grep -qiE 'Co-Authored-By:.*(Claude|Anthropic)|Claude-Session|Generated with.*Claude' "$1"; then
     echo "commit-msg: AI attribution trailer found; remove the Co-Authored-By / Claude-Session / Generated-with line (AGENTS.md)" >&2
     grep -niE 'Co-Authored-By:.*(Claude|Anthropic)|Claude-Session|Generated with.*Claude' "$1" >&2
+    exit 1
+fi
+
+# 2. A word the shell ate. `word` inside a double-quoted -m argument, or inside
+# an unquoted heredoc, is command substitution: the shell runs it, the output
+# is empty, and the word disappears together with its backticks. Nothing warns
+# you -- "command not found" goes to stderr and the commit succeeds. It left
+# `1788fc264` reading "They are  -- something is live".
+#
+# The remains are spaces, and where they land depends on what the eaten word
+# touched: two spaces if it had a space on each side, exactly one leading space
+# if it started the line, one trailing space if it ended it. All three are
+# checked. Counting backticks would find nothing: they vanish in pairs.
+#
+# The leading-space test demands EXACTLY one space. Measured against 200 real
+# messages from this repository: "one or more" rejected a message whose only
+# fault was a bullet's continuation lines, indented by two. Indentation here
+# starts at two spaces, so one is the width nobody types on purpose.
+#
+# Lines indented by four or more spaces are skipped: that is a quoted command
+# or error message, where aligned columns are normal.
+body=$(grep -v '^#' "$1")
+hits=$(printf '%s\n' "$body" | grep -nE '(^ [^ ]|[^ ] +$|[^ ]  +[^ ])' | grep -vE '^[0-9]+:( {4,}|	)')
+if [ -n "$hits" ]; then
+    echo "commit-msg: stray spaces, which is what a shell-eaten \`word\` leaves behind:" >&2
+    printf '%s\n' "$hits" | sed 's/^/  /' >&2
+    echo "If a word is missing there, the shell ran it: write the message with" >&2
+    echo "  git commit -F <file>   or   git commit -m \"\$(cat <<'EOF' ... EOF)\"" >&2
+    echo "If the spacing is deliberate, indent that line by four spaces to mark it as quoted text." >&2
     exit 1
 fi
 exit 0
