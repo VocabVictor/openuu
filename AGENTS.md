@@ -414,7 +414,12 @@ steps, all of them:
   started from, ask before replacing. Overwriting another session's fix
   without noticing is how the same repair got done twice on 2026-09-13.
 * **Run it once after installing it**, with the flags that matter. An install
-  that is never exercised is an untested change to shared infrastructure.
+  that is never exercised is an untested change to shared infrastructure. The
+  case that earned this line: a script gained a `-Server` switch and a local
+  `$server` holding a path. PowerShell variable names are case-insensitive, so
+  the two were one variable and the assignment overwrote the switch with a
+  string. Reading the code does not show it; the first run printed
+  `looked in C:uild\wt-e9srv and True` and the cause was in the message.
 * **Say in the group which script you changed**, so the next person to hit an
   oddity knows where to look.
 
