@@ -126,6 +126,7 @@ mod fps_control;
 mod peer_capabilities;
 mod peer_msg;
 mod peer_session;
+mod peer_misc;
 #[cfg(test)]
 mod test_support;
 #[cfg(test)]
