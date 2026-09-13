@@ -134,7 +134,7 @@ extension _SafetyTfa on _SafetyState {
                 _childRow(_settingRow(
                     context,
                     'Manage trusted devices',
-                    _secondaryButton('Manage trusted devices',
+                    _secondaryButton(context, 'Manage trusted devices',
                         locked ? null : manageTrustedDeviceDialog),
                     description: '')),
             ]));

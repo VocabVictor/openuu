@@ -51,9 +51,9 @@ Widget _aboutDesktop(BuildContext context,
               status,
               const SizedBox(width: UiSpace.settingsControlGap),
               url.isEmpty
-                  ? _secondaryButton('Check for updates',
+                  ? _secondaryButton(context, 'Check for updates',
                       () => bind.mainGetSoftwareUpdateUrl())
-                  : _secondaryButton(
+                  : _secondaryButton(context, 
                       installed ? 'Update' : 'Download',
                       () => installed
                           ? handleUpdate(url)
@@ -117,7 +117,7 @@ void _licenceDialog(bool zh) {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _dialogTitle(zh ? '开源许可' : 'Open source licence', close),
+            _dialogTitle(context, zh ? '开源许可' : 'Open source licence', close),
             const SizedBox(height: UiSpace.s2),
             Text(
                 zh ? 'OpenUU 基于 RustDesk 开发，遵循 GNU Affero General Public License v3.0 发布。你可以按该许可的条款使用、修改和分发本软件，完整许可文本与源代码见下方链接。' : 'OpenUU is derived from RustDesk and is released under the GNU Affero General Public License v3.0. You may use, modify and redistribute it under that licence; the full text and the source code are behind the link below.',
@@ -125,11 +125,11 @@ void _licenceDialog(bool zh) {
                     .copyWith(fontWeight: FontWeight.w400, height: 1.5)),
             const SizedBox(height: UiSpace.s6),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              _secondaryButton(zh ? '查看许可全文' : 'View licence',
+              _secondaryButton(context, zh ? '查看许可全文' : 'View licence',
                   () => launchUrlString(url),
                   height: UiSpace.controlHeight),
               const SizedBox(width: UiSpace.s2),
-              _primaryButton(zh ? '关闭' : 'Close', close,
+              _primaryButton(context, zh ? '关闭' : 'Close', close,
                   height: UiSpace.controlHeight),
             ]),
           ]),

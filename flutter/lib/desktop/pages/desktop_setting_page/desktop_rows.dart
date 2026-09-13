@@ -11,7 +11,7 @@ Widget _switchRow(BuildContext context, String label, bool value,
         enabled: enabled, description: description);
 
 /// The secondary button of the settings page: white, 1px border, 28 high.
-Widget _secondaryButton(String label, VoidCallback? onPressed,
+Widget _secondaryButton(BuildContext context, String label, VoidCallback? onPressed,
         {double height = UiSpace.settingsControlHeight}) =>
     SizedBox(
     height: height,
@@ -28,7 +28,7 @@ Widget _secondaryButton(String label, VoidCallback? onPressed,
         child: Text(translate(label))));
 
 /// The primary button, 28 high, for a panel's Save.
-Widget _primaryButton(String label, VoidCallback? onPressed,
+Widget _primaryButton(BuildContext context, String label, VoidCallback? onPressed,
         {double height = UiSpace.settingsControlHeight}) =>
     SizedBox(
     height: height,
@@ -48,7 +48,7 @@ Widget _primaryButton(String label, VoidCallback? onPressed,
 
 /// The danger button: white, red border and text; confirmation lives in
 /// the dialog that opens it.
-Widget _dangerButton(String label, VoidCallback? onPressed,
+Widget _dangerButton(BuildContext context, String label, VoidCallback? onPressed,
         {double height = UiSpace.settingsControlHeight}) =>
     SizedBox(
         height: height,
@@ -78,7 +78,7 @@ Widget _secretRow(BuildContext context, String label, bool isSet,
             style: UiType.of(context).caption
                 .copyWith(color: isSet ? UiColor.of(context).textSecondary : UiColor.of(context).faint)),
         const SizedBox(width: UiSpace.settingsControlGap),
-        _secondaryButton(
+        _secondaryButton(context, 
             isSet ? (zh ? '修改' : 'Change') : (zh ? '设置' : 'Set'),
             enabled ? onEdit : null),
       ]),
@@ -92,11 +92,11 @@ Widget _childRow(Widget row) => SettingsChildRow(child: row);
 /// The Apply button next to a numeric field: secondary on the desktop shell.
 Widget _applyButton(VoidCallback? onPressed) => isWindows &&
         !bind.isIncomingOnly()
-    ? _secondaryButton('Apply', onPressed)
+    ? _secondaryButton(context, 'Apply', onPressed)
     : ElevatedButton(onPressed: onPressed, child: Text(translate('Apply')));
 
 /// A numeric field, 56 wide and 28 high on the desktop shell.
-Widget _numberField(TextEditingController controller,
+Widget _numberField(BuildContext context, TextEditingController controller,
         {required bool enabled,
         required String hint,
         required ValueChanged<String> onChanged,

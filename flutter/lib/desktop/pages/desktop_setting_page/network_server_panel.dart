@@ -112,10 +112,10 @@ class _ServerPanelState extends State<_ServerPanel> {
               lines: 3,
               enabled: !locked && !_busy),
           SettingsPanelFooter(buttons: [
-            _secondaryButton('Import server config',
+            _secondaryButton(context, 'Import server config',
                 locked || _busy ? null : _importClipboard),
-            _secondaryButton(zh ? '重置' : 'Reset', _busy ? null : _load),
-            _primaryButton(zh ? '保存' : 'Save', locked || _busy ? null : _save),
+            _secondaryButton(context, zh ? '重置' : 'Reset', _busy ? null : _load),
+            _primaryButton(context, zh ? '保存' : 'Save', locked || _busy ? null : _save),
           ]),
         ]));
   }

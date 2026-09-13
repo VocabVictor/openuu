@@ -23,7 +23,7 @@ extension _SafetyNetwork on _SafetyState {
               context,
               'Port',
               Row(mainAxisSize: MainAxisSize.min, children: [
-                _numberField(controller,
+                _numberField(context, controller,
                     enabled: enabled && !locked && !isOptFixed,
                     hint: '21118',
                     onChanged: (_) => applyEnabled.value = true,

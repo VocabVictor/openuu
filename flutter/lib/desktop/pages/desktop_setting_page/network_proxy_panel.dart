@@ -98,8 +98,8 @@ class _ProxyPanelState extends State<_ProxyPanel> {
           obscure: true,
           enabled: !locked && !_busy),
       SettingsPanelFooter(buttons: [
-        _secondaryButton(zh ? '重置' : 'Reset', _busy ? null : _load),
-        _primaryButton(zh ? '保存' : 'Save', locked || _busy ? null : _save),
+        _secondaryButton(context, zh ? '重置' : 'Reset', _busy ? null : _load),
+        _primaryButton(context, zh ? '保存' : 'Save', locked || _busy ? null : _save),
       ]),
     ]);
   }

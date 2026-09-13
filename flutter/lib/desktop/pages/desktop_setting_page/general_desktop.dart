@@ -32,7 +32,7 @@ extension _GeneralDesktop on _GeneralState {
                   style:
                       UiType.of(context).rowTitle.copyWith(fontWeight: FontWeight.w400)),
               const Spacer(),
-              _secondaryButton(stopped ? 'Start' : 'Stop',
+              _secondaryButton(context, stopped ? 'Start' : 'Stop',
                   serviceBtnEnabled.value ? onToggle : null),
             ])));
   }

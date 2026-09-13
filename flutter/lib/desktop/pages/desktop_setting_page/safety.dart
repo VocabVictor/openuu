@@ -106,7 +106,7 @@ extension _SafetyMisc on _SafetyState {
             context,
             'Timeout in minutes',
             Row(mainAxisSize: MainAxisSize.min, children: [
-              _numberField(controller,
+              _numberField(context, controller,
                   enabled: enabled && !locked && !isOptFixed,
                   hint: '10',
                   onChanged: (_) => applyEnabled.value = true,

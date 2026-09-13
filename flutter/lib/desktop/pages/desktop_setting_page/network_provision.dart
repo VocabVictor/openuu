@@ -17,10 +17,10 @@ extension _NetworkProvision on _NetworkState {
             context,
             zh ? '导入配置' : 'Import configuration',
             Row(mainAxisSize: MainAxisSize.min, children: [
-              _secondaryButton(zh ? '从剪贴板' : 'From clipboard',
+              _secondaryButton(context, zh ? '从剪贴板' : 'From clipboard',
                   locked ? null : () => _importFromClipboard(context, zh)),
               const SizedBox(width: UiSpace.s2),
-              _secondaryButton(zh ? '从文件' : 'From file',
+              _secondaryButton(context, zh ? '从文件' : 'From file',
                   locked ? null : () => _importFromFile(context, zh)),
             ]),
             description: zh
@@ -42,7 +42,7 @@ extension _NetworkProvision on _NetworkState {
             minWidth: UiSpace.dialogContentWidth,
             maxWidth: UiSpace.dialogContentWidth),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          _dialogTitle(zh ? '分享配置二维码' : 'Share configuration', close),
+          _dialogTitle(context, zh ? '分享配置二维码' : 'Share configuration', close),
           const SizedBox(height: UiSpace.s2),
           Container(
               color: Colors.white,
@@ -61,12 +61,12 @@ extension _NetworkProvision on _NetworkState {
               textAlign: TextAlign.center),
           const SizedBox(height: UiSpace.s6),
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            _secondaryButton(zh ? '复制链接' : 'Copy link', () async {
+            _secondaryButton(context, zh ? '复制链接' : 'Copy link', () async {
               await Clipboard.setData(ClipboardData(text: payload));
               showToast(zh ? '已复制' : 'Copied');
             }, height: UiSpace.controlHeight),
             const SizedBox(width: UiSpace.s2),
-            _primaryButton(zh ? '关闭' : 'Close', close,
+            _primaryButton(context, zh ? '关闭' : 'Close', close,
                 height: UiSpace.controlHeight),
           ]),
         ]),
@@ -121,7 +121,7 @@ extension _NetworkProvision on _NetworkState {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _dialogTitle(zh ? '导入配置' : 'Import configuration', close),
+              _dialogTitle(context, zh ? '导入配置' : 'Import configuration', close),
               const SizedBox(height: UiSpace.s2),
               line(translate('ID Server'), '${server['id'] ?? ''}'),
               line(translate('Relay Server'), '${server['relay'] ?? ''}'),
@@ -139,10 +139,10 @@ extension _NetworkProvision on _NetworkState {
                         style: UiType.of(context).caption)),
               const SizedBox(height: UiSpace.s6),
               Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                _secondaryButton('Cancel', close,
+                _secondaryButton(context, 'Cancel', close,
                     height: UiSpace.controlHeight),
                 const SizedBox(width: UiSpace.s2),
-                _primaryButton(zh ? '导入' : 'Import', () async {
+                _primaryButton(context, zh ? '导入' : 'Import', () async {
                   final report = _json(await bind.mainImportConfigText(
                       text: text, trusted: trusted));
                   close();
@@ -175,7 +175,7 @@ extension _NetworkProvision on _NetworkState {
 }
 
 /// A 48-high, left-aligned dialog title with a close icon.
-Widget _dialogTitle(String title, VoidCallback close) => SizedBox(
+Widget _dialogTitle(BuildContext context, String title, VoidCallback close) => SizedBox(
     height: UiSpace.dialogTitleHeight,
     child: Row(children: [
       Expanded(

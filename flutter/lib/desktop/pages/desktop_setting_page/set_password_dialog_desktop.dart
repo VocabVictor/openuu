@@ -198,15 +198,15 @@ void _setPasswordDialogDesktop(
                     child: Text(statusTip, style: UiType.of(context).caption)),
               const SizedBox(height: UiSpace.s6),
               Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                _secondaryButton('Cancel', close,
+                _secondaryButton(context, 'Cancel', close,
                     height: UiSpace.controlHeight),
                 if (localPasswordSet) ...[
                   const SizedBox(width: UiSpace.s2),
-                  _dangerButton(zh ? '清除' : 'Remove', remove,
+                  _dangerButton(context, zh ? '清除' : 'Remove', remove,
                       height: UiSpace.controlHeight),
                 ],
                 const SizedBox(width: UiSpace.s2),
-                _primaryButton('OK', canSubmit ? submit : null,
+                _primaryButton(context, 'OK', canSubmit ? submit : null,
                     height: UiSpace.controlHeight),
               ]),
             ]),

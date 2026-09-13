@@ -144,7 +144,7 @@ Widget _Radio<T>(BuildContext context,
 Widget _Button(String label, Function() onPressed,
     {bool enabled = true, String? tip, ButtonStyle? style}) {
   if (isWindows && !bind.isIncomingOnly()) {
-    final button = _secondaryButton(label, enabled ? onPressed : null);
+    final button = _secondaryButton(context, label, enabled ? onPressed : null);
     return tip == null
         ? button
         : Tooltip(message: translate(tip), child: button);
