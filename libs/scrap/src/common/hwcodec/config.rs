@@ -4,6 +4,11 @@ use super::*;
 pub struct HwCodecConfig {
     #[serde(default)]
     pub signature: u64,
+    /// Boot the adapters were probed in: DXGI adapter LUIDs are assigned per
+    /// boot, so a cache from an earlier boot names adapters that no longer
+    /// exist and every VRAM decode context in it fails to match.
+    #[serde(default)]
+    pub boot: u64,
     #[serde(default)]
     pub ram_encode: Vec<CodecInfo>,
     #[serde(default)]
@@ -122,15 +127,17 @@ impl HwCodecConfig {
                     let c = hbb_common::config::common_load::<HwCodecConfig2>("_hwcodec");
                     let c: HwCodecConfig = serde_json::from_str(&c.config).unwrap_or_default();
                     let new_signature = hwcodec::common::get_gpu_signature();
-                    if c.signature == new_signature {
+                    if c.signature == new_signature && c.boot == boot_stamp() {
                         log::debug!("load cached hwcodec config: {c:?}");
                         *CONFIG.lock().unwrap() = Some(c.clone());
                         c
                     } else {
                         log::info!(
-                            "gpu signature changed, {} -> {}",
+                            "gpu signature or boot changed, {} -> {}, boot {} -> {}",
                             c.signature,
-                            new_signature
+                            new_signature,
+                            c.boot,
+                            boot_stamp()
                         );
                         HwCodecConfig::default()
                     }
@@ -187,5 +194,41 @@ impl HwCodecConfig {
             }
         }
         crate::codec::Encoder::update(crate::codec::EncodingUpdate::Check);
+    }
+}
+
+/// Seconds since the epoch at which this boot started, rounded to a minute so
+/// two probes in the same boot agree; 0 where LUIDs do not change per boot.
+pub fn boot_stamp() -> u64 {
+    #[cfg(windows)]
+    {
+        extern "system" {
+            fn GetTickCount64() -> u64;
+        }
+        let up = unsafe { GetTickCount64() } / 1000;
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        (now.saturating_sub(up) / 60) * 60
+    }
+    #[cfg(not(windows))]
+    {
+        0
+    }
+}
+
+#[cfg(test)]
+mod boot_stamp_tests {
+    use super::boot_stamp;
+
+    #[test]
+    fn the_stamp_is_stable_within_a_boot() {
+        let a = boot_stamp();
+        std::thread::sleep(std::time::Duration::from_millis(20));
+        assert_eq!(a, boot_stamp());
+        if cfg!(windows) {
+            assert!(a > 1_600_000_000, "{a}");
+        }
     }
 }

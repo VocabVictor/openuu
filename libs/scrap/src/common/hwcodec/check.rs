@@ -32,6 +32,7 @@ pub fn check_available_hwcodec() -> String {
         #[cfg(feature = "vram")]
         vram_decode: vram.1,
         signature: hwcodec::common::get_gpu_signature(),
+        boot: boot_stamp(),
     };
     log::debug!("{c:?}");
     serde_json::to_string(&c).unwrap_or_default()
