@@ -61,4 +61,14 @@ void main() {
     expect(logicalWorkArea(const Rect.fromLTWH(0, 0, 1920, 1040), 0).width,
         1920);
   });
+
+  test('a stored frame smaller than the minimum is not usable', () {
+    expect(isUsableSessionFrame(1536, 864), isTrue);
+    expect(isUsableSessionFrame(320, 240), isTrue);
+    // The sliver a maximized-window save bug used to leave behind.
+    expect(isUsableSessionFrame(202, 77), isFalse);
+    expect(isUsableSessionFrame(85, 77), isFalse);
+    expect(isUsableSessionFrame(null, 600), isFalse);
+    expect(isUsableSessionFrame(800, null), isFalse);
+  });
 }

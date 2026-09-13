@@ -12,6 +12,7 @@ import '../../consts.dart';
 import '../models/platform_model.dart';
 
 import 'globals.dart';
+import 'window_fit.dart';
 import 'window_position.dart';
 
 Future<Size> _adjustRestoreMainWindowSize(double? width, double? height) async {
@@ -140,6 +141,14 @@ Future<bool> restoreWindowPosition(WindowType type,
   // does not apply to it.
   if (type == WindowType.RemoteDesktop && !isRemotePeerPos) {
     return false;
+  }
+  final peerPos = pos;
+  if (type == WindowType.RemoteDesktop && peerPos != null) {
+    final stored = LastWindowPosition.loadFromString(peerPos);
+    if (!isUsableSessionFrame(stored?.width, stored?.height)) {
+      debugPrint("Ignoring unusable stored frame: $peerPos");
+      return false;
+    }
   }
   pos ??= bind.getLocalFlutterOption(k: windowFramePrefix + type.name);
 

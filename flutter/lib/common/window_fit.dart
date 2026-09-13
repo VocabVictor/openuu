@@ -41,6 +41,17 @@ Rect logicalWorkArea(Rect physicalVisibleFrame, double scaleFactor) {
       physicalVisibleFrame.height / scale);
 }
 
+/// Smallest frame a remembered session window may have. A stored frame
+/// below it is treated as absent: it would open as a sliver the user has to
+/// find and drag back, and one has been written by a bug before.
+const kMinSessionWindow = Size(320, 240);
+
+bool isUsableSessionFrame(double? width, double? height) =>
+    width != null &&
+    height != null &&
+    width >= kMinSessionWindow.width &&
+    height >= kMinSessionWindow.height;
+
 /// A session window's frame is remembered for its peer only after the user
 /// resized or moved the window, at least 3 s after the first-open fit;
 /// otherwise every peer would remember the default frame forever.

@@ -212,9 +212,12 @@ Future _saveSessionWindowPosition(WindowType windowType, int windowId,
       final peerPos = bind.mainGetPeerFlutterOptionSync(
           id: peerId, k: windowFramePrefix + windowType.name);
       var lpos = LastWindowPosition.loadFromString(peerPos);
+      // A maximized window keeps the size it had before, so restoring it
+              // does not open a full-screen one; without a stored size the
+              // current one is that size, not the window's offset.
       return LastWindowPosition(
-              lpos?.width ?? pos.offsetWidth,
-              lpos?.height ?? pos.offsetHeight,
+              lpos?.width ?? pos.width,
+              lpos?.height ?? pos.height,
               lpos?.offsetWidth ?? pos.offsetWidth,
               lpos?.offsetHeight ?? pos.offsetHeight,
               isMaximized,
