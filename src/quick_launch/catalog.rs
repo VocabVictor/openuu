@@ -41,7 +41,10 @@ pub(super) fn scan(root: &Path, extension: &str, depth: usize, paths: &mut Vec<P
 }
 
 pub(super) fn catalog(home: &Path) -> Vec<App> {
-    let mut paths = Vec::new();
+    // Annotated because the three cfg blocks below are the only users, and on
+    // a platform none of them match -- Android -- nothing would pin the element
+    // type.
+    let mut paths: Vec<PathBuf> = Vec::new();
     #[cfg(target_os = "windows")]
     {
         if let Some(root) = std::env::var_os("PROGRAMDATA") {
