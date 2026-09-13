@@ -17,7 +17,9 @@ use hbb_common::{
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-pub use apply::{apply, import_exe_dir_file, reload_persisted, HASH_KEY, PERSISTED_FILE};
+pub use apply::{
+    apply, import_exe_dir_file, reload_persisted, EXE_DIR_FILE, HASH_KEY, PERSISTED_FILE,
+};
 
 pub const VERSION: u32 = 1;
 /// Prefix of the QR / deep-link payload; the rest is base64url (no padding) JSON.
