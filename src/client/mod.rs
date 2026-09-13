@@ -85,7 +85,7 @@ use crate::clipboard::CLIPBOARD_INTERVAL;
 use crate::clipboard::{check_clipboard, ClipboardSide};
 
 pub use super::lang::*;
-pub use video_queue::{VideoFrameQueue, VIDEO_QUEUE_SIZE};
+pub use video_queue::VideoFrameQueue;
 
 #[cfg(not(target_os = "linux"))]
 mod audio_playback;
