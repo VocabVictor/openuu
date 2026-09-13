@@ -18,7 +18,7 @@ void main() {
           query: (_) async {},
           usingPublicServer: () async => true);
       await tester.pumpWidget(MaterialApp(home: DesktopDevicePage(
-        poller: poller,
+        poller: poller, translator: (s) => s,
         name: 'DESKTOP-A-VERY-LONG-DEVICE-NAME-123456789', id: '123456789',
         onBack: () {}, onLogin: () {}, onSettings: () {}, onAssistance: () {}, onFavorites: () {},
         onWatch: () => connections++, onConnect: () => connections++, onFiles: () {}, onTerminal: () {}, onTunnel: () {})));

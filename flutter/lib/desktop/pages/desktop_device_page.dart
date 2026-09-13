@@ -19,8 +19,12 @@ class DesktopDevicePage extends StatefulWidget {
   @visibleForTesting
   final OnlinePoller? poller;
 
+  /// Likewise: the translation table lives behind the same bridge.
+  @visibleForTesting
+  final String Function(String)? translator;
+
   const DesktopDevicePage({super.key, this.onQuickLaunch, required this.name, required this.id,
-    this.poller,
+    this.poller, this.translator,
     required this.onBack, required this.onLogin,
     required this.onSettings, required this.onAssistance, required this.onFavorites,
     required this.onConnect, required this.onWatch, required this.onFiles, required this.onTerminal,
@@ -73,7 +77,8 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
     final presence = _poller.presenceOf(id);
     final online = presence == PeerPresence.online;
     // Three states, three sentences: "not asked yet" is not "offline".
-    final status = translate(switch (presence) {
+    final tr = widget.translator ?? translate;
+    final status = tr(switch (presence) {
       PeerPresence.online => 'Online',
       PeerPresence.offline => 'Offline',
       PeerPresence.unknown => 'Status unknown',
