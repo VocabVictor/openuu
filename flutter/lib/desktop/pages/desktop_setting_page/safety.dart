@@ -157,6 +157,11 @@ extension _SafetyMisc on _SafetyState {
     }
 
     final isOptFixed = isOptionFixed(kOptionWhitelist);
+    if (isWindows && !bind.isIncomingOnly()) {
+      return Obx(() => _secretRow(context, 'Unlock with PIN',
+          unlockPin.isNotEmpty, () => onChanged(!unlockPin.isNotEmpty),
+          enabled: enabled && !isOptFixed, description: ''));
+    }
     return GestureDetector(
       child: Obx(() => Row(
             children: [

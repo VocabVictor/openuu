@@ -13,6 +13,7 @@ Widget _OptionCheckBox(
   bool isServer = true,
   bool Function()? optGetter,
   Future<void> Function(String, bool)? optSetter,
+  String? description,
 }) {
   getOpt() => optGetter != null
       ? optGetter()
@@ -62,7 +63,7 @@ Widget _OptionCheckBox(
                   ? (zh
                       ? '当前配置下不可用'
                       : 'Unavailable with the current configuration')
-                  : null,
+                  : description,
         ));
   }
 

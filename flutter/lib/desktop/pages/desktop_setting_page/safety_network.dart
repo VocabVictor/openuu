@@ -81,6 +81,12 @@ extension _SafetyNetwork on _SafetyState {
       }
 
       final isOptFixed = isOptionFixed(kOptionWhitelist);
+      if (isWindows && !bind.isIncomingOnly()) {
+        return Obx(() => _switchRow(context, 'Use IP Whitelisting',
+            hasWhitelist.value, (_) => onChanged(!hasWhitelist.value),
+            enabled: enabled && !isOptFixed,
+            description: translate('whitelist_tip')));
+      }
       return GestureDetector(
         child: Tooltip(
           message: translate('whitelist_tip'),
@@ -131,6 +137,12 @@ extension _SafetyNetwork on _SafetyState {
     }
 
     final isOptFixed = isOptionFixed(kOptionIdWhitelist);
+    if (isWindows && !bind.isIncomingOnly()) {
+      return Obx(() => _switchRow(context, 'Use ID whitelisting',
+          hasIdWhitelist.value, (_) => onChanged(!hasIdWhitelist.value),
+          enabled: enabled && !isOptFixed,
+          description: translate('id_whitelist_tip')));
+    }
     return GestureDetector(
       child: Tooltip(
         message: translate('id_whitelist_tip'),

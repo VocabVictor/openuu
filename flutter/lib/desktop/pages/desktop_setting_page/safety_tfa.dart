@@ -44,7 +44,8 @@ extension _SafetyTfa on _SafetyState {
           onChanged(!has2fa.value);
         },
       ).marginOnly(left: _kCheckBoxLeftMargin);
-      if (!has2fa.value) {
+      final desktop = isWindows && !bind.isIncomingOnly();
+      if (!has2fa.value && !desktop) {
         return tfa;
       }
       updateBot() async {
@@ -112,6 +113,32 @@ extension _SafetyTfa on _SafetyState {
         ],
       ).marginOnly(left: 30);
 
+      if (desktop) {
+        return Obx(() => Column(children: [
+              _switchRow(context, 'enable-2fa-title', has2fa.value,
+                  (_) => onChanged(!has2fa.value),
+                  enabled: enabled, description: ''),
+              if (has2fa.value)
+                _childRow(_switchRow(context, 'Telegram bot', hasBot.value,
+                    (_) => onChangedBot(!hasBot.value),
+                    enabled: enabled,
+                    description: translate('enable-bot-tip'))),
+              if (has2fa.value)
+                _childRow(_OptionCheckBox(
+                    context, "Enable trusted devices", kOptionEnableTrustedDevices,
+                    enabled: !locked,
+                    description: translate('enable-trusted-devices-tip'),
+                    update: (v) => _setState(() {}))),
+              if (has2fa.value &&
+                  mainGetBoolOptionSync(kOptionEnableTrustedDevices))
+                _childRow(_settingRow(
+                    context,
+                    'Manage trusted devices',
+                    _secondaryButton('Manage trusted devices',
+                        locked ? null : manageTrustedDeviceDialog),
+                    description: '')),
+            ]));
+      }
       return Column(
         children: [tfa, bot, trust],
       );
