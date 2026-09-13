@@ -601,6 +601,16 @@ steps, all of them:
   or extended it since you last fetched; if the remote differs from what you
   started from, ask before replacing. Overwriting another session's fix
   without noticing is how the same repair got done twice on 2026-09-13.
+
+  **The step is named for other people's changes, but what it actually gives
+  you is a look at what is installed, which is the wider thing.** On
+  2026-09-14 this diff found no one else's edit: it found that the copy the
+  author had installed an hour earlier contained a line ending in two
+  carriage returns, spliced there by their own patch. PowerShell ran it, the
+  build passed, and nothing anywhere reported it. So read the diff as "is the
+  installed copy what I think it is", not only as "has anyone else been
+  here". `python tools/scan_control_chars.py <local copy>` before the `scp`
+  covers the same ground mechanically.
 * **Run it once after installing it**, with the flags that matter. An install
   that is never exercised is an untested change to shared infrastructure. The
   case that earned this line: a script gained a `-Server` switch and a local
