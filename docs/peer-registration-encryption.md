@@ -11,6 +11,10 @@
   （hbbs 用 ID 服务器私钥签名的 KeyExchange → 客户端 sealed box 回传对称密钥 → 之后整条流用对称密钥加密），
   然后在这条长连接上收发同样的 rendezvous 消息。hbbs 侧 `rendezvous_server/secure.rs` + `io.rs` 已处理 KeyExchange。
 - 主控端到 hbbs 的打洞请求本来就走 TCP + `secure_tcp`；只有被控端的注册/心跳/票据下发还在 UDP 明文。
+- 但 hbbs 侧目前**不支持在 TCP 上注册**：`rendezvous_server/tcp.rs` 只处理 PunchHoleRequest/RequestRelay/RelayResponse/
+  PunchHoleSent/LocalAddr/TestNatRequest，收到 `RegisterPk` 回 NOT_SUPPORT，没有 `RegisterPeer` 分支；peer 表只记 UDP
+  `socket_addr`，`PunchHole`/`RequestRelay`/`FetchLocalAddr` 一律往 UDP 地址发。客户端 `start_tcp` 循环也只在 key 未确认时发
+  `RegisterPk`，没有周期性 `RegisterPeer` 心跳。所以方案 a 不是"切默认值"，而是先补 hbbs。
 
 ## 候选方案
 
@@ -28,6 +32,11 @@
 理由：零协议改动、hbb_common 子模块不用动、旧客户端不受影响、hbbs 已经在为主控端维持同样的 TCP 会话；
 b) 的收益（无连接状态）对我们规模不重要且实现最重；c) 是 a) 全量升级完成后的收尾，而不是起点。
 
+实施顺序（hbbs 先行，客户端默认值最后切）：
+0) hbbs：TCP 上接受 `RegisterPk`/`RegisterPeer`（与 UDP 分支同样的鉴权/UUID 校验），peer 记录加 `Option<Sink>`，
+   下发 `PunchHole`/`RequestRelay`/`FetchLocalAddr` 时有 sink 走 sink、否则走 UDP，心跳超时仍按 `last_reg_time`；
+   补"TCP 注册与 UDP 注册行为等价"测试（心跳超时、地址更新、三种下发经加密 TCP 到达）和
+   `event=peer_register transport=tcp|udp` 占比日志；旧 UDP 路径原样保留。hbbs 部署另批。
 分三步：1) OpenUU 构建默认 `disable-udp=Y`（可在网络设置关掉），hbbs 日志加 `event=peer_register transport=tcp|udp`
-统计占比；2) hbbs 对 TCP 注册补齐与 UDP 等价的行为测试（心跳超时、`PunchHole` 推送、断线重连）；
+统计占比，客户端 `start_tcp` 循环加 `REG_INTERVAL` 周期的 `RegisterPeer`（在 hbbs 部署上线后再落）；2) 打洞回归清单只用日志断言：tcp_punch、对称 NAT 回退到 relay、`RequestRelay` 经 TCP 下发，用两台被控端复测；
 3) UDP 注册占比归零后再评估 c)。
