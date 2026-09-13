@@ -8,10 +8,15 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:zxing2/qrcode.dart';
 
 import '../../common.dart';
+import '../../common/config_import.dart';
 import '../../models/platform_model.dart';
 import '../widgets/dialog.dart';
 
 class ScanPage extends StatefulWidget {
+  /// Opened on first start to import a configuration.
+  final bool firstStart;
+  const ScanPage({super.key, this.firstStart = false});
+
   @override
   State<ScanPage> createState() => _ScanPageState();
 }
@@ -35,7 +40,9 @@ class _ScanPageState extends State<ScanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan QR'),
+        title: Text(widget.firstStart
+            ? translate('Scan to import configuration')
+            : 'Scan QR'),
         actions: [
           _buildImagePickerButton(),
           _buildFlashToggleButton(),
@@ -71,7 +78,13 @@ class _ScanPageState extends State<ScanPage> {
     });
     scanSubscription = controller.scannedDataStream.listen((scanData) {
       if (scanData.code != null) {
-        showServerSettingFromQr(scanData.code!);
+        if (isConfigPayload(scanData.code!)) {
+          closeConnection();
+          controller.pauseCamera();
+          confirmImportConfig(scanData.code!, trusted: false);
+        } else {
+          showServerSettingFromQr(scanData.code!);
+        }
       }
     });
   }
@@ -97,7 +110,9 @@ class _ScanPageState extends State<ScanPage> {
 
         var reader = QRCodeReader();
         var result = reader.decode(bitmap);
-        if (result.text.startsWith(bind.mainUriPrefixSync())) {
+        if (isConfigPayload(result.text)) {
+          confirmImportConfig(result.text, trusted: false);
+        } else if (result.text.startsWith(bind.mainUriPrefixSync())) {
           handleUriLink(uriString: result.text);
         } else {
           showServerSettingFromQr(result.text);

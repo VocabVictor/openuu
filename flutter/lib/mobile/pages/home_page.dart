@@ -6,6 +6,7 @@ import '../../common.dart';
 import '../../common/widgets/chat_page.dart';
 import '../../models/platform_model.dart';
 import 'connection_page.dart';
+import 'scan_page.dart';
 import 'package:flutter_hbb/models/chat_model.dart';
 
 abstract class PageShape extends Widget {
@@ -42,6 +43,22 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     initPages();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _firstStartScan());
+  }
+
+  /// First start with no server from any source: offer the scanner once so
+  /// a config QR code can provision the phone.
+  Future<void> _firstStartScan() async {
+    const shownKey = 'first-start-scan-shown';
+    if (bind.mainGetLocalOption(key: shownKey) == 'Y') return;
+    await bind.mainSetLocalOption(key: shownKey, value: 'Y');
+    if (bind.mainGetOptionSync(key: 'custom-rendezvous-server').isNotEmpty ||
+        !await bind.mainIsUsingPublicServer()) {
+      return;
+    }
+    if (!mounted) return;
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => const ScanPage(firstStart: true)));
   }
 
   void initPages() {
