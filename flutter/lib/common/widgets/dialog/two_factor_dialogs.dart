@@ -163,7 +163,13 @@ void enter2FaDialog(
     codeField = Dialog2FaField(
       controller: controller,
       title: translate('Verification code'),
-      onChanged: () => submitReady.value = codeField.isReady,
+      // The OK button reads submitReady while building the dialog, so the
+      // dialog has to rebuild when the code becomes complete; the field only
+      // writes the observable.
+      onChanged: () {
+        submitReady.value = codeField.isReady;
+        setState(() {});
+      },
     );
 
     final trustField = Obx(() => uiDialogToggle(
