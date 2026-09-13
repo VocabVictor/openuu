@@ -47,6 +47,8 @@ mod video_dir;
 pub use video_dir::*;
 mod settings;
 pub use settings::*;
+mod provision;
+pub use provision::*;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use status::check_connect_status;
 

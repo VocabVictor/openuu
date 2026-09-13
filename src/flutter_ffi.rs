@@ -2611,6 +2611,18 @@ pub fn main_get_buildin_option(key: String) -> SyncReturn<String> {
     SyncReturn(get_builtin_option(&key))
 }
 
+pub fn main_import_config_text(text: String, trusted: bool) -> String {
+    import_config_text(text, trusted)
+}
+
+pub fn main_preview_config_text(text: String) -> String {
+    preview_config_text(text)
+}
+
+pub fn main_encode_share_config(option_keys: Vec<String>) -> String {
+    encode_share_config(option_keys)
+}
+
 pub fn main_check_hwcodec() {
     check_hwcodec()
 }
