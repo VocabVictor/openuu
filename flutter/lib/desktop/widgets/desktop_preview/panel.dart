@@ -67,6 +67,7 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final pal = UiColor.of(context);
     final preview = _preview;
     return ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: _kMaxPreviewHeight),
@@ -76,12 +77,12 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
             onEnter: (_) => setState(() => _hover = true),
             onExit: (_) => setState(() => _hover = false),
             child: Stack(fit: StackFit.expand, children: [
-              const DecoratedBox(
+              DecoratedBox(
                   decoration: BoxDecoration(
                       gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xffdcecf8), Color(0xff729fc2)]))),
+                          colors: [pal.primaryTint, pal.primary]))),
               if (preview != null)
                 Image.memory(preview.bytes,
                     fit: BoxFit.contain,
@@ -94,6 +95,11 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
                       onTap: widget.onConnect,
                       child: AnimatedContainer(
                           duration: const Duration(milliseconds: 150),
+                          // The scrim and everything on it stay literal: this
+                          // layer darkens whoever's screenshot is behind it, so
+                          // its own colour does not follow the theme, and the
+                          // white on top means "on a dark scrim", not
+                          // "foreground on the primary colour".
                           color: Colors.black.withOpacity(_hover ? .24 : .10),
                           child: Center(
                               child: Column(
@@ -128,6 +134,9 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: UiSpace.tagPaddingX, vertical: 5),
                         decoration: BoxDecoration(
+                            // Literal for the same reason as the scrim: the
+                            // badge is legible over a screenshot, not over a
+                            // surface the theme controls.
                             color: Colors.black45,
                             borderRadius:
                                 BorderRadius.circular(UiSpace.tagRadius)),
