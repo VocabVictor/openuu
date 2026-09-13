@@ -153,6 +153,38 @@ resolves; the hashes here are the current ones.
   one moved onto the shell. Escape now runs only the explicit close handler.
   Found by the session-window design self-check, not by a report or a crash;
   no external trigger existed. `3249bd8e0`, `flutter analyze` 224 -> 223.
+* One hardware encoder failing three times in a row emptied the list of every
+  hardware encoder the machine had been probed for, for the rest of the
+  process; the failures that get there are mostly temporary (a driver reset,
+  an encode session another program wanted) and the only recovery was
+  restarting the program, since the negotiation that follows recomputes from
+  the now empty list and nothing probes again. A failure is now a note about
+  the one encoder that failed, named by codec for RAM and by format, driver
+  and adapter for VRAM, forgotten after ten minutes. `5357d9864`, 4 scrap
+  unit tests, `cargo check --lib --features flutter,hwcodec,vram` clean.
+* Any error from the desktop duplication put the session on GDI for the rest
+  of its life, whatever the error was. The one Windows produces most is
+  `DXGI_ERROR_ACCESS_LOST`, which is not a failure but what happens when the
+  desktop is replaced, and every consent prompt replaces it: in a remote
+  assistance session the first prompt cost the session its capture path and
+  left it comparing and copying whole frames for every capture after that.
+  Errors are now read before they are answered, and a lost duplication is
+  made again, three times in a row at most with a growing wait.
+  `494063e84`, 9 unit tests on the decision.
+* A desktop surface that cannot be mapped is copied instead of ending the
+  session's duplication. `DesktopImageInSystemMemory` is what the duplication
+  reported when it was created and a driver may keep the image elsewhere
+  afterwards; the copy the capturer already uses when the flag was false to
+  begin with works either way. A candidate explanation for a Hyper-V peer
+  whose logs show `DXGI_ERROR_INVALID_CALL` and a GDI fallback within half a
+  second of every session start, 28 times; the refusal is logged, which is
+  the evidence for whether it is. Not yet confirmed on that peer: the virtual
+  machine was powered off before the build reached it. `9bdbca7e4`.
+* The three above are the same mistake in three places, and the lesson is now
+  a rule in `AGENTS.md`: a capability that fails degrades that capability,
+  never the subsystem that offers it. What made them hard to see is that each
+  one answers a real failure, and answers it far too widely; none of them
+  looks wrong at the line where it is written.
 * A cached hardware-codec probe from an earlier boot was still trusted, so
   every VRAM decode context named an adapter that no longer existed and D3D
   decoding fell back to the CPU path with `Failed to get decode context`; the
@@ -224,6 +256,18 @@ resolves; the hashes here are the current ones.
 Measurements and their limits are in `docs/perf-baseline-2026-09-13.md`
 (`23fb8ecbd`, `b9aafc583`, `b45b10a3f`, `40d12b808`, `3854ac04c`).
 
+* Standby cost on a controlled machine, from about 217 timer wake-ups a
+  second to about 6. Services with no subscribers sleep until one arrives
+  rather than polling their own subscriber list thirty times a second
+  (`de195fc4d`, 6 unit tests); the child reaper waits to be woken by a spawn
+  instead of looking ten times a second at a list that is empty unless a
+  session is running (`5ee0db0b5`, 6 unit tests); the Windows service hears
+  about a session change instead of enumerating sessions three times a second
+  (`94b4a7b84`, 2 unit tests); the heartbeat collects system information only
+  when it could upload it, not on every three second tick (`970c15fa6`, 5
+  unit tests); the tray asks for the session count every three seconds rather
+  than every second (`76ff65ed8`). Real-machine before and after is pending a
+  virtual machine that was powered off.
 * The single most valuable number of the day: sessions to the LAN peer had
   always gone through the relay at about 1.3 s, because the peer was
   registered by hand and had no inbound firewall rule, so the successful

@@ -258,6 +258,14 @@ do not automate the interaction.
   * lock acquisition where failure means poisoning, not normal control flow.
 * Otherwise prefer `Result` + `?` or explicit handling.
 * Do not ignore errors silently.
+* A capability that fails degrades that capability, never the subsystem that
+  offers it. One encoder failing is not a reason to stop using hardware
+  encoding; one duplication being lost is not a reason to capture the whole
+  session the slow way; one map being refused is not a reason to abandon the
+  fast path for good. Answer the failure at the level it happened, put aside
+  only what failed, and prefer a narrower fallback (another codec, another
+  path in the same subsystem) over a wholesale downgrade. When something is
+  put aside, say when it is tried again.
 * Avoid unnecessary `.clone()`.
 * Prefer borrowing when practical.
 * Do not add dependencies unless needed.
