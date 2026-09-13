@@ -494,50 +494,14 @@ impl Connection {
                     _ => {}
                 },
                 Some(message::Union::Misc(misc)) => return self.handle_misc(misc).await,
-                Some(message::Union::AudioFrame(frame)) => {
-                    if !self.disable_audio {
-                        if let Some(sender) = &self.audio_sender {
-                            allow_err!(sender.send(MediaData::AudioFrame(Box::new(frame))));
-                        } else {
-                            log::warn!(
-                                "Processing audio frame without the voice call audio sender."
-                            );
-                        }
-                    }
-                }
-                Some(message::Union::VoiceCallRequest(request)) => {
-                    if request.is_connect {
-                        self.voice_call_request_timestamp = Some(
-                            NonZeroI64::new(request.req_timestamp)
-                                .unwrap_or(NonZeroI64::new(get_time()).unwrap()),
-                        );
-                        // Notify the connection manager.
-                        self.send_to_cm(Data::VoiceCallIncoming);
-                    } else {
-                        self.close_voice_call().await;
-                    }
-                }
+                Some(message::Union::AudioFrame(frame)) => self.handle_audio_frame(frame),
+                Some(message::Union::VoiceCallRequest(request)) => self.handle_voice_call_request(request).await,
                 Some(message::Union::VoiceCallResponse(_response)) => {
                     // TODO: Maybe we can do a voice call from cm directly.
                 }
-                Some(message::Union::ScreenshotRequest(request)) => {
-                    if let Some(tx) = self.inner.tx.clone() {
-                        crate::video_service::set_take_screenshot(
-                            self.video_source(),
-                            request.display as _,
-                            request.sid.clone(),
-                            tx,
-                        );
-                        self.refresh_video_display(Some(request.display as usize));
-                    }
-                }
+                Some(message::Union::ScreenshotRequest(request)) => self.handle_screenshot_request(request),
                 Some(message::Union::PortForwardChannel(ch)) => self.handle_port_forward_channel(ch),
-                Some(message::Union::TerminalAction(action)) => {
-                    #[cfg(not(any(target_os = "android", target_os = "ios")))]
-                    allow_err!(self.handle_terminal_action(action).await);
-                    #[cfg(any(target_os = "android", target_os = "ios"))]
-                    log::warn!("Terminal action received but not supported on this platform");
-                }
+                Some(message::Union::TerminalAction(action)) => self.handle_terminal_action_msg(action).await,
                 _ => {}
             }
         }
