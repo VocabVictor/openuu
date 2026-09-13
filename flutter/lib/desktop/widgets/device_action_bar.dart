@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../common.dart';
+import '../../common.dart' show translate;
 import '../../models/wol_model.dart';
 import 'ui_tokens.dart';
 
