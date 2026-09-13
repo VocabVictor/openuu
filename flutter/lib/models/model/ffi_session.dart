@@ -82,6 +82,7 @@ extension FfiSession on FFI {
     // Dispose relative mouse mode resources to ensure cursor is restored
     inputModel.disposeRelativeMouseMode();
     inputModel.disposeSideButtonTracking();
+    inputModel.disposeMoveCoalescing();
     if (closeSession) {
       await bind.sessionClose(sessionId: sessionId);
     }

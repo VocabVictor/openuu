@@ -218,6 +218,14 @@ extension InputModelMoveCoalesce on InputModel {
     });
   }
 
+  /// The session is going: a held move has nowhere to go, and the timer
+  /// would fire into a closed session.
+  void disposeMoveCoalescing() {
+    _moveFlushTimer?.cancel();
+    _moveFlushTimer = null;
+    _moveCoalescer.reset();
+  }
+
   /// Sends whatever move is held, now.
   void flushPendingMove() {
     for (final e
