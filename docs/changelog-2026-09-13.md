@@ -442,3 +442,30 @@ reason they are worth keeping.
 The fixture that was read as display corruption belongs here too: an
 unlabelled test pattern cost another session an interrupt and reached the
 user as a suspected bug. Fixtures now carry a banner saying what they are.
+
+## Two commits carry changes that are not theirs
+
+Left in the record deliberately, because history was not rewritten and someone
+will eventually run into it.
+
+While repairing compile errors in the connection writer split, repeated
+`git commit --amend` in the shared working tree landed on other sessions'
+commits: between one amend and the next, another session had committed, so
+HEAD was no longer mine.
+
+* `55a37150b`, whose subject is the third-party endpoint audit, also carries 41
+  lines of `src/stream_split/{mod,tcp_split,tests}.rs`.
+* `2fa5530c1`, whose subject is the lessons page, also carries one line of
+  `src/stream_split/tcp_split.rs`.
+
+Both authors' own content is intact: an amend with a pathspec replaces only the
+listed paths and keeps the rest. Nothing was lost, and the tree at master is
+correct.
+
+**`3841bac47` does not compile on its own.** It is the first commit of the
+writer split, and its repairs ended up in the two commits above, so a `git
+bisect` that lands on it will fail to build for a reason that has nothing to do
+with what is being bisected. Skip it.
+
+The rule that came out of this is in AGENTS.md: in a shared working tree
+`--amend` and `rebase` are never used, because HEAD may not be your commit.
