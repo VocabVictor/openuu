@@ -146,6 +146,28 @@ resolves; the hashes here are the current ones.
 
 ## Defects
 
+* A session window closed while maximized saved the window's offset as its
+  size, because the size fell back to the wrong field when nothing was
+  stored for that peer yet. The peer then remembered a frame the size of a
+  title bar (85x77 here), every later session to that peer restored the
+  sliver and saved it again, and the window shrank further each time until
+  only its title bar was left. Upstream logic, untouched today, but the
+  frame memory added this afternoon writes a peer frame in more cases and
+  brought it out: it took four sessions to a test peer to reach the sliver.
+  The size now falls back to the window's own size, and a stored frame
+  below 320x240 is ignored on restore, so the peers already spoiled by this
+  fit themselves to the display again instead of staying broken; a
+  configuration written before the fix needs no hand editing. `83403321d`,
+  9 window-fit unit tests, `flutter analyze` 223.
+* The star and the chevron of a device row drifted right with the length of
+  the device name, so no two rows had them in the same column and the local
+  row, which has neither, left a ragged gap. The name was a `Flexible` next
+  to a `Spacer`, and a `Flex` splits its free space between two flexible
+  children: the name took what it needed and the spacer got only half of
+  what was left. The name and its badge now take the middle as one
+  `Expanded` child and the icons sit on the card's right edge. `084b443ac`,
+  a widget test measures the icon centres across three name lengths.
+
 * Escape in a `UiDialog` fell back to the first secondary action when no
   close handler was given. Every call site happened to put the cancelling
   action first, so nothing misbehaved; but a trust dialog puts the permissive
