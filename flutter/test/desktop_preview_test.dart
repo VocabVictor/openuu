@@ -30,7 +30,7 @@ void main() {
                       return null;
                     })))));
     await tester.pump();
-    expect(find.text('No saved preview'), findsOneWidget);
+    expect(find.text('A preview will be saved after connecting'), findsOneWidget);
     final size = tester.getSize(find.byType(AspectRatio));
     expect(size.width / size.height, closeTo(16 / 9, .001));
     await tester.tap(find.text('Enter desktop  →'));
