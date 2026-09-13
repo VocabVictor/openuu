@@ -99,16 +99,17 @@ Known and accepted exceptions, which those commands will print:
   scrim darkens a photograph and the white on it means "on a dark scrim", not
   "foreground on the primary colour". Following the theme would put white text
   on a pale screenshot. **Never retired.**
-* **The value painted inside the slider thumb in `menu_buttons.dart`.** The
-  white there *is* `onPrimary` — it sits on the primary fill — but the code is
-  a `CustomPainter`, which has no `BuildContext` to resolve the palette from.
-  **Retired as soon as the painter takes the colour as a constructor
-  argument**, which is the only change it needs; unlike the two above, this one
-  is a limitation of where the code sits, not a property of what it draws.
+* ~~**The value painted inside the slider thumb in `menu_buttons.dart`.**~~
+  **Retired, `440faba31`.** Its release condition was that the painter take the
+  colour as a constructor argument, and that is what it now does: both call
+  sites resolve `onPrimary` and pass it in. Kept here as a worked example --
+  an exception whose reason was *where the code sits* rather than *what it
+  draws* is one somebody can end, and this one lasted a few hours.
 
-These three are not one exception. The first two say the colour is not a
-surface colour at all; the third says it is, and cannot reach the palette from
-where it stands. Only the third has a release condition.
+These three were not one exception. The first two say the colour is not a
+surface colour at all; the third said it is, and could not reach the palette
+from where it stood. Only the third had a release condition, and only the
+third is gone — which is the whole point of writing the condition down.
 
 **Files the palette round never touched.** These last changed in the earlier
 light-token round; the palette round did not open them, so their literals are
