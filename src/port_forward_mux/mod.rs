@@ -213,6 +213,6 @@ pub fn window_update_msg(id: i32, add: u32) -> Message {
 }
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
-pub use tunnel::{Claim, Tunnel};
+pub use tunnel::{account_login_check, Claim, LoginCheck, Tunnel};
 
 
