@@ -101,27 +101,22 @@ impl Encoder {
             .unwrap_or((PreferCodec::Auto.into(), 0));
         let preference = most_frequent.enum_value_or(PreferCodec::Auto);
 
-        // auto: h265 > h264 > av1/vp9/vp8
+        // auto: h265 > h264 > av1 (when affordable) > vp9 > vp8 (auto_codec.rs)
         let av1_test = Config::get_option(base::config::keys::OPTION_AV1_TEST) != "N";
-        let mut auto_codec = if av1_useable && av1_test {
-            CodecFormat::AV1
-        } else {
-            CodecFormat::VP9
-        };
-        if h264_useable {
-            auto_codec = CodecFormat::H264;
-        }
-        if h265_useable {
-            auto_codec = CodecFormat::H265;
-        }
-        if auto_codec == CodecFormat::VP9 || auto_codec == CodecFormat::AV1 {
-            let mut system = System::new();
-            system.refresh_memory();
-            if vp8_useable && system.total_memory() <= 4 * 1024 * 1024 * 1024 {
-                // 4 Gb
-                auto_codec = CodecFormat::VP8
-            }
-        }
+        let mut system = System::new();
+        system.refresh_memory();
+        let auto_codec = auto_codec::choose_auto_codec(&auto_codec::AutoCodecInputs {
+            vp8_useable,
+            av1_useable: av1_useable && av1_test,
+            h264_useable,
+            h265_useable,
+            hw_encoder_available: h264vram_encoding
+                || h265vram_encoding
+                || h264hw_encoding.is_some()
+                || h265hw_encoding.is_some(),
+            logical_cores: num_cpus::get(),
+            total_memory: system.total_memory(),
+        });
 
         *format = match preference {
             PreferCodec::VP8 => CodecFormat::VP8,

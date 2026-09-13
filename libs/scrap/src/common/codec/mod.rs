@@ -49,6 +49,7 @@ pub const ENCODE_NEED_SWITCH: &'static str = "ENCODE_NEED_SWITCH";
 
 mod encoder_new;
 mod encoder_update;
+pub mod auto_codec;
 mod decoder_new;
 mod decoder_frames;
 mod options;
