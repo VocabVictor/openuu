@@ -116,6 +116,17 @@ with its own tests.
   transport people use, if the protocol floor itself has to change, or if
   upstream breaks the wrapper more than about twice.
 
+* **Calibrate the writer's video queue depth against a real thin link.**
+  `VIDEO_QUEUE_CAP` in `src/server/connection/writer/queue.rs` is 30, reasoned
+  from "about a second of frames at the rates we see" and never measured: no
+  run so far has had a link thin enough to fill the queue. Too deep and the
+  peer is shown a slideshow of the past before the drop kicks in; too shallow
+  and frames are thrown away on a link that would have carried them.
+  Precondition: one session over a link slow enough to make the queue overflow,
+  with the writer's `dropped` and `queued` figures recorded alongside what the
+  session looked like. The measurement matters more than the number: if drops
+  and a usable picture coexist, the cap is roughly right.
+
 ## Session-window restyle follow-ups
 
 Left behind by the nine-step restyle (`docs/session-window-restyle.md`). None

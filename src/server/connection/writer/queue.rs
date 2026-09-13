@@ -6,6 +6,11 @@ use std::{collections::VecDeque, sync::Arc, time::Instant};
 /// How many video messages may wait. A frame is worth sending only while it is still
 /// roughly current; beyond about a second of backlog the peer would be shown a slideshow
 /// of the past, so the queue is short on purpose and the oldest is what goes.
+///
+/// **Reasoned, not measured.** Thirty is about a second at the frame rates we see, which
+/// is the point where a frame stops being worth its place. Nothing has been run on a link
+/// thin enough to fill this queue, so treat it as a starting value to calibrate rather
+/// than a verified constant; `docs/backlog.md` says what that calibration needs.
 pub(super) const VIDEO_QUEUE_CAP: usize = 30;
 
 pub(super) type Item = (Instant, Arc<Message>);
