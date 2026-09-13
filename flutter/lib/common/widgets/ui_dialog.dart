@@ -1,0 +1,156 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_hbb/common.dart';
+import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
+
+/// One button of a [UiDialog]'s action row.
+///
+/// A dialog has at most one primary action and it is the last one; the
+/// secondary and danger buttons come before it in the order given.
+class UiDialogAction {
+  const UiDialogAction._(this.label, this.onPressed, this.kind);
+
+  const UiDialogAction.primary(String label, VoidCallback? onPressed)
+      : this._(label, onPressed, UiDialogActionKind.primary);
+  const UiDialogAction.secondary(String label, VoidCallback? onPressed)
+      : this._(label, onPressed, UiDialogActionKind.secondary);
+  const UiDialogAction.danger(String label, VoidCallback? onPressed)
+      : this._(label, onPressed, UiDialogActionKind.danger);
+
+  /// Passed through [translate].
+  final String label;
+  final VoidCallback? onPressed;
+  final UiDialogActionKind kind;
+
+  bool get isPrimary => kind == UiDialogActionKind.primary;
+}
+
+enum UiDialogActionKind { primary, secondary, danger }
+
+/// The generic dialog shell (design-review-settings.md §2.6,
+/// docs/session-window-restyle.md): 352 wide content with 24 padding, a
+/// 15/600 left-aligned title with an optional close icon, the body, and a
+/// right-aligned button row. No large icon.
+///
+/// Enter triggers the primary action, Escape calls [onClose] (or the first
+/// secondary action when [onClose] is null).
+class UiDialog extends StatelessWidget {
+  UiDialog({
+    Key? key,
+    required this.title,
+    required this.body,
+    this.actions = const [],
+    this.onClose,
+    this.width = UiSpace.dialogContentWidth,
+  })  : assert(_atMostOnePrimaryLast(actions)),
+        super(key: key);
+
+  final String title;
+  final Widget body;
+  final List<UiDialogAction> actions;
+
+  /// Shows the close icon in the title row and handles Escape.
+  final VoidCallback? onClose;
+  final double width;
+
+  static bool _atMostOnePrimaryLast(List<UiDialogAction> actions) {
+    final primaries = actions.where((a) => a.isPrimary).length;
+    return primaries == 0 || (primaries == 1 && actions.last.isPrimary);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = actions.isNotEmpty && actions.last.isPrimary
+        ? actions.last.onPressed
+        : null;
+    final cancel = onClose ??
+        actions
+            .where((a) => a.kind == UiDialogActionKind.secondary)
+            .map((a) => a.onPressed)
+            .firstWhere((_) => true, orElse: () => null);
+    return CustomAlertDialog(
+      titlePadding: EdgeInsets.zero,
+      contentBoxConstraints: BoxConstraints(minWidth: width, maxWidth: width),
+      onSubmit: primary,
+      onCancel: cancel,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _titleRow(),
+          const SizedBox(height: UiSpace.s2),
+          body,
+          if (actions.isNotEmpty) ...[
+            const SizedBox(height: UiSpace.s6),
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              for (var i = 0; i < actions.length; i++) ...[
+                if (i > 0) const SizedBox(width: UiSpace.s2),
+                uiDialogButton(actions[i]),
+              ],
+            ]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _titleRow() => SizedBox(
+      height: UiSpace.dialogTitleHeight,
+      child: Row(children: [
+        Expanded(child: Text(title, style: UiType.sectionTitle)),
+        if (onClose != null)
+          IconButton(
+              iconSize: 16,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              icon: const Icon(Icons.close, color: UiColor.muted),
+              onPressed: onClose),
+      ]));
+}
+
+/// A 32-high dialog button in the primary / secondary / danger style.
+Widget uiDialogButton(UiDialogAction action) {
+  final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(UiSpace.buttonRadius));
+  final Widget button;
+  switch (action.kind) {
+    case UiDialogActionKind.primary:
+      button = ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              backgroundColor: UiColor.primary,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: UiColor.primaryDisabled,
+              disabledForegroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: UiSpace.s4),
+              shape: shape,
+              textStyle: UiType.button),
+          onPressed: action.onPressed,
+          child: Text(translate(action.label)));
+      break;
+    case UiDialogActionKind.secondary:
+      button = OutlinedButton(
+          style: OutlinedButton.styleFrom(
+              foregroundColor: UiColor.text,
+              backgroundColor: Colors.white,
+              side: const BorderSide(color: UiColor.inputBorder),
+              padding: const EdgeInsets.symmetric(horizontal: UiSpace.s3),
+              shape: shape,
+              textStyle: UiType.button),
+          onPressed: action.onPressed,
+          child: Text(translate(action.label)));
+      break;
+    case UiDialogActionKind.danger:
+      button = OutlinedButton(
+          style: OutlinedButton.styleFrom(
+              foregroundColor: UiColor.danger,
+              backgroundColor: Colors.white,
+              side: const BorderSide(color: UiColor.dangerBorder),
+              padding: const EdgeInsets.symmetric(horizontal: UiSpace.s3),
+              shape: shape,
+              textStyle: UiType.button),
+          onPressed: action.onPressed,
+          child: Text(translate(action.label)));
+      break;
+  }
+  return SizedBox(height: UiSpace.controlHeight, child: button);
+}
