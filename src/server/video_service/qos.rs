@@ -20,7 +20,12 @@ pub(super) fn check_qos(
     name: &str,
 ) -> ResultType<()> {
     let mut video_qos = VIDEO_QOS.lock().unwrap();
-    *spf = video_qos.spf();
+    let paced = video_qos.spf();
+    if *spf != paced {
+        *spf = paced;
+        // Hardware rate control budgets bits per frame for a fixed fps; tell it the new one.
+        allow_err!(encoder.set_fps(video_qos.fps()));
+    }
     if *ratio != video_qos.ratio() {
         *ratio = video_qos.ratio();
         if encoder.support_changing_quality() {
