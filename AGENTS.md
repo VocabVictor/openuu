@@ -438,6 +438,21 @@ service status, configuration file content and service log checks. When a
 screen has to be judged by eye, produce one screenshot for the user and stop;
 do not automate the interaction.
 
+### Whoever pushes master reads that push's CI result
+
+`linux-check.yml` runs the Linux compile check and the full widget suite on
+every push to master, and seeing the answer takes a deliberate `gh run list`.
+On 2026-09-13 master was red for hours with two unrelated failures side by
+side -- a widget test whose wording had changed without its assertion, and
+`cargo check` dying before it compiled anything because a dependency was added
+to a manifest without the lock file. Both were found by a session looking for
+something else. Every mechanism worked; nobody read it.
+
+The answer is not another mechanism. **The session that pushes master looks at
+that run and hands out the repairs if it is red.** One person pushes, so the
+responsibility has exactly one owner; a notification would only move the
+unread result somewhere else.
+
 ### Running the desktop widget tests
 
 The whole suite is one command on the build machine, and it has two
