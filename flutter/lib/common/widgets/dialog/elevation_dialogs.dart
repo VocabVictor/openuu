@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 
 import '../../../common.dart';
 import '../../../models/platform_model.dart';
+import '../ui_dialog.dart';
+import '../ui_fields.dart';
 import 'validation.dart';
 
 void showWaitUacDialog(
@@ -258,13 +260,13 @@ void showWaitAcceptDialog(SessionID sessionId, String type, String title,
       closeConnection();
     }
 
-    return CustomAlertDialog(
-      title: null,
-      content: msgboxContent(type, title, text),
+    return UiDialog(
+      title: translate(title),
+      onClose: onCancel,
+      body: uiDialogText(translate(text)),
       actions: [
-        dialogButton('Cancel', onPressed: onCancel, isOutline: true),
+        UiDialogAction.secondary('Cancel', onCancel),
       ],
-      onCancel: onCancel,
-    );
+    ).alert(context);
   });
 }

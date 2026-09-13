@@ -4,7 +4,10 @@ import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../common.dart';
+import '../../../desktop/widgets/ui_tokens.dart';
 import '../../../models/platform_model.dart';
+import '../ui_dialog.dart';
+import '../ui_fields.dart';
 import 'code_fields.dart';
 import 'package:flutter_hbb/models/model.dart';
 
@@ -163,39 +166,28 @@ void enter2FaDialog(
       onChanged: () => submitReady.value = codeField.isReady,
     );
 
-    final trustField = Obx(() => CheckboxListTile(
-          contentPadding: const EdgeInsets.all(0),
-          dense: true,
-          controlAffinity: ListTileControlAffinity.leading,
-          title: Text(translate("Trust this device")),
-          value: trustThisDevice.value,
-          onChanged: (value) {
-            if (value == null) return;
-            trustThisDevice.value = value;
-          },
-        ));
+    final trustField = Obx(() => uiDialogToggle(
+        translate("Trust this device"),
+        trustThisDevice.value,
+        (value) => trustThisDevice.value = value));
 
-    return CustomAlertDialog(
-        title: Text(translate('enter-2fa-title')),
-        content: Column(
+    return UiDialog(
+      title: translate('enter-2fa-title'),
+      onClose: cancel,
+      body: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             codeField,
-            if (bind.sessionGetEnableTrustedDevices(sessionId: sessionId))
+            if (bind.sessionGetEnableTrustedDevices(sessionId: sessionId)) ...[
+              const SizedBox(height: UiSpace.s2),
               trustField,
-          ],
-        ),
-        actions: [
-          dialogButton('Cancel',
-              onPressed: cancel,
-              isOutline: true,
-              style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyMedium?.color)),
-          Obx(() => dialogButton(
-                'OK',
-                onPressed: submitReady.isTrue ? submit : null,
-              )),
-        ],
-        onSubmit: submit,
-        onCancel: cancel);
+            ],
+          ]),
+      actions: [
+        UiDialogAction.secondary('Cancel', cancel),
+        UiDialogAction.primary('OK', submitReady.isTrue ? submit : null),
+      ],
+    ).alert(context);
   });
 }
