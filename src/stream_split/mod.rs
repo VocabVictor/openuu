@@ -108,12 +108,6 @@ impl ConnWriter {
         }
     }
 
-    pub async fn send_bytes(&mut self, bytes: bytes::Bytes) -> ResultType<()> {
-        match self {
-            ConnWriter::Tcp(w) => w.send_bytes(bytes).await,
-        }
-    }
-
     pub fn set_send_timeout(&mut self, ms: u64) {
         match self {
             ConnWriter::Tcp(w) => w.set_send_timeout(ms),

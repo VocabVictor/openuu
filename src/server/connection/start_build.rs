@@ -229,6 +229,8 @@ impl Connection {
             try_stop_record_cursor_pos();
         }
         self.on_close("End", true).await;
+        // After the last message, so what is queued still goes out.
+        self.stream.close();
         log::info!("#{} connection loop exited", id);
     }
 }

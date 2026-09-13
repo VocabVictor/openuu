@@ -158,6 +158,15 @@ impl Wire {
         }
     }
 
+    /// Lets the writer task finish what is queued and stop. Called once the session is
+    /// over: without it the task lives until the socket errors, which on a peer that is
+    /// simply idle can be a long time.
+    pub(super) fn close(&self) {
+        if let Wire::Split { writer, .. } = self {
+            writer.close();
+        }
+    }
+
     pub(super) fn writer(&self) -> Option<&writer::Writer> {
         match self {
             Wire::Split { writer, .. } => Some(writer),
