@@ -643,65 +643,12 @@ impl<T: InvokeUiSession> Remote<T> {
                     }
                     _ => {}
                 },
-                Some(message::Union::MessageBox(msgbox)) => {
-                    let mut link = msgbox.link;
-                    if let Some(v) = config::HELPER_URL.get(&link as &str) {
-                        link = v.to_string();
-                    } else {
-                        log::warn!("Message box ignore link {} for security", &link);
-                        link = "".to_string();
-                    }
-                    self.handler
-                        .msgbox(&msgbox.msgtype, &msgbox.title, &msgbox.text, &link);
-                }
-                Some(message::Union::VoiceCallRequest(request)) => {
-                    if request.is_connect {
-                        // TODO: maybe we will do a voice call from the peer in the future.
-                    } else {
-                        log::debug!("The remote has requested to close the voice call");
-                        if let Some(sender) = self.stop_voice_call_sender.take() {
-                            allow_err!(sender.send(()));
-                            self.handler.on_voice_call_closed("");
-                        }
-                    }
-                }
-                Some(message::Union::VoiceCallResponse(response)) => {
-                    let ts = std::mem::replace(&mut self.voice_call_request_timestamp, None);
-                    if let Some(ts) = ts {
-                        if response.req_timestamp != ts.get() {
-                            log::debug!("Possible encountering a voice call attack.");
-                        } else {
-                            if response.accepted {
-                                // The peer accepted the voice call.
-                                self.handler.on_voice_call_started();
-                                self.stop_voice_call_sender = self.start_voice_call();
-                            } else {
-                                // The peer refused the voice call.
-                                self.handler.on_voice_call_closed("");
-                            }
-                        }
-                    }
-                }
-                Some(message::Union::PeerInfo(pi)) => {
-                    self.handler.set_displays(&pi.displays);
-                    self.handler.set_platform_additions(&pi.platform_additions);
-                }
-                Some(message::Union::ScreenshotResponse(response)) => {
-                    crate::client::screenshot::set_screenshot(response.data);
-                    self.handler
-                        .handle_screenshot_resp(response.sid, response.msg);
-                }
-                Some(message::Union::TerminalResponse(response)) => {
-                    use base::message_proto::terminal_response::Union;
-                    if let Some(Union::Opened(opened)) = &response.union {
-                        if opened.success && !opened.service_id.is_empty() {
-                            let mut lc = self.handler.lc.write().unwrap();
-                            let key = lc.get_key_terminal_service_id().to_owned();
-                            lc.set_option(key, opened.service_id.clone());
-                        }
-                    }
-                    self.handler.handle_terminal_response(response);
-                }
+                Some(message::Union::MessageBox(msgbox)) => self.handle_message_box(msgbox),
+                Some(message::Union::VoiceCallRequest(request)) => self.handle_voice_call_request(request),
+                Some(message::Union::VoiceCallResponse(response)) => self.handle_voice_call_response(response),
+                Some(message::Union::PeerInfo(pi)) => self.handle_bare_peer_info(pi),
+                Some(message::Union::ScreenshotResponse(response)) => self.handle_screenshot_response(response),
+                Some(message::Union::TerminalResponse(response)) => self.handle_terminal_response(response),
                 _ => {}
             }
         }
