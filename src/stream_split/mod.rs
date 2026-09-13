@@ -40,6 +40,10 @@
 //! would close it when the first half is dropped. That needs its own commit and its own
 //! test.
 
+// Nothing calls the halves yet; the connection loop is wired to them in a following
+// commit, and this goes with that.
+#![allow(dead_code)]
+
 use hbb_common::{protobuf, ResultType, Stream};
 
 mod null_io;

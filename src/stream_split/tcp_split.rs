@@ -6,15 +6,15 @@ use hbb_common::{
     futures::{SinkExt, StreamExt},
     protobuf,
     tcp::{DynTcpStream, Encrypt, FramedStream},
-    tokio::io::{AsyncReadExt, Chain, ReadHalf, WriteHalf},
+    tokio::io::{AsyncRead, AsyncReadExt, ReadHalf, WriteHalf},
     tokio_util::codec::{Framed, FramedRead, FramedWrite},
     ResultType,
 };
 use std::io::{Cursor, Error};
 
 /// The read side, with whatever had already been pulled off the socket put back in front
-/// of it.
-type ReadSide = Chain<Cursor<Vec<u8>>, ReadHalf<DynTcpStream>>;
+/// of it. Boxed because the chaining adaptor's type is not nameable from outside tokio.
+type ReadSide = Box<dyn AsyncRead + Send + Sync + Unpin>;
 
 pub struct TcpReader {
     framed: FramedRead<ReadSide, BytesCodec>,
@@ -58,7 +58,7 @@ pub(super) fn split(stream: FramedStream) -> Result<(TcpReader, TcpWriter), Fram
 
     Ok((
         TcpReader {
-            framed: FramedRead::new(buffered.chain(read_io), BytesCodec::new()),
+            framed: FramedRead::new(Box::new(buffered.chain(read_io)) as ReadSide, BytesCodec::new()),
             decrypt: key.clone(),
         },
         TcpWriter {

@@ -176,3 +176,32 @@ async fn a_stream_with_a_pending_write_buffer_is_not_split() {
         .expect("the frame did not decode");
     assert_eq!(&got[..], b"still readable");
 }
+
+/// The behaviour the split removes, kept as a description of it.
+///
+/// One owner cannot await a send and the socket at once — the borrow checker will not
+/// even let it try — so a frame that was ready the whole time is only delivered after the
+/// blocked send has been given up on. This passes before and after the change; it is here
+/// to say what the coupling was, not to detect it.
+#[tokio::test(flavor = "current_thread")]
+async fn one_owner_cannot_read_while_its_write_is_blocked() {
+    let io = BlockingIo::new();
+    io.block_writes();
+    io.feed_frame(b"input that is ready now");
+    let mut stream = framed_over(io);
+
+    let blocked = tokio::time::timeout(
+        std::time::Duration::from_millis(50),
+        stream.send_bytes(Bytes::from(vec![0u8; 64])),
+    )
+    .await;
+    assert!(blocked.is_err(), "the write was supposed to block");
+
+    // Only now can the read be attempted at all.
+    let got = tokio::time::timeout(SECOND, stream.next())
+        .await
+        .expect("nothing arrived")
+        .expect("the stream ended")
+        .expect("the frame did not decode");
+    assert_eq!(&got[..], b"input that is ready now");
+}
