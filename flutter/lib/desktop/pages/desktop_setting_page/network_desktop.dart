@@ -77,15 +77,33 @@ extension _NetworkDesktop on _NetworkState {
                     },
                     enabled: !locked && !isOptionFixed(kOptionDisableUdp),
                     description: translate('disable-udp-tip')),
-              if (isUsingPublicServer != true)
-                boolRow(
-                    'Allow insecure TLS fallback',
-                    'allow-insecure-tls-fallback-tip',
-                    kOptionAllowInsecureTLSFallback),
+              if (isUsingPublicServer != true) _tlsFallbackRow(context),
             ];
             if (rows.isEmpty) return const Offstage();
             return _group(zh ? '连接方式' : 'Connection', rows);
           }),
     ]);
+  }
+
+  /// The only switch that lowers security: its subtitle turns to the warning
+  /// colour with a warning icon while it is on (design-review-settings N4).
+  Widget _tlsFallbackRow(BuildContext context) {
+    const key = kOptionAllowInsecureTLSFallback;
+    final on = mainGetBoolOptionSync(key);
+    return SettingsRow(
+        label: translate('Allow insecure TLS fallback'),
+        subtitle:
+            '${on ? '⚠ ' : ''}${translate('allow-insecure-tls-fallback-tip')}',
+        subtitleStyle:
+            on ? UiType.caption.copyWith(color: UiColor.warning) : null,
+        enabled: !locked && !isOptionFixed(key),
+        control: SettingsSwitch(
+            value: on,
+            onChanged: !locked && !isOptionFixed(key)
+                ? (value) {
+                    mainSetBoolOption(key, value);
+                    _setState(() {});
+                  }
+                : null));
   }
 }

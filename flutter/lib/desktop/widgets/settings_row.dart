@@ -7,6 +7,8 @@ import 'ui_tokens.dart';
 class SettingsRow extends StatelessWidget {
   final String label;
   final String? subtitle;
+  /// Replaces the caption style of the subtitle, e.g. for a warning.
+  final TextStyle? subtitleStyle;
   final Widget control;
   final bool enabled;
   final VoidCallback? onTap;
@@ -15,6 +17,7 @@ class SettingsRow extends StatelessWidget {
       required this.label,
       required this.control,
       this.subtitle,
+      this.subtitleStyle,
       this.enabled = true,
       this.onTap});
 
@@ -39,7 +42,7 @@ class SettingsRow extends StatelessWidget {
                   Text(sub,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: UiType.caption),
+                      style: subtitleStyle ?? UiType.caption),
               ])),
           const SizedBox(width: UiSpace.settingsControlGap),
           control,
