@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../common.dart' show translate;
 import '../../models/platform_model.dart';
 import 'ui_tokens.dart';
 
@@ -220,7 +221,6 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final preview = _preview;
     return ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: _kMaxPreviewHeight),
@@ -258,7 +258,7 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
                                       size: _kEmptyIconSize,
                                       color: Colors.white),
                                 const SizedBox(height: UiSpace.s3),
-                                Text(zh ? '进入桌面  →' : 'Enter desktop  →',
+                                Text('${translate('Enter desktop')}  →',
                                     style: UiType.pageTitle
                                         .copyWith(color: Colors.white)),
                                 if (preview == null)
@@ -267,12 +267,10 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
                                           top: UiSpace.s2),
                                       child: Text(
                                           _error != null
-                                              ? (zh
-                                                  ? '预览读取失败，请重试'
-                                                  : 'Unable to load preview')
-                                              : (zh
-                                                  ? '连接后将保存最近桌面画面'
-                                                  : 'A preview will be saved after connecting'),
+                                              ? translate(
+                                                  'Unable to load preview')
+                                              : translate(
+                                                  'A preview will be saved after connecting'),
                                           style: UiType.caption.copyWith(
                                               color: Colors.white))),
                               ]))))),
@@ -288,13 +286,13 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
                             borderRadius:
                                 BorderRadius.circular(UiSpace.tagRadius)),
                         child: Text(
-                            '${zh ? '最近画面 · 非实时' : 'Saved preview · Not live'}  ${MaterialLocalizations.of(context).formatShortDate(preview.capturedAt.toLocal())} ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(preview.capturedAt.toLocal()))}',
+                            '${translate('Saved preview · Not live')}  ${MaterialLocalizations.of(context).formatShortDate(preview.capturedAt.toLocal())} ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(preview.capturedAt.toLocal()))}',
                             style: UiType.tag.copyWith(color: Colors.white)))),
               Positioned(
                   right: 8,
                   top: 8,
                   child: IconButton(
-                      tooltip: zh ? '重新读取预览缓存' : 'Reload saved preview',
+                      tooltip: translate('Reload saved preview'),
                       onPressed: _load,
                       icon: const Icon(Icons.refresh, color: Colors.white))),
             ]))));
