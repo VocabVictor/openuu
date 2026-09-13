@@ -59,7 +59,19 @@ def paths_to_read(root, prefix):
     """A named file wins over the git listing; anything else must match."""
     if prefix and os.path.isfile(prefix):
         return [prefix]
-    found = list(listed_files(root, prefix))
+    if prefix and (os.path.isabs(prefix) or prefix.startswith("..")):
+        # git would answer "is outside repository" with a traceback; say the
+        # useful thing instead. A path spelled for a file that is not there is
+        # the commonest way to scan nothing by accident.
+        raise SystemExit(
+            "nothing to scan: '%s' is outside the repository and is not an "
+            "existing file." % prefix)
+    try:
+        found = list(listed_files(root, prefix))
+    except subprocess.CalledProcessError as error:
+        raise SystemExit("git could not list '%s': %s"
+                         % (prefix or ".",
+                            error.stderr.decode("utf-8", "replace").strip()))
     if prefix and not found:
         raise SystemExit(
             "nothing to scan: '%s' is neither a file nor a listed path with a "
