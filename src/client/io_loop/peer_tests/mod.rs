@@ -3,6 +3,7 @@
 use super::test_support::*;
 use super::*;
 
+mod misc_arms;
 mod session;
 
 /// Feed one message to the remote and return whether the loop keeps running.

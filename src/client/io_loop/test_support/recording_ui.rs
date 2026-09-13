@@ -15,6 +15,10 @@ impl RecordingUi {
         self.calls.lock().unwrap().clone()
     }
 
+    pub(crate) fn calls_clear(&self) {
+        self.calls.lock().unwrap().clear();
+    }
+
     pub(crate) fn has_call(&self, prefix: &str) -> bool {
         self.calls().iter().any(|c| c.starts_with(prefix))
     }
