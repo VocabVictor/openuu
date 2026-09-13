@@ -184,7 +184,10 @@ jobs:
         shell: pwsh
         run: |
           $lines = Get-ChildItem .\SignOutput\openuu-* | ForEach-Object { "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $($_.Name)" }
-          $lines | Set-Content -Path ".\SignOutput\openuu-$env:VERSION-SHA256SUMS.txt" -Encoding ascii
+          $sumsPath = ".\SignOutput\openuu-$env:VERSION-SHA256SUMS.txt"
+          # LF, no BOM: the file is published for `sha256sum -c`, which treats a
+          # trailing CR as part of the file name and then cannot find the file.
+          [IO.File]::WriteAllText((Join-Path $PWD $sumsPath), (($lines -join "`n") + "`n"), (New-Object Text.UTF8Encoding $false))
           Get-Content ".\SignOutput\openuu-$env:VERSION-SHA256SUMS.txt"
           Get-ChildItem .\SignOutput | Format-Table Name, Length
 
