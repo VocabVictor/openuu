@@ -179,14 +179,23 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
     v.add(TTextMenu(child: Offstage(), onPressed: () {}, divider: true));
   }
   // ctrlAltDel
-  if (isDefaultConn &&
-      !ffiModel.viewOnly &&
-      ffiModel.keyboard &&
-      (pi.platform == kPeerPlatformLinux || pi.sasEnabled)) {
+  if (isDefaultConn && !ffiModel.viewOnly && ffiModel.keyboard) {
+    // Windows accepts this only from a process with SAS rights, which means
+    // the controlled side runs as a service. Leaving the item out there
+    // reads as "no such feature" when the truth is "not elevated", so it is
+    // shown disabled with the reason instead.
+    final canSendSas = pi.platform == kPeerPlatformLinux || pi.sasEnabled;
+    final label = Text(translate("Insert Ctrl + Alt + Del"));
     v.add(
       TTextMenu(
-          child: Text('${translate("Insert Ctrl + Alt + Del")}'),
-          onPressed: () => bind.sessionCtrlAltDel(sessionId: sessionId)),
+          child: canSendSas
+              ? label
+              : Tooltip(
+                  message: translate('ctrl-alt-del-unavailable-tip'),
+                  child: label),
+          onPressed: canSendSas
+              ? () => bind.sessionCtrlAltDel(sessionId: sessionId)
+              : null),
     );
   }
   // restart

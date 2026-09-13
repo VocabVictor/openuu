@@ -55,6 +55,9 @@ extension _RemotePageActions on _RemotePageState {
           .asMap()
           .entries
           .map((e) => PopupMenuItem<int>(
+              // An entry with no action is one the peer cannot do right now;
+              // it explains itself and must not look tappable.
+              enabled: e.value.onPressed != null,
               child: e.value.getChild(),
               value: e.key + mobileActionMenus.length))
           .toList(),
