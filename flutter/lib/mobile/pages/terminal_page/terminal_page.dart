@@ -119,9 +119,6 @@ class _TerminalPageState extends State<TerminalPage>
       _terminalClipboardNoticeController;
   final _terminalClipboardNotice = TerminalClipboardNoticeCoordinator<int>();
 
-  // For web only.
-  final String _robotoMonoFontFamily = 'monospace';
-
   SessionID get sessionId => _ffi.sessionId;
 
   @override
