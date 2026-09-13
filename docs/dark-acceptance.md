@@ -18,8 +18,11 @@ is compared with afterwards:
   any item below that leaves it at 222 changed nothing, and one that raises it
   has to say which line it added.
 * `ftest.ps1 <branch>` with no path — **160 tests, all passing.** The full
-  suite, not a selected file: a suite that is never run whole is a suite whose
-  red is discovered by whoever happens to run it.
+  suite, not a selected file. It is also run by `linux-check.yml` on every
+  push to master, which is the correction to a claim made earlier in this
+  file's history: the suite was not unrun. It ran every time, it was red, and
+  nobody opened the result. A check whose output nobody reads is weaker than
+  no check, because it is counted as coverage.
 
 Both are taken **on the build machine**, after `check.ps1 <branch> -Flutter`,
 which is what moves that worktree to the commit being measured. **222 is a
