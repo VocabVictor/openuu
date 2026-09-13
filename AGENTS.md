@@ -47,6 +47,11 @@ destructive action is a decision surface, not decoration.
 * The line the user judges (who is asking, for what, on which device) is part
   of the surface; changing its wording needs the same care as changing the
   buttons.
+* An action that grants **more** than an ordinary confirmation does
+  (elevating to administrator, authorising permanently, remembering the
+  device) must be visually distinguishable from the ordinary affirmative and
+  must not share its main-button styling. Two affirmatives of different power
+  that look alike invite the wrong click.
 * When a visual proposal conflicts with any of the above, the visual gives
   way. Say so explicitly in review rather than accepting the visual and
   noting the concern.
