@@ -147,6 +147,8 @@ mod logon_response;
 mod subscriptions;
 mod cm_and_input;
 mod password_check;
+#[cfg(test)]
+mod test_support;
 mod login_scope;
 mod on_message;
 mod terminal_login;
@@ -187,5 +189,6 @@ mod test {
     use tests_b::*;
     mod scope_tests;
     mod scope_option_tests;
+    mod login_tests;
 
 }
