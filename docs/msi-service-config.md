@@ -71,3 +71,23 @@ MSI 来自 master 头 a323bce1c 的 bundle（含 `1231a3e49` 的 `--import-confi
 | `imported-config-hash` | 以用户身份跑 `openuu.exe --import-config <json>` 后，同目录出现 `OpenUU_local.toml` 含 `imported-config-hash`；服务侧轮次未单独采集 |
 
 不带属性的一轮走原 toml 导入路径，结果与前一节相同。
+
+## 便携服务机原位安装验证（2026-09-13 晚，虚机 <vm>，纯命令行）
+
+被控端此前跑的是便携版 `C:\openuu-peer\openuu.exe --service`。先 `sc stop` + `sc delete` 释放服务名与 IPC 名，
+再用 master 头出的 MSI（`OpenUU-1.5.0-x86_64.msi`）做两轮静默安装，脚本见会话 scratchpad 的 `vm-msi-install.ps1`。
+
+| 检查项 | 轮 A：`msiexec /i … /qn /norestart` | 轮 B：同上 + `OPENUU_CONFIG=<json>` |
+| --- | --- | --- |
+| msiexec 退出码 | 0 | 0 |
+| 安装目录与版本 | `C:\Program Files\OpenUU\OpenUU.exe` 1.5.0+68，卸载项 `OpenUU 1.5.0.<revision>` | 同左 |
+| 服务 | `OpenUU` state=Running start=Auto account=LocalSystem，命令行 `"…\OpenUU.exe" --service` | 同左 |
+| `Get-NetFirewallRule -DisplayName 'OpenUU Service'` | 2 条，均 Enabled=True，program 指向安装目录的 exe | 同左 |
+| 服务侧四项配置 | custom-rendezvous-server / relay-server / api-server 指向服务器，key 已设置（44 字符） | 同左 |
+| `imported-config.json` | 不存在（无属性轮不导入） | 存在（405 B），含 server 四项、verification-method、lang、locked 四项 |
+| 导入日志 | — | `event=config_import path=…\openuu-config-test.json applied=2 locked=4 secrets=0 ignored=0` |
+| 注册 | `start rendezvous mediator of <server>` → `start tcp: <server>:21116` → `register_pk … due to key not confirmed`，NAT 应答正常 | 同左 |
+| peer id | `--get-id` 仍为原 ID（换装不改 ID：服务配置目录未变） | 同左 |
+
+一个非致命告警：轮 A 的 MSI 日志有 `CreateStartService: Failed to start service: OpenUUConfigImport, error: 0x41D`（1053 超时），
+该一次性导入服务随后被删除，四项配置与注册均正常，轮 B 未再出现。
