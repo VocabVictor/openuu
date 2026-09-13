@@ -20,6 +20,8 @@ void main() {
               deviceId: '123 456 789',
               password: 'test-only',
               verification: 'Temporary password',
+              verificationMethod: 'use-temporary-password',
+              onVerificationChanged: (_) {},
               enabled: true,
               temporaryPassword: true,
               onEnable: (_) async {},

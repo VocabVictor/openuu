@@ -57,8 +57,24 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        InkWell(
-                            onTap: widget.onSecurity,
+                        PopupMenuButton<String>(
+                            tooltip: t('切换验证方式', 'Change verification'),
+                            initialValue: widget.verificationMethod,
+                            onSelected: widget.onVerificationChanged,
+                            itemBuilder: (_) => [
+                                  PopupMenuItem(
+                                      value: _useTemporaryPassword,
+                                      child: Text(t('仅使用一次性密码',
+                                          'One-time password only'))),
+                                  PopupMenuItem(
+                                      value: _usePermanentPassword,
+                                      child: Text(t('仅使用固定密码',
+                                          'Permanent password only'))),
+                                  PopupMenuItem(
+                                      value: _useBothPasswords,
+                                      child: Text(t('同时使用两种密码',
+                                          'Use both passwords'))),
+                                ],
                             child: Row(children: [
                               Expanded(child: _caption(widget.verification)),
                               const Icon(Icons.expand_more,

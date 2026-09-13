@@ -32,6 +32,8 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           return DesktopAssistancePage(
             deviceId: model.serverId.text, password: model.serverPasswd.text,
             verification: model.approveMode == 'click' ? translate('Accept sessions via click') : translate(_verificationLabel(model.verificationMethod)),
+            verificationMethod: model.verificationMethod,
+            onVerificationChanged: (method) => model.setVerificationMethod(method),
             temporaryPassword: model.approveMode != 'click' && model.verificationMethod != kUsePermanentPassword,
             enabled: !svcStopped.value, onEnable: (value) => start_service(value),
             onConnect: (id) => connect(context, id),

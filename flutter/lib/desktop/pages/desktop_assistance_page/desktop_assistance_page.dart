@@ -6,10 +6,10 @@ part 'this_device_card.dart';
 part 'partner_card.dart';
 
 class DesktopAssistancePage extends StatefulWidget {
-  final String deviceId, password, verification;
+  final String deviceId, password, verification, verificationMethod;
   final bool enabled, temporaryPassword;
   final Future<void> Function(bool) onEnable;
-  final ValueChanged<String> onConnect;
+  final ValueChanged<String> onConnect, onVerificationChanged;
   final VoidCallback onRefresh,
       onSecurity,
       onDevices,
@@ -21,6 +21,8 @@ class DesktopAssistancePage extends StatefulWidget {
       required this.deviceId,
       required this.password,
       required this.verification,
+      required this.verificationMethod,
+      required this.onVerificationChanged,
       required this.enabled,
       required this.temporaryPassword,
       required this.onEnable,
@@ -36,6 +38,11 @@ class DesktopAssistancePage extends StatefulWidget {
 }
 
 const _muted = Color(0xff7b8492);
+
+// Values of the verification-method option, as the settings page writes them.
+const _useTemporaryPassword = 'use-temporary-password';
+const _usePermanentPassword = 'use-permanent-password';
+const _useBothPasswords = 'use-both-passwords';
 
 Widget _caption(String text) =>
     Text(text, style: const TextStyle(fontSize: 13, color: _muted));
