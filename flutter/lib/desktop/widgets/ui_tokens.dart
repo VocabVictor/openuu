@@ -102,6 +102,8 @@ class UiSpace {
   static const double settingsDropdownPaddingLeft = 10;
   static const double settingsDropdownPaddingRight = s2;
   static const double settingsStatusBarHeight = 44;
+  static const double settingsBrandHeadHeight = 72;
+  static const double settingsBrandIconSize = 48;
 }
 
 class UiColor {

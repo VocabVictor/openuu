@@ -83,59 +83,12 @@ class _AboutState extends State<_About> {
       const linkStyle = TextStyle(decoration: TextDecoration.underline);
       final scrollController = ScrollController();
       if (isWindows && !bind.isIncomingOnly()) {
-        Widget info(String label, String value) =>
-            _settingRow(context, label, const SizedBox.shrink(),
-                description: value);
-        return ListView(controller: scrollController, children: [
-          _group(null, [
-                _settingRow(
-                    context,
-                    'OpenUU',
-                    const BrandIcon(),
-                    description: 'Remote desktop'),
-                info('Version', version),
-                info('Build Date', buildDate),
-                info('Fingerprint', fingerprint),
-                info('ID', myId),
-                Obx(() {
-                  final url = stateGlobal.updateUrl.value;
-                  if (url.isEmpty) {
-                    return _settingRow(
-                        context,
-                        'Check for updates',
-                        _Button('Check for updates',
-                            () => bind.mainGetSoftwareUpdateUrl()),
-                        description: translate('Up to date'));
-                  }
-                  final installed = bind.mainIsInstalled();
-                  return _settingRow(
-                      context,
-                      'Check for updates',
-                      _Button(
-                          installed ? 'Update' : 'Download',
-                          () => installed
-                              ? handleUpdate(url)
-                              : launchUrlString(url)),
-                      description:
-                          '${translate("new-version-of-{${bind.mainGetAppNameSync()}}-tip")} (${bind.mainGetNewVersion()})');
-                }),
-                _settingRow(
-                    context,
-                    'Website',
-                    IconButton(
-                        icon: const Icon(Icons.open_in_new, size: 20),
-                        onPressed: () =>
-                            launchUrlString('https://github.com/VocabVictor/openuu'))),
-                Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: SelectableText(
-                        'Copyright © ${DateTime.now().year} Purslane Tech Pte. Ltd.\n$license',
-                        style: const TextStyle(
-                            fontSize: 12,
-                            height: 1.5,
-                            color: Color(0xff858b95)))),
-          ]),
-        ]);
+        return _aboutDesktop(context,
+            version: version,
+            buildDate: buildDate,
+            fingerprint: fingerprint,
+            myId: myId,
+            license: license);
       }
       return SingleChildScrollView(
         controller: scrollController,

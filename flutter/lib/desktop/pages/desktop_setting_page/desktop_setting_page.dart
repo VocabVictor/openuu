@@ -31,6 +31,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../../common/widgets/dialog.dart';
 import '../../../common/widgets/login.dart';
 
+part 'about_desktop.dart';
 part 'account_about.dart';
 part 'constants.dart';
 part 'controls.dart';
