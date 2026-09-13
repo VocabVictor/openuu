@@ -65,7 +65,7 @@ class AndroidPermissionManager {
   static var _current = "";
 
   static Future<bool> check(String type) {
-    if (isDesktop || isWeb) {
+    if (isDesktop) {
       return Future.value(true);
     }
     return gFFI.invokeMethod("check_permission", type);
@@ -79,7 +79,7 @@ class AndroidPermissionManager {
   /// We use XXPermissions to request permissions,
   /// for supported types, see https://github.com/getActivity/XXPermissions/blob/e46caea32a64ad7819df62d448fb1c825481cd28/library/src/main/java/com/hjq/permissions/Permission.java
   static Future<bool> request(String type) {
-    if (isDesktop || isWeb) {
+    if (isDesktop) {
       return Future.value(true);
     }
 

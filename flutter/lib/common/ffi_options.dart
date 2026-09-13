@@ -11,7 +11,6 @@ import '../../consts.dart';
 import '../models/model.dart';
 import '../models/platform_model.dart';
 
-import 'globals.dart';
 import 'peer_widgets.dart';
 
 /// find ffi, tag is Remote ID
@@ -186,19 +185,17 @@ bool idWhitelistNotEmpty() {
 }
 
 void checkUpdate() {
-  if (!isWeb) {
-    if (!bind.isCustomClient()) {
-      platformFFI.registerEventHandler(
-          kCheckSoftwareUpdateFinish, kCheckSoftwareUpdateFinish,
-          (Map<String, dynamic> evt) async {
-        if (evt['url'] is String) {
-          stateGlobal.updateUrl.value = evt['url'];
-        }
-      });
-      Timer(const Duration(seconds: 1), () async {
-        bind.mainGetSoftwareUpdateUrl();
-      });
-    }
+  if (!bind.isCustomClient()) {
+    platformFFI.registerEventHandler(
+        kCheckSoftwareUpdateFinish, kCheckSoftwareUpdateFinish,
+        (Map<String, dynamic> evt) async {
+      if (evt['url'] is String) {
+        stateGlobal.updateUrl.value = evt['url'];
+      }
+    });
+    Timer(const Duration(seconds: 1), () async {
+      bind.mainGetSoftwareUpdateUrl();
+    });
   }
 }
 

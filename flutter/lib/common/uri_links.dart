@@ -11,7 +11,6 @@ import 'globals.dart';
 import 'url_cmd_args.dart';
 import 'windows_misc.dart';
 
-var webInitialLink = "";
 
 /// Initialize uni links for macos/windows
 ///
@@ -29,12 +28,7 @@ Future<bool> initUniLinks() async {
     if (initialLink == null || initialLink.isEmpty) {
       return false;
     }
-    if (isWeb) {
-      webInitialLink = initialLink;
-      return false;
-    } else {
-      return handleUriLink(uriString: initialLink);
-    }
+    return handleUriLink(uriString: initialLink);
   } catch (err) {
     debugPrintStack(label: "$err");
     return false;
@@ -47,7 +41,7 @@ Future<bool> initUniLinks() async {
 ///
 /// Returns a [StreamSubscription] which can listen the uni links.
 StreamSubscription? listenUniLinks({handleByFlutter = true}) {
-  if (isLinux || isWeb) {
+  if (isLinux) {
     return null;
   }
 

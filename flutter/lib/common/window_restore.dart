@@ -21,10 +21,10 @@ Future<Size> _adjustRestoreMainWindowSize(double? width, double? height) async {
   const double maxHeight = 6480;
 
   final defaultWidth =
-      ((isDesktop || isWebDesktop) ? 1280 : kMobileDefaultDisplayWidth)
+      (isDesktop ? 1280 : kMobileDefaultDisplayWidth)
           .toDouble();
   final defaultHeight =
-      ((isDesktop || isWebDesktop) ? 720 : kMobileDefaultDisplayHeight)
+      (isDesktop ? 720 : kMobileDefaultDisplayHeight)
           .toDouble();
   double restoreWidth = width ?? defaultWidth;
   double restoreHeight = height ?? defaultHeight;
@@ -64,7 +64,7 @@ Future<Offset?> _adjustRestoreMainWindowOffset(
     return null;
   }
 
-  if (isDesktop || isWebDesktop) {
+  if (isDesktop) {
     final screens = await window_size.getScreenList();
     if (screens.isNotEmpty) {
       final windowRect = Rect.fromLTWH(left, top, width, height);
@@ -85,12 +85,10 @@ Future<Offset?> _adjustRestoreMainWindowOffset(
 
   double frameLeft = 0.0;
   double frameTop = 0.0;
-  double frameRight = ((isDesktop || isWebDesktop)
-          ? kDesktopMaxDisplaySize
+  double frameRight = (isDesktop ? kDesktopMaxDisplaySize
           : kMobileMaxDisplaySize)
       .toDouble();
-  double frameBottom = ((isDesktop || isWebDesktop)
-          ? kDesktopMaxDisplaySize
+  double frameBottom = (isDesktop ? kDesktopMaxDisplaySize
           : kMobileMaxDisplaySize)
       .toDouble();
 

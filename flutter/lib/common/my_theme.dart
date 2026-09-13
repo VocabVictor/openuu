@@ -39,12 +39,12 @@ class MyTheme {
 
   static SwitchThemeData switchTheme() {
     return SwitchThemeData(
-        splashRadius: (isDesktop || isWebDesktop) ? 0 : kRadialReactionRadius);
+        splashRadius: isDesktop ? 0 : kRadialReactionRadius);
   }
 
   static RadioThemeData radioTheme() {
     return RadioThemeData(
-        splashRadius: (isDesktop || isWebDesktop) ? 0 : kRadialReactionRadius);
+        splashRadius: isDesktop ? 0 : kRadialReactionRadius);
   }
 
   // Checkbox
@@ -93,21 +93,18 @@ class MyTheme {
   static EdgeInsets dialogContentPadding({bool actions = true}) {
     final double p = dialogPadding;
 
-    return (isDesktop || isWebDesktop)
-        ? EdgeInsets.fromLTRB(p, p, p, actions ? (p - 4) : p)
+    return isDesktop ? EdgeInsets.fromLTRB(p, p, p, actions ? (p - 4) : p)
         : EdgeInsets.fromLTRB(p, p, p, actions ? (p / 2) : p);
   }
 
   static EdgeInsets dialogActionsPadding() {
     final double p = dialogPadding;
 
-    return (isDesktop || isWebDesktop)
-        ? EdgeInsets.fromLTRB(p, 0, p, (p - 4))
+    return isDesktop ? EdgeInsets.fromLTRB(p, 0, p, (p - 4))
         : EdgeInsets.fromLTRB(p, 0, (p - mobileTextButtonPaddingLR), (p / 2));
   }
 
-  static EdgeInsets dialogButtonPadding = (isDesktop || isWebDesktop)
-      ? EdgeInsets.only(left: dialogPadding)
+  static EdgeInsets dialogButtonPadding = isDesktop ? EdgeInsets.only(left: dialogPadding)
       : EdgeInsets.only(left: dialogPadding / 3);
 
   static ScrollbarThemeData scrollbarTheme = ScrollbarThemeData(
@@ -181,11 +178,10 @@ class MyTheme {
       labelColor: Colors.black87,
     ),
     tooltipTheme: tooltipTheme(),
-    splashColor: (isDesktop || isWebDesktop) ? Colors.transparent : null,
-    highlightColor: (isDesktop || isWebDesktop) ? Colors.transparent : null,
-    splashFactory: (isDesktop || isWebDesktop) ? NoSplash.splashFactory : null,
-    textButtonTheme: (isDesktop || isWebDesktop)
-        ? TextButtonThemeData(
+    splashColor: isDesktop ? Colors.transparent : null,
+    highlightColor: isDesktop ? Colors.transparent : null,
+    splashFactory: isDesktop ? NoSplash.splashFactory : null,
+    textButtonTheme: isDesktop ? TextButtonThemeData(
             style: TextButton.styleFrom(
               splashFactory: NoSplash.splashFactory,
               shape: RoundedRectangleBorder(
@@ -224,8 +220,7 @@ class MyTheme {
         color: Colors.white,
         shape: RoundedRectangleBorder(
           side: BorderSide(
-              color: (isDesktop || isWebDesktop)
-                  ? Color(0xFFECECEC)
+              color: isDesktop ? Color(0xFFECECEC)
                   : Colors.transparent),
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
         )),
@@ -255,8 +250,7 @@ class MyTheme {
       ),
     ),
     scrollbarTheme: scrollbarThemeDark,
-    inputDecorationTheme: (isDesktop || isWebDesktop)
-        ? InputDecorationTheme(
+    inputDecorationTheme: isDesktop ? InputDecorationTheme(
             fillColor: Color(0xFF24252B),
             filled: true,
             isDense: true,
@@ -282,11 +276,10 @@ class MyTheme {
       labelColor: Colors.white70,
     ),
     tooltipTheme: tooltipTheme(),
-    splashColor: (isDesktop || isWebDesktop) ? Colors.transparent : null,
-    highlightColor: (isDesktop || isWebDesktop) ? Colors.transparent : null,
-    splashFactory: (isDesktop || isWebDesktop) ? NoSplash.splashFactory : null,
-    textButtonTheme: (isDesktop || isWebDesktop)
-        ? TextButtonThemeData(
+    splashColor: isDesktop ? Colors.transparent : null,
+    highlightColor: isDesktop ? Colors.transparent : null,
+    splashFactory: isDesktop ? NoSplash.splashFactory : null,
+    textButtonTheme: isDesktop ? TextButtonThemeData(
             style: TextButton.styleFrom(
               splashFactory: NoSplash.splashFactory,
               disabledForegroundColor: Colors.white70,
@@ -349,7 +342,7 @@ class MyTheme {
 
   static Future<void> changeDarkMode(ThemeMode mode) async {
     Get.changeThemeMode(mode);
-    if (desktopType == DesktopType.main || isAndroid || isIOS || isWeb) {
+    if (desktopType == DesktopType.main || isAndroid || isIOS) {
       if (mode == ThemeMode.system) {
         await bind.mainSetLocalOption(
             key: kCommConfKeyTheme, value: defaultOptionTheme);
@@ -357,7 +350,7 @@ class MyTheme {
         await bind.mainSetLocalOption(
             key: kCommConfKeyTheme, value: mode.toShortString());
       }
-      if (!isWeb) await bind.mainChangeTheme(dark: mode.toShortString());
+      await bind.mainChangeTheme(dark: mode.toShortString());
       // Synchronize the window theme of the system.
       updateSystemWindowTheme();
     }

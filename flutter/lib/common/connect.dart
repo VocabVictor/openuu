@@ -14,10 +14,6 @@ import '../mobile/pages/file_manager_page.dart';
 import '../mobile/pages/remote_page.dart';
 import '../mobile/pages/view_camera_page.dart';
 import '../mobile/pages/terminal_page.dart';
-import '../desktop/pages/remote_page.dart' as desktop_remote;
-import '../desktop/pages/file_manager_page.dart' as desktop_file_manager;
-import '../desktop/pages/view_camera_page.dart' as desktop_view_camera;
-import 'package:flutter_hbb/desktop/widgets/remote_toolbar.dart';
 import '../models/platform_model.dart';
 
 import 'ffi_options.dart';
@@ -36,24 +32,19 @@ closeConnection({String? id}) {
       stateGlobal.isInMainPage = true;
     }();
   } else {
-    if (isWeb) {
-      Navigator.popUntil(globalKey.currentContext!, ModalRoute.withName("/"));
-      stateGlobal.isInMainPage = true;
-    } else {
-      final controller = Get.find<DesktopTabController>();
-      if (controller.tabType == DesktopTabType.terminal &&
-          controller.onCloseWindow != null) {
-        // Terminal windows are scoped to one peer. The optional id passed to
-        // closeConnection() is that peer id, not a terminal tab key
-        // (${peerId}_${terminalId}). Closing from terminal dialogs should close
-        // the peer's whole terminal window, including all terminal tabs.
-        unawaited(controller.onCloseWindow!().catchError((e, _) {
-          debugPrint('[closeConnection] Failed to close terminal window: $e');
-        }));
-        return;
-      }
-      controller.closeBy(id);
+    final controller = Get.find<DesktopTabController>();
+    if (controller.tabType == DesktopTabType.terminal &&
+        controller.onCloseWindow != null) {
+      // Terminal windows are scoped to one peer. The optional id passed to
+      // closeConnection() is that peer id, not a terminal tab key
+      // (${peerId}_${terminalId}). Closing from terminal dialogs should close
+      // the peer's whole terminal window, including all terminal tabs.
+      unawaited(controller.onCloseWindow!().catchError((e, _) {
+        debugPrint('[closeConnection] Failed to close terminal window: $e');
+      }));
+      return;
     }
+    controller.closeBy(id);
   }
 }
 
@@ -174,56 +165,27 @@ connect(BuildContext context, String id,
     }
   } else {
     if (isFileTransfer) {
-      if (isWeb) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (BuildContext context) =>
-                desktop_file_manager.FileManagerPage(
-                    id: id,
-                    password: password,
-                    isSharedPassword: isSharedPassword),
-          ),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (BuildContext context) => FileManagerPage(
-                id: id,
-                password: password,
-                isSharedPassword: isSharedPassword,
-                forceRelay: forceRelay),
-          ),
-        );
-      }
-    } else if (isViewCamera) {
-      if (isWeb) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (BuildContext context) =>
-                desktop_view_camera.ViewCameraPage(
-              key: ValueKey(id),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => FileManagerPage(
               id: id,
-              toolbarState: ToolbarState(),
               password: password,
               isSharedPassword: isSharedPassword,
-            ),
-          ),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (BuildContext context) => ViewCameraPage(
-                id: id,
-                password: password,
-                isSharedPassword: isSharedPassword,
-                forceRelay: forceRelay),
-          ),
-        );
-      }
+              forceRelay: forceRelay),
+        ),
+      );
+    } else if (isViewCamera) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => ViewCameraPage(
+              id: id,
+              password: password,
+              isSharedPassword: isSharedPassword,
+              forceRelay: forceRelay),
+        ),
+      );
     } else if (isTerminal) {
       Navigator.push(
         context,
@@ -237,31 +199,16 @@ connect(BuildContext context, String id,
         ),
       );
     } else {
-      if (isWeb) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (BuildContext context) => desktop_remote.RemotePage(
-              key: ValueKey(id),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => RemotePage(
               id: id,
-              toolbarState: ToolbarState(),
               password: password,
               isSharedPassword: isSharedPassword,
-            ),
-          ),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (BuildContext context) => RemotePage(
-                id: id,
-                password: password,
-                isSharedPassword: isSharedPassword,
-                forceRelay: forceRelay),
-          ),
-        );
-      }
+              forceRelay: forceRelay),
+        ),
+      );
     }
     stateGlobal.isInMainPage = false;
   }
