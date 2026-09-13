@@ -81,6 +81,7 @@ class ButtonOP extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = UiColor.of(context);
     final branding = _oidcProviderBranding(op);
     final buttonLabel = translate("Continue with {${branding.label}}");
     return Row(children: [
@@ -89,10 +90,9 @@ class ButtonOP extends StatelessWidget {
         width: isWindows ? 320 : 200,
         child: Obx(() => ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: isWindows ? Colors.white : primaryColor,
-              foregroundColor: isWindows ? const Color(0xff303743) : null,
-              side:
-                  isWindows ? const BorderSide(color: Color(0xffdce2e9)) : null,
+              backgroundColor: isWindows ? pal.surface : primaryColor,
+              foregroundColor: isWindows ? pal.text : null,
+              side: isWindows ? BorderSide(color: pal.inputBorder) : null,
               shape: isWindows
                   ? RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8))

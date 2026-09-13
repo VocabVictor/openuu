@@ -58,6 +58,7 @@ Future<bool?> _openLoginDialog() async {
   Future.delayed(Duration.zero, fetchLoginOptions);
 
   final res = await gFFI.dialogManager.show<bool>((setState, close, context) {
+    final pal = UiColor.of(context);
     username.addListener(() {
       if (usernameMsg != null) {
         setState(() => usernameMsg = null);
@@ -187,7 +188,7 @@ Future<bool?> _openLoginDialog() async {
                 if (!inProgress)
                   SelectableText(
                     error.toString(),
-                    style: const TextStyle(fontSize: 11, color: Colors.red),
+                    style: TextStyle(fontSize: 11, color: pal.danger),
                     textAlign: TextAlign.center,
                   ),
               ],
@@ -271,7 +272,7 @@ Future<bool?> _openLoginDialog() async {
               // No need to handle the branch of null.
               // Because we can ensure the color is not null when debug.
               color: isCloseHovered
-                  ? Colors.white
+                  ? pal.onPrimary
                   : Theme.of(context)
                       .textTheme
                       .titleLarge
@@ -279,7 +280,7 @@ Future<bool?> _openLoginDialog() async {
                       ?.withOpacity(0.55),
             ),
             onTap: onDialogCancel,
-            hoverColor: Colors.red,
+            hoverColor: pal.danger,
             borderRadius: BorderRadius.circular(5),
           ),
         ).marginOnly(top: 10, right: 15),
@@ -320,7 +321,7 @@ Future<bool?> _openLoginDialog() async {
                 Localizations.localeOf(context).languageCode == 'zh'
                     ? '登录账号，连接你的设备'
                     : 'Sign in to connect to your devices',
-                style: const TextStyle(fontSize: 13, color: Color(0xff858c98))),
+                style: TextStyle(fontSize: 13, color: pal.muted)),
             const SizedBox(height: 16),
           ],
           const SizedBox(
@@ -356,28 +357,28 @@ Future<bool?> _openLoginDialog() async {
       onSubmit: onLogin,
       theme: base.copyWith(
         textTheme: base.textTheme.apply(fontFamily: 'Microsoft YaHei'),
-        dialogTheme: const DialogTheme(
-            backgroundColor: Color(0xfff8fbff),
+        dialogTheme: DialogTheme(
+            backgroundColor: pal.panelBg,
             surfaceTintColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(14)))),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: pal.surface,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          labelStyle: const TextStyle(fontSize: 14, color: Color(0xff8a929e)),
+          labelStyle: TextStyle(fontSize: 14, color: pal.muted),
           floatingLabelBehavior: FloatingLabelBehavior.never,
-          prefixIconColor: const Color(0xff8993a1),
-          suffixIconColor: const Color(0xff8993a1),
-          enabledBorder: border(const Color(0xffdce2e9)),
-          focusedBorder: border(const Color(0xff3978ff)),
-          border: border(const Color(0xffdce2e9)),
+          prefixIconColor: pal.muted,
+          suffixIconColor: pal.muted,
+          enabledBorder: border(pal.inputBorder),
+          focusedBorder: border(pal.primary),
+          border: border(pal.inputBorder),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xff3978ff),
-          foregroundColor: Colors.white,
+          backgroundColor: pal.primaryFill,
+          foregroundColor: pal.onPrimary,
           elevation: 0,
           shadowColor: Colors.transparent,
           textStyle:
