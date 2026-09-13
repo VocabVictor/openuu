@@ -3,18 +3,19 @@ part of 'overlay.dart';
 /// The mobile action bar floats over the peer's screen, not over a page of ours,
 /// so what it has to stand out against is whatever the remote desktop is showing.
 /// Resolving it from the palette would make it follow *our* appearance while its
-/// actual backdrop is unrelated to it -- in dark mode it would lighten against a
-/// backdrop that did not change. It stays a fixed colour for the same reason a
-/// road sign does not follow the weather.
+/// actual backdrop is unrelated to it. What it has to contend with is the peer's
+/// desktop, and the peer's desktop does not change with our appearance: letting
+/// this brighten when we go dark is chasing a target that is standing still.
 ///
 /// 0x66 is what withOpacity(0.4) resolved to, so the colour is unchanged.
 const Color _remoteChromeFill = Color(0x660071FF);
 
-/// The icons on that bar. Not `onPrimary`: `onPrimary` promises legibility on
-/// a solid fill of ours, and this bar is 40% transparent over an unknown
-/// picture, so no palette member can promise anything about it. White is the
-/// honest answer for the same reason the bar's own colour is fixed -- both are
-/// chosen against the peer's screen, which our appearance does not describe.
+/// The icons on that bar. Not `onPrimary`: what `onPrimary` promises is
+/// legibility on a solid fill of ours, and this bar is 40% transparent over an
+/// unknown picture, so here it can promise nothing at all. Borrowing it would
+/// make the palette owe a debt it cannot pay. White is the honest answer, for
+/// the same reason the bar's own colour is fixed: both are chosen against the
+/// peer's screen, which our appearance does not describe.
 const Color _onRemoteChrome = Colors.white;
 
 class DraggableChatWindow extends StatelessWidget {
