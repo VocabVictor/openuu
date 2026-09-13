@@ -1,6 +1,6 @@
 # Server and client configuration provisioning
 
-Status: proposal (openuu-e9, 2026-09-13), awaiting lenovo-0f. Goal: a user
+Status: approved (2026-09-13). Goal: a user
 installs OpenUU and never opens the network settings; an administrator ships
 one file (or one QR code) and every option in it is in effect on first start.
 
@@ -37,8 +37,10 @@ and sits in the same maps; OpenUU does not ship it.
   empty values and a comment; `.github/workflows/windows-build.yml` and
   `release.yml` export the four variables from repository secrets;
   `openuu-toolchain/build-env.ps1` reads them from `D:\openuu-tools\
-  default-config.env` (git-ignored) for local builds. Real values are never
-  committed.
+  default-config.env` (git-ignored) for local builds. Real values exist only
+  in those two places: never in the repository, the docs, a PR or a log line
+  (the start-up log prints the id server host and `key=<set>` / `key=<unset>`,
+  never the key).
 * At start-up (`core_main`, before `load_custom_client`) the non-empty
   constants are inserted into `DEFAULT_SETTINGS` under
   `custom-rendezvous-server`, `relay-server`, `api-server`, `key`, and
@@ -91,6 +93,13 @@ needs no separate vocabulary and the parser validates against those lists.
 * `locked` may name any key from `server` or `options`; those go into
   `OVERWRITE_SETTINGS`. Locked keys are only accepted from a file, never from a
   QR code or the clipboard.
+* Persistence of the file layer: `OVERWRITE_SETTINGS` and `DEFAULT_SETTINGS`
+  are in-memory tables loaded at start-up (today from `custom.txt`). A
+  successful import therefore stores a verbatim copy of the file as
+  `<config dir>/imported-config.json` (secrets stripped, they were already
+  applied to their own stores) and every start reloads that copy into the two
+  tables before `custom.txt`; `imported-config-hash` is the SHA-256 of that
+  copy. Deleting the copy un-locks everything on the next start.
 * Secrets: `permanent-password` (and any key ending in `password`, `pin` or
   `token`) is accepted from a file, applied through the existing
   `Config::set_permanent_password` path (stored hashed as today), never
@@ -107,7 +116,7 @@ needs no separate vocabulary and the parser validates against those lists.
 | --- | --- | --- |
 | `<exe dir>/openuu-config.json` | every start of the service and of the UI process; skipped when its SHA-256 equals the stored `imported-config-hash` local option | Rust `core_main` |
 | `--import-config <path>` | as today for `.toml`; a `.json` path takes the new parser (the MSI-generated temp service keeps working) | Rust |
-| MSI | `msiexec … OPENUU_CONFIG=<path>` copies the file to the install dir as `openuu-config.json` (so the exe-dir rule picks it up) and passes it to the existing `--import-config` custom action; a `openuu-config.json` placed in the dist dir is bundled the way `custom.txt` is (`preprocess.py` per-customer file) | MSI + Rust |
+| MSI | `msiexec … OPENUU_CONFIG=<path>`; when both a `.json` and the legacy `.toml` import path are present the `.json` wins and the conflict is logged as `event=config_import_conflict` copies the file to the install dir as `openuu-config.json` (so the exe-dir rule picks it up) and passes it to the existing `--import-config` custom action; a `openuu-config.json` placed in the dist dir is bundled the way `custom.txt` is (`preprocess.py` per-customer file) | MSI + Rust |
 | settings page → "导入配置文件 / 从剪贴板导入" | manual | Flutter calls `main_import_config_text` (new FFI, one-line forward) |
 | QR / deep link | see §4 | Flutter → same FFI |
 
