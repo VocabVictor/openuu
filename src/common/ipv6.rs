@@ -69,6 +69,24 @@ async fn test_bind_ipv6() -> ResultType<SocketAddr> {
 }
 
 pub async fn test_ipv6() -> Option<tokio::task::JoinHandle<()>> {
+    test_ipv6_when(crate::get_ipv6_punch_enabled()).await
+}
+
+/// Learning this host's public v6 address means asking the built-in list of
+/// public STUN servers whenever the deployment has configured none of its own,
+/// so the probe follows the same switch the controlling side checks before it
+/// offers a v6 candidate. The guard belongs here rather than at the call
+/// sites: the controlled side (`rendezvous_mediator::direct::start_ipv6`) and
+/// NAT typing both reached it without one, which meant a peer contacted third
+/// parties because the *other* end had the feature enabled.
+///
+/// Skipping costs nothing: `PUBLIC_IPV6_ADDR` stays unset, `get_ipv6_socket`
+/// returns `None` at once and this side simply offers no v6 candidate, so no
+/// punch is delayed or blocked by the absence of the probe.
+async fn test_ipv6_when(enabled: bool) -> Option<tokio::task::JoinHandle<()>> {
+    if !enabled {
+        return None;
+    }
     if PUBLIC_IPV6_ADDR
         .lock()
         .unwrap()
@@ -151,4 +169,29 @@ pub async fn test_ipv6() -> Option<tokio::task::JoinHandle<()>> {
             }
         };
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The probe asks public STUN servers, so when the switch is off it must
+    /// not run at all. Asserting on the cached timestamp is what makes this a
+    /// test of "no query was made" rather than of the return value: the real
+    /// body stamps `PUBLIC_IPV6_ADDR.1` before it touches the network, so an
+    /// untouched stamp means nothing was sent.
+    #[tokio::test]
+    async fn a_disabled_probe_sends_nothing() {
+        let before = PUBLIC_IPV6_ADDR.lock().unwrap().1;
+        assert!(test_ipv6_when(false).await.is_none());
+        let after = PUBLIC_IPV6_ADDR.lock().unwrap().1;
+        assert_eq!(
+            before.is_some(),
+            after.is_some(),
+            "a disabled probe must not even record an attempt"
+        );
+        if let (Some(b), Some(a)) = (before, after) {
+            assert_eq!(b, a, "a disabled probe must not refresh the attempt stamp");
+        }
+    }
 }
