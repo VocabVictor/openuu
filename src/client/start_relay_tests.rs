@@ -3,7 +3,7 @@ use hbb_common::tokio::net::{TcpListener, TcpStream};
 
 /// An `Interface` that answers nothing; the relay stage only reads its policy flags.
 #[derive(Clone, Default)]
-struct NoUi;
+pub(super) struct NoUi;
 
 #[async_trait]
 impl Interface for NoUi {
@@ -34,7 +34,7 @@ impl Interface for NoUi {
 
 /// A loopback pair standing in for the rendezvous connection; the far end is kept so
 /// the socket stays open for the duration of the call.
-async fn rendezvous_pair() -> (Stream, Stream, SocketAddr) {
+pub(super) async fn rendezvous_pair() -> (Stream, Stream, SocketAddr) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     let client = TcpStream::connect(addr).await.unwrap();

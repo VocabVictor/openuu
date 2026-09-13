@@ -218,4 +218,6 @@ mod webrtc_race_tests;
 mod view_only_session_tests;
 #[cfg(test)]
 mod start_relay_tests;
+#[cfg(test)]
+mod start_punch_tests;
 
