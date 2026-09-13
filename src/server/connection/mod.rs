@@ -210,5 +210,6 @@ mod test {
     mod file_tests;
     mod cm_data_tests;
     mod start_arms_tests;
+    mod start_build_tests;
 
 }
