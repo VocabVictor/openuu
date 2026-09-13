@@ -120,14 +120,6 @@ impl VideoQoS {
 
         let target_ratio = self.latest_quality().ratio();
         let current_ratio = self.ratio;
-        let current_bitrate = self.bitrate();
-
-        // Calculate ratio for adding 150kbps bandwidth
-        let ratio_add_150kbps = if current_bitrate > 0 {
-            Some((current_bitrate + 150) as f32 * current_ratio / current_bitrate as f32)
-        } else {
-            None
-        };
 
         let min = self.min_ratio();
         let max = target_ratio * MAX_BR_MULTIPLE;
@@ -136,7 +128,9 @@ impl VideoQoS {
 
         // Three bad replies in a row confirm congestion; with a bitrate-targeted
         // encoder the bitrate is then the only thing that drains the queue, so it
-        // comes down hard.  Increases need every viewer below the threshold.
+        // comes down hard.  Increases need every viewer below the threshold and
+        // compound: 15 percent a window brings a quartered bitrate back in ten
+        // windows, where a fixed 150 kbps step took half a minute longer.
         if let Some(factor) = reduction {
             v = current_ratio * factor;
         } else if max_delay < 50 {
@@ -149,16 +143,6 @@ impl VideoQoS {
             }
         } else if dynamic_screen {
             v = current_ratio * 1.05;
-        }
-
-        // Limit quality increase rate for better stability
-        if let Some(ratio_add_150kbps) = ratio_add_150kbps {
-            if v > ratio_add_150kbps
-                && ratio_add_150kbps > current_ratio
-                && current_ratio >= BR_SPEED
-            {
-                v = ratio_add_150kbps;
-            }
         }
 
         if reduction.is_some() {

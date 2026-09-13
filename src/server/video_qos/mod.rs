@@ -1,5 +1,5 @@
 use super::*;
-use scrap::codec::{Quality, BR_BALANCED, BR_BEST, BR_SPEED};
+use scrap::codec::{Quality, BR_BALANCED, BR_BEST};
 use std::{
     collections::VecDeque,
     time::{Duration, Instant},
@@ -31,7 +31,9 @@ d. second timeout / TestDelay reply => real fps is the minimum over all users;
 ratio adjust:
 a. user set image quality => update to the maximum ratio of the latest quality
 b. 3 seconds timeout => update ratio according to network delay
-    When network delay < DELAY_THRESHOLD_150MS, increase ratio, max 150kbps;
+    When network delay < DELAY_THRESHOLD_150MS and the screen is moving, increase ratio
+    by 5-15 percent per window, so a cut recovers exponentially rather than 150 kbps
+    a window; never above the quality's own ratio;
     When a user calls for a reduction (two bad replies in a row, or a probe still
     out at the second tick past two seconds), decrease ratio by the step that user's
     own delay and confirmation call for, the most conservative step over all users;

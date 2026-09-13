@@ -4,3 +4,4 @@ use super::*;
 
 mod oscillation;
 mod recovery;
+mod recovery_pace;
