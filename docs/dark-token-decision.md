@@ -185,6 +185,22 @@ Inverting the page is its own meaning, so it is its own pair,
 `inverseSurface` / `onInverseSurface`: near-black under white in light,
 near-white under near-black in dark, 15.26:1 and 13.26:1 respectively.
 
+## One value was chosen by the measurement, not by eye
+
+The dark `primary` started at `0xff4d84ff`, which looked right and measured
+4.37:1 as text on the dark surface — under the 4.5 the standard asks for, by
+0.13. Acceptance found it; nobody would have seen it. It is now `0xff5d90ff`
+(4.97:1), and that is the whole justification for the value: no argument
+about the hue, no preference, a threshold it missed.
+
+Raising it moved every pair it takes part in, so all of them were
+re-measured, not just the one that failed: as text it now scores 4.97 on
+`surface`, 5.43 on `panelBg`, 4.67 on `primaryTint` and 3.87 on
+`primaryTintHover` (an icon tint, 3:1), and white on it as a switch track
+scores 3.04 against the 3:1 a knob needs. **Changing one member means
+re-checking every pair it appears in; a fix that clears one threshold by
+crossing another is not a fix.**
+
 ## What the palette must satisfy
 
 The dark values are not the light ones inverted. Two rules from AGENTS.md bind

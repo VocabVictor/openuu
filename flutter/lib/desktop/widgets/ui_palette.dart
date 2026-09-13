@@ -129,7 +129,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
     textSecondary: Color(0xffc9cdd4),
     muted: Color(0xff9296a0),
     faint: Color(0xff6b7079),
-    primary: Color(0xff4d84ff),
+    primary: Color(0xff5d90ff),
     primaryFill: Color(0xff2f6ae0),
     primaryTint: Color(0xff1b2a4a),
     primaryTintHover: Color(0xff24375e),
