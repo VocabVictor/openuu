@@ -85,22 +85,60 @@ class ToolbarState {
 }
 
 class _ToolbarTheme {
-  static const Color blueColor = MyTheme.button;
-  static const Color hoverBlueColor = MyTheme.accent;
-  static Color inactiveColor = Colors.grey[800]!;
-  static Color hoverInactiveColor = Colors.grey[850]!;
+  // Button backgrounds. The bar is a white (dark: #22262c) outlined strip; a
+  // button only paints a background on hover, when it is in an active state
+  // (pinned, recording, call, mobile actions) or when it is the close/danger
+  // button. Names are kept so the menu items read as before.
+  static const Color blueColor = Colors.transparent;
+  static const Color hoverBlueColor = UiColor.settingsRowHover;
+  static Color inactiveColor = Colors.transparent;
+  static Color hoverInactiveColor = UiColor.settingsRowHover;
+  static const Color activeColor = UiColor.primaryTint;
+  static const Color hoverActiveColor = Color(0xffdce8ff);
 
-  static const Color redColor = Colors.redAccent;
-  static const Color hoverRedColor = Colors.red;
+  static const Color redColor = Color(0xfffff0ef);
+  static const Color hoverRedColor = Color(0xffffe1df);
   // kMinInteractiveDimension
   static const double height = 20.0;
   static const double dividerHeight = 12.0;
 
-  static const double buttonSize = 32;
-  static const double buttonHMargin = 2;
+  static const double buttonSize = UiSession.toolbarButtonSize;
+  static const double iconSize = UiSession.toolbarIconSize;
+  static const double buttonHMargin = UiSession.toolbarButtonGap / 2;
   static const double buttonVMargin = 6;
-  static const double iconRadius = 8;
-  static const double elevation = 3;
+  static const double iconRadius = UiSession.toolbarButtonRadius;
+  static const double barRadius = UiSession.toolbarRadius;
+  static const double elevation = 0;
+
+  /// Icon tint for a button background: primary on the active tint, danger on
+  /// the red tint, secondary text otherwise.
+  static Color iconColor(Color background, {bool dark = false}) {
+    if (background == activeColor || background == hoverActiveColor) {
+      return UiColor.primary;
+    }
+    if (background == redColor || background == hoverRedColor) {
+      return UiColor.danger;
+    }
+    return dark ? const Color(0xffc9cdd4) : UiColor.textSecondary;
+  }
+
+  static Color barColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xff22262c)
+          : Colors.white;
+
+  static BoxDecoration barDecoration(BuildContext context) => BoxDecoration(
+        color: barColor(context),
+        border: Border.all(color: borderColor(context), width: 1),
+        borderRadius: BorderRadius.circular(barRadius),
+        boxShadow: const [
+          BoxShadow(
+            color: UiSession.toolbarShadow,
+            offset: UiSession.toolbarShadowOffset,
+            blurRadius: UiSession.toolbarShadowBlur,
+          ),
+        ],
+      );
 
   static double dividerSpaceToAction = isWindows ? 8 : 14;
 
@@ -111,7 +149,9 @@ class _ToolbarTheme {
   static const double menuButtonBorderRadius = 3.0;
 
   static Color borderColor(BuildContext context) =>
-      MyTheme.color(context).border3 ?? MyTheme.border;
+      Theme.of(context).brightness == Brightness.dark
+          ? (MyTheme.color(context).border3 ?? MyTheme.border)
+          : UiColor.border;
 
   static Color? dividerColor(BuildContext context) =>
       MyTheme.color(context).divider;

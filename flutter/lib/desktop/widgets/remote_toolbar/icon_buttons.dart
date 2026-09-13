@@ -35,12 +35,18 @@ class _IconMenuButtonState extends State<_IconMenuButton> {
   @override
   Widget build(BuildContext context) {
     assert(widget.assetName != null || widget.icon != null);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final background = hover ? widget.hoverColor : widget.color;
     final icon = widget.icon ??
-        SvgPicture.asset(
-          widget.assetName!,
-          colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          width: _ToolbarTheme.buttonSize,
-          height: _ToolbarTheme.buttonSize,
+        Center(
+          child: SvgPicture.asset(
+            widget.assetName!,
+            colorFilter: ColorFilter.mode(
+                _ToolbarTheme.iconColor(background, dark: dark),
+                BlendMode.srcIn),
+            width: _ToolbarTheme.iconSize,
+            height: _ToolbarTheme.iconSize,
+          ),
         );
     var button = SizedBox(
       width: widget.width ?? _ToolbarTheme.buttonSize,
@@ -62,7 +68,7 @@ class _IconMenuButtonState extends State<_IconMenuButton> {
                     decoration: BoxDecoration(
                       borderRadius:
                           BorderRadius.circular(_ToolbarTheme.iconRadius),
-                      color: hover ? widget.hoverColor : widget.color,
+                      color: background,
                     ),
                     child: icon)),
           )),
@@ -120,12 +126,18 @@ class _IconSubmenuButtonState extends State<_IconSubmenuButton> {
   @override
   Widget build(BuildContext context) {
     assert(widget.svg != null || widget.icon != null);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final background = hover ? widget.hoverColor : widget.color;
     final icon = widget.icon ??
-        SvgPicture.asset(
-          widget.svg!,
-          colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          width: _ToolbarTheme.buttonSize,
-          height: _ToolbarTheme.buttonSize,
+        Center(
+          child: SvgPicture.asset(
+            widget.svg!,
+            colorFilter: ColorFilter.mode(
+                _ToolbarTheme.iconColor(background, dark: dark),
+                BlendMode.srcIn),
+            width: _ToolbarTheme.iconSize,
+            height: _ToolbarTheme.iconSize,
+          ),
         );
     final button = SizedBox(
         width: widget.width ?? _ToolbarTheme.buttonSize,
@@ -145,7 +157,7 @@ class _IconSubmenuButtonState extends State<_IconSubmenuButton> {
                         decoration: BoxDecoration(
                           borderRadius:
                               BorderRadius.circular(_ToolbarTheme.iconRadius),
-                          color: hover ? widget.hoverColor : widget.color,
+                          color: background,
                         ),
                         child: icon))),
             menuChildren: widget

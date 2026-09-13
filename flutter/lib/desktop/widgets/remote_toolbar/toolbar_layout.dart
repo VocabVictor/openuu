@@ -87,40 +87,35 @@ extension _RemoteToolbarLayout on _RemoteToolbarState {
     toolbarItems.add(_VoiceCallMenu(id: widget.id, ffi: widget.ffi));
     toolbarItems.add(_RecordMenu());
     toolbarItems.add(_CloseMenu(id: widget.id, ffi: widget.ffi));
-    final toolbarBorderRadius = BorderRadius.all(Radius.circular(4.0));
+    final toolbarBorderRadius =
+        BorderRadius.all(Radius.circular(_ToolbarTheme.barRadius));
     // innerAxis: how the toolbar icons themselves flow.
     // outerAxis: how the toolbar block and the handle stack against each other
     // (perpendicular to the dock edge, so the handle hangs off the interior face).
     final innerAxis = isHorizontal ? Axis.horizontal : Axis.vertical;
     final outerAxis = isHorizontal ? Axis.vertical : Axis.horizontal;
     final spacer = isHorizontal
-        ? SizedBox(width: _ToolbarTheme.buttonHMargin * 2)
-        : SizedBox(height: _ToolbarTheme.buttonHMargin * 2);
-    final toolbarMaterial = Material(
-      elevation: _ToolbarTheme.elevation,
-      shadowColor: MyTheme.color(context).shadow,
-      borderRadius: toolbarBorderRadius,
-      color: Theme.of(context)
-          .menuBarTheme
-          .style
-          ?.backgroundColor
-          ?.resolve(MaterialState.values.toSet()),
-      child: SingleChildScrollView(
-        scrollDirection: innerAxis,
-        child: Theme(
-          data: themeData(),
-          child: _ToolbarTheme.borderWrapper(
-              context,
-              Flex(
-                direction: innerAxis,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  spacer,
-                  ...toolbarItems,
-                  spacer,
-                ],
-              ),
-              toolbarBorderRadius),
+        ? SizedBox(width: UiSession.toolbarPaddingX - _ToolbarTheme.buttonHMargin)
+        : SizedBox(height: UiSession.toolbarPaddingX - _ToolbarTheme.buttonHMargin);
+    final toolbarMaterial = Container(
+      decoration: _ToolbarTheme.barDecoration(context),
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: toolbarBorderRadius,
+        child: SingleChildScrollView(
+          scrollDirection: innerAxis,
+          child: Theme(
+            data: themeData(),
+            child: Flex(
+              direction: innerAxis,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                spacer,
+                ...toolbarItems,
+                spacer,
+              ],
+            ),
+          ),
         ),
       ),
     );
