@@ -70,6 +70,15 @@ class DesktopSettingPage extends StatefulWidget {
       _DesktopSettingPageState(initialTabkey);
 
   static void switch2page(SettingsTabKey page) {
+    if (!tabKeys.contains(page)) {
+      return;
+    }
+    DesktopTabPage.onAddSetting(initialPage: page);
+  }
+
+  /// Jump the mounted settings page to `page`; a no-op before it is mounted,
+  /// when the constructor's initialTabkey applies instead.
+  static void jumpToMounted(SettingsTabKey page) {
     try {
       int index = tabKeys.indexOf(page);
       if (index == -1) {
@@ -77,15 +86,14 @@ class DesktopSettingPage extends StatefulWidget {
       }
       if (Get.isRegistered<PageController>(tag: _kSettingPageControllerTag) &&
           Get.isRegistered<Rx<SettingsTabKey>>(tag: _kSettingPageTabKeyTag)) {
-        DesktopTabPage.onAddSetting(initialPage: page);
         PageController controller =
             Get.find<PageController>(tag: _kSettingPageControllerTag);
         Rx<SettingsTabKey> selected =
             Get.find<Rx<SettingsTabKey>>(tag: _kSettingPageTabKeyTag);
         selected.value = page;
-        controller.jumpToPage(index);
-      } else {
-        DesktopTabPage.onAddSetting(initialPage: page);
+        if (controller.hasClients) {
+          controller.jumpToPage(index);
+        }
       }
     } catch (e) {
       debugPrintStack(label: '$e');

@@ -33,22 +33,29 @@ class DesktopTabPage extends StatefulWidget {
     page.showHome(assistance, favorites);
   }
 
+  /// Show the settings inside the home shell, on `initialPage`.
   static void onAddSetting(
       {SettingsTabKey initialPage = SettingsTabKey.general}) {
-    try {
-      DesktopTabController tabController = Get.find<DesktopTabController>();
-      tabController.add(TabInfo(
-          key: kTabLabelSettingPage,
-          label: kTabLabelSettingPage,
-          selectedIcon: Icons.build_sharp,
-          unselectedIcon: Icons.build_outlined,
-          page: DesktopSettingPage(
-            key: const ValueKey(kTabLabelSettingPage),
-            initialTabkey: initialPage,
-          )));
-    } catch (e) {
-      debugPrintStack(label: '$e');
+    if (bind.isIncomingOnly()) {
+      // The incoming-only build has no home shell; keep the settings tab.
+      try {
+        DesktopTabController tabController = Get.find<DesktopTabController>();
+        tabController.add(TabInfo(
+            key: kTabLabelSettingPage,
+            label: kTabLabelSettingPage,
+            selectedIcon: Icons.build_sharp,
+            unselectedIcon: Icons.build_outlined,
+            page: DesktopSettingPage(
+              key: const ValueKey(kTabLabelSettingPage),
+              initialTabkey: initialPage,
+            )));
+      } catch (e) {
+        debugPrintStack(label: '$e');
+      }
+      return;
     }
+    final page = Get.find<_DesktopTabPageState>();
+    page.showSettings(initialPage);
   }
 }
 
@@ -56,14 +63,29 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
   final tabController = DesktopTabController(tabType: DesktopTabType.main);
   bool _showAssistance = false;
   bool _showFavorites = false;
+  bool _showSettings = false;
+  SettingsTabKey _settingsTab = SettingsTabKey.general;
   final _wol = WolModel();
 
   void showHome(bool assistance, bool favorites) {
     setState(() {
       _showAssistance = assistance;
       _showFavorites = favorites;
+      _showSettings = false;
     });
     tabController.jumpTo(0);
+  }
+
+  void showSettings(SettingsTabKey tab) {
+    setState(() {
+      _showSettings = true;
+      _settingsTab = tab;
+    });
+    tabController.jumpTo(0);
+    // The page keeps one instance; once it is mounted, jump to the requested
+    // sub-page instead of rebuilding it.
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => DesktopSettingPage.jumpToMounted(tab));
   }
 
   _DesktopTabPageState() {
@@ -131,28 +153,42 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
                 final homeSelected =
                     tabController.state.value.selectedTabInfo.key ==
                         kTabLabelHomePage;
+                final showSettings = isWindows &&
+                    !bind.isIncomingOnly() &&
+                    homeSelected &&
+                    _showSettings;
                 final showWelcome = isWindows &&
                     !bind.isIncomingOnly() &&
                     !signedIn &&
-                    homeSelected;
+                    homeSelected &&
+                    !_showSettings;
                 final showFavorites = isWindows &&
                     !bind.isIncomingOnly() &&
                     signedIn &&
                     homeSelected &&
-                    _showFavorites;
+                    _showFavorites &&
+                    !_showSettings;
                 final showDevices = isWindows &&
                     !bind.isIncomingOnly() &&
                     signedIn &&
                     homeSelected &&
                     !_showAssistance &&
-                    !_showFavorites;
+                    !_showFavorites &&
+                    !_showSettings;
                 return Stack(children: [
                   // Keep the existing home mounted: it owns remote-window event handlers.
                   Offstage(
-                      offstage: showWelcome || showDevices || showFavorites,
+                      offstage: showWelcome ||
+                          showDevices ||
+                          showFavorites ||
+                          showSettings,
                       child: pageView),
                   if (showDevices) const DesktopDevicesPage(),
                   if (showFavorites) const DesktopFavoritesPage(),
+                  if (showSettings)
+                    DesktopSettingPage(
+                        key: const ValueKey(kTabLabelSettingPage),
+                        initialTabkey: _settingsTab),
                   if (showWelcome)
                     DesktopWelcomePage(
                       onLogin: () {
@@ -170,15 +206,6 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
               tail: Row(mainAxisSize: MainAxisSize.min, children: [
                 if (isWindows && !bind.isIncomingOnly())
                   const AccountAction(),
-                Offstage(
-                  offstage: bind.isIncomingOnly() || bind.isDisableSettings(),
-                  child: ActionIcon(
-                    message: 'Settings',
-                    icon: IconFont.menu,
-                    onTap: DesktopTabPage.onAddSetting,
-                    isClose: false,
-                  ),
-                ),
               ]),
             )));
     final content = tabWidget;
