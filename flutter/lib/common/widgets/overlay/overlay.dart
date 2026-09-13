@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../../../consts.dart';
 import '../../../desktop/widgets/tabbar_widget.dart';
+import '../../../desktop/widgets/ui_tokens.dart';
 import '../../../models/chat_model.dart';
 import '../../../models/model.dart';
 import '../chat_page.dart';

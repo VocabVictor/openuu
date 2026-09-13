@@ -1,5 +1,15 @@
 part of 'overlay.dart';
 
+/// The mobile action bar floats over the peer's screen, not over a page of ours,
+/// so what it has to stand out against is whatever the remote desktop is showing.
+/// Resolving it from the palette would make it follow *our* appearance while its
+/// actual backdrop is unrelated to it -- in dark mode it would lighten against a
+/// backdrop that did not change. It stays a fixed colour for the same reason a
+/// road sign does not follow the weather.
+///
+/// 0x66 is what withOpacity(0.4) resolved to, so the colour is unchanged.
+const Color _remoteChromeFill = Color(0x660071FF);
+
 class DraggableChatWindow extends StatelessWidget {
   const DraggableChatWindow(
       {Key? key,
@@ -55,14 +65,14 @@ class DraggableChatWindow extends StatelessWidget {
               );
               return Container(
                   decoration:
-                      BoxDecoration(border: Border.all(color: MyTheme.border)),
+                      BoxDecoration(border: Border.all(color: UiColor.of(context).border)),
                   child: child);
             });
   }
 
   Widget _buildMobileAppBar(BuildContext context) {
     return Container(
-      color: Theme.of(context).colorScheme.primary,
+      color: UiColor.of(context).primaryFill,
       height: 50,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -109,7 +119,7 @@ class DraggableChatWindow extends StatelessWidget {
       decoration: BoxDecoration(
           border: Border(
               bottom: BorderSide(
-                  color: Theme.of(context).hintColor.withOpacity(0.4)))),
+                  color: UiColor.of(context).border))),
       height: 38,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -120,7 +130,7 @@ class DraggableChatWindow extends StatelessWidget {
                   opacity: chatModel.isWindowFocus.value ? 1.0 : 0.4,
                   child: Row(children: [
                     Icon(Icons.chat_bubble_outline,
-                        size: 20, color: Theme.of(context).colorScheme.primary),
+                        size: 20, color: UiColor.of(context).primary),
                     SizedBox(width: 6),
                     Text(translate("Chat"))
                   ])))),
@@ -191,7 +201,7 @@ class DraggableMobileActions extends StatelessWidget {
                   shadowColor: Colors.transparent,
                   child: Container(
                     decoration: BoxDecoration(
-                        color: MyTheme.accent.withOpacity(0.4),
+                        color: _remoteChromeFill,
                         borderRadius:
                             BorderRadius.all(Radius.circular(15 * scale))),
                     child: Row(
