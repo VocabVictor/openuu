@@ -1,0 +1,181 @@
+# Android APK build, revived from the dormant job in playground.yml
+# (docs/android-build-restore-plan.md, option A). Manual only for now: it
+# answers "can the mobile target still be built" without spending minutes on
+# every push. Nothing else builds the Rust core for Android — Gradle only ever
+# calls `cargo metadata` — so this workflow stages librustdesk.so itself and
+# then asserts the APK actually contains it.
+name: Android build
+
+on:
+  workflow_dispatch:
+
+env:
+  RUST_VERSION: "1.92.0"
+  FLUTTER_VERSION: "3.24.5"
+  CARGO_NDK_VERSION: "3.1.2"
+  NDK_VERSION: "r26d"
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  VCPKG_COMMIT_ID: "9e593bb18ea69cc5095e012465dcd675a822ed0d"
+  TARGET: aarch64-linux-android
+  ABI: arm64-v8a
+
+jobs:
+  generate-bridge:
+    uses: ./.github/workflows/bridge.yml
+
+  build-android:
+    name: aarch64-linux-android (ubuntu-22.04)
+    needs: [generate-bridge]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          submodules: recursive
+
+      - name: Restore bridge files
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bridge-artifact
+          path: ./
+
+      - name: Install prerequisites
+        shell: bash
+        run: |
+          sudo apt-get -y update
+          sudo apt-get install -y \
+             clang \
+             cmake \
+             curl \
+             gcc-multilib \
+             git \
+             g++ \
+             g++-multilib \
+             libasound2-dev \
+             libc6-dev \
+             libclang-dev \
+             libunwind-dev \
+             libgstreamer1.0-dev \
+             libgstreamer-plugins-base1.0-dev \
+             libgtk-3-dev \
+             libpulse-dev \
+             libva-dev \
+             libvdpau-dev \
+             libxcb-randr0-dev \
+             libxcb-shape0-dev \
+             libxcb-xfixes0-dev \
+             libxdo-dev \
+             libxfixes-dev \
+             llvm-dev \
+             nasm \
+             yasm \
+             ninja-build \
+             openjdk-17-jdk-headless \
+             pkg-config \
+             wget
+
+      - name: Install flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: ${{ env.TARGET }}
+
+      - uses: nttld/setup-ndk@ed92fe6cadad69be94a966a7ee3271275e62f779 # v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: true
+
+      - name: Setup vcpkg with Github Actions binary cache
+        uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11
+        with:
+          vcpkgDirectory: /opt/artifacts/vcpkg
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+
+      - name: Install vcpkg dependencies for Android
+        shell: bash
+        run: ./flutter/build_android_deps.sh ${{ env.ABI }}
+
+      # uni_links_desktop has no Android implementation; the upstream Android
+      # job comments it out of the manifest for the same reason.
+      - name: Build the Rust core for Android
+        shell: bash
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          sed -i 's/uni_links_desktop/#uni_links_desktop/g' flutter/pubspec.yaml
+          cargo install cargo-ndk --version ${{ env.CARGO_NDK_VERSION }} --locked
+          ./flutter/ndk_arm64.sh
+
+      - name: Stage the native libraries
+        shell: bash
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          libs=flutter/android/app/src/main/jniLibs/${{ env.ABI }}
+          mkdir -p "$libs"
+          cp ./target/${{ env.TARGET }}/release/liblibrustdesk.so "$libs/librustdesk.so"
+          cp "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/${{ env.TARGET }}/libc++_shared.so" "$libs/"
+          ls -l "$libs"
+
+      - name: Build the APK
+        shell: bash
+        env:
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+        run: |
+          export PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH
+          # no release keystore in this repository; sign with the debug key
+          sed -i 's/signingConfigs.release/signingConfigs.debug/g' flutter/android/app/build.gradle
+          cd flutter
+          flutter build apk --release --target-platform android-arm64 --split-per-abi
+
+      # The point of the whole workflow: a green build that ships an APK
+      # without the Rust core would die on System.loadLibrary at startup, so
+      # the presence of both libraries is what is actually asserted here.
+      - name: The APK must contain the native libraries
+        shell: bash
+        run: |
+          apk=flutter/build/app/outputs/flutter-apk/app-${{ env.ABI }}-release.apk
+          test -f "$apk" || { echo "::error::no APK at $apk"; exit 1; }
+          ls -l "$apk"
+          unzip -l "$apk" | tee /tmp/apk.txt
+          for lib in librustdesk.so libc++_shared.so; do
+            grep -q "lib/${{ env.ABI }}/$lib" /tmp/apk.txt \
+              || { echo "::error::$lib missing from the APK"; exit 1; }
+          done
+          echo "both native libraries are present"
+
+      - name: Upload the APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: openuu-android-${{ env.ABI }}
+          if-no-files-found: error
+          path: flutter/build/app/outputs/flutter-apk/app-${{ env.ABI }}-release.apk
+
+  # A skipped job reads as a grey tick rather than a failure, so a prerequisite
+  # that never ran would quietly pass. Same guard as linux-check.yml.
+  guard:
+    name: prerequisites actually ran
+    needs: [generate-bridge, build-android]
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Every prerequisite must have succeeded
+        shell: bash
+        env:
+          BRIDGE_RESULT: ${{ needs.generate-bridge.result }}
+          BUILD_RESULT: ${{ needs.build-android.result }}
+        run: |
+          echo "generate-bridge: $BRIDGE_RESULT"
+          echo "build-android: $BUILD_RESULT"
+          if [ "$BRIDGE_RESULT" != success ] || [ "$BUILD_RESULT" != success ]; then
+            echo "::error::a prerequisite did not succeed; skipped or cancelled counts as a failure"
+            exit 1
+          fi
