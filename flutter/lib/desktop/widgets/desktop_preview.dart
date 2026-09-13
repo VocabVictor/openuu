@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../models/platform_model.dart';
+import 'ui_tokens.dart';
 
 class DesktopPreview {
   final Uint8List bytes;
@@ -148,6 +149,11 @@ class _DesktopPreviewCaptureState extends State<DesktopPreviewCapture> {
       RepaintBoundary(key: _boundary, child: widget.child);
 }
 
+/// Caps the 16:9 panel so a wide window cannot make it ~660 high and push the
+/// sections under it off a 1080p screen.
+const double _kMaxPreviewHeight = 360;
+const double _kEmptyIconSize = 48;
+
 class DesktopPreviewPanel extends StatefulWidget {
   final String peer;
   final VoidCallback onConnect;
@@ -212,7 +218,9 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
   Widget build(BuildContext context) {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
     final preview = _preview;
-    return AspectRatio(
+    return ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: _kMaxPreviewHeight),
+        child: AspectRatio(
         aspectRatio: 16 / 9,
         child: MouseRegion(
             onEnter: (_) => setState(() => _hover = true),
@@ -243,14 +251,16 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
                                   children: [
                                 if (preview == null)
                                   const Icon(Icons.desktop_windows_outlined,
-                                      size: 48, color: Colors.white),
-                                const SizedBox(height: 12),
+                                      size: _kEmptyIconSize,
+                                      color: Colors.white),
+                                const SizedBox(height: UiSpace.s3),
                                 Text(zh ? '进入桌面  →' : 'Enter desktop  →',
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 22)),
+                                    style: UiType.pageTitle
+                                        .copyWith(color: Colors.white)),
                                 if (preview == null)
                                   Padding(
-                                      padding: const EdgeInsets.only(top: 10),
+                                      padding: const EdgeInsets.only(
+                                          top: UiSpace.s2),
                                       child: Text(
                                           _error != null
                                               ? (zh
@@ -259,25 +269,23 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
                                               : (zh
                                                   ? '连接后将保存最近桌面画面'
                                                   : 'A preview will be saved after connecting'),
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 13))),
+                                          style: UiType.caption.copyWith(
+                                              color: Colors.white))),
                               ]))))),
-              Positioned(
-                  left: 12,
-                  bottom: 12,
-                  child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
-                      decoration: BoxDecoration(
-                          color: Colors.black45,
-                          borderRadius: BorderRadius.circular(4)),
-                      child: Text(
-                          preview == null
-                              ? (zh ? '暂无历史画面' : 'No saved preview')
-                              : '${zh ? '最近画面 · 非实时' : 'Saved preview · Not live'}  ${MaterialLocalizations.of(context).formatShortDate(preview.capturedAt.toLocal())} ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(preview.capturedAt.toLocal()))}',
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 11)))),
+              if (preview != null)
+                Positioned(
+                    left: UiSpace.s3,
+                    bottom: UiSpace.s3,
+                    child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: UiSpace.tagPaddingX, vertical: 5),
+                        decoration: BoxDecoration(
+                            color: Colors.black45,
+                            borderRadius:
+                                BorderRadius.circular(UiSpace.tagRadius)),
+                        child: Text(
+                            '${zh ? '最近画面 · 非实时' : 'Saved preview · Not live'}  ${MaterialLocalizations.of(context).formatShortDate(preview.capturedAt.toLocal())} ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(preview.capturedAt.toLocal()))}',
+                            style: UiType.tag.copyWith(color: Colors.white)))),
               Positioned(
                   right: 8,
                   top: 8,
@@ -285,6 +293,6 @@ class _DesktopPreviewPanelState extends State<DesktopPreviewPanel> {
                       tooltip: zh ? '重新读取预览缓存' : 'Reload saved preview',
                       onPressed: _load,
                       icon: const Icon(Icons.refresh, color: Colors.white))),
-            ])));
+            ]))));
   }
 }
