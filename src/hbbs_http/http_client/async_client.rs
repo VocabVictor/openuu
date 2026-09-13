@@ -1,3 +1,4 @@
+#![cfg_attr(not(any(target_os = "windows", target_os = "macos")), allow(dead_code))]
 use super::*;
 
 pub async fn create_http_client_async_with_url_strict(url: &str) -> ResultType<AsyncClient> {

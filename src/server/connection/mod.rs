@@ -166,6 +166,7 @@ use ipc_start::*;
 mod audit_types;
 pub use audit_types::*;
 mod drop_and_state;
+#[cfg_attr(not(windows), allow(unused_imports))]
 pub use drop_and_state::*;
 mod retina_perm;
 pub use retina_perm::*;

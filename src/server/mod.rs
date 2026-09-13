@@ -39,7 +39,7 @@ mod start;
 pub use start::*;
 mod config_sync;
 #[cfg(any(target_os = "macos", target_os = "linux"))]
-use config_sync::{sync_and_watch_config_dir, wait_initial_config_sync};
+use config_sync::wait_initial_config_sync;
 
 pub mod audio_service;
 #[cfg(target_os = "windows")]

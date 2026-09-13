@@ -1,5 +1,3 @@
-use super::*;
-
 #[test]
 pub(super) fn test_scrub_preexisting_ipc_parent_entries_should_bind_to_opened_inode_not_path() {
     use std::os::unix::ffi::OsStrExt;

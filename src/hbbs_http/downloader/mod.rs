@@ -1,3 +1,4 @@
+#![cfg_attr(not(any(target_os = "windows", target_os = "macos")), allow(dead_code, unused_imports))]
 use super::create_http_client_async_with_url_strict;
 use hbb_common::{
     bail,

@@ -1,3 +1,4 @@
+#[cfg_attr(target_os = "linux", allow(unused_imports))]
 use super::*;
 
 #[cfg(not(target_os = "linux"))]

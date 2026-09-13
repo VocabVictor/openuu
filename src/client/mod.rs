@@ -178,6 +178,7 @@ mod clipboard_sync;
 mod audio_handler;
 pub use audio_handler::*;
 mod audio_buffer;
+#[cfg_attr(target_os = "linux", allow(unused_imports))]
 use audio_buffer::*;
 mod video;
 pub use video::*;

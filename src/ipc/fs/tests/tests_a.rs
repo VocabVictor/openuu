@@ -1,5 +1,3 @@
-use super::*;
-
 // Pins the HELPER's contract, which is all `new_drm_listener` consists of at that line -- not
 // the call site itself. Binding the real `/tmp/<app>-service/ipc_drm` from a test would collide
 // with a live root service, so "the listener still calls this" is not covered here.

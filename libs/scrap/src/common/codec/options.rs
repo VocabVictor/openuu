@@ -1,3 +1,4 @@
+#[cfg_attr(not(windows), allow(unused_imports))]
 use super::*;
 
 #[cfg(any(feature = "hwcodec", feature = "mediacodec"))]
