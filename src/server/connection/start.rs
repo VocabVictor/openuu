@@ -18,127 +18,9 @@ impl Connection {
         let _raii_id = raii::ConnectionID::new(id);
         let _raii_control_permissions_id =
             raii::ControlPermissionsID::new(id, &control_permissions);
-        let salt = Config::get_effective_permanent_password_salt();
-        let hash = Hash {
-            salt,
-            challenge: Config::get_auto_password(6),
-            ..Default::default()
-        };
-        let (tx_from_cm_holder, mut rx_from_cm) = mpsc::unbounded_channel::<ipc::Data>();
-        // holding tx_from_cm_holder to avoid cpu burning of rx_from_cm.recv when all sender closed
-        let tx_from_cm = tx_from_cm_holder.clone();
-        let (tx_to_cm, rx_to_cm) = mpsc::unbounded_channel::<ipc::Data>();
-        let (tx, mut rx) = mpsc::unbounded_channel::<(Instant, Arc<Message>)>();
-        let (tx_video, mut rx_video) = mpsc::unbounded_channel::<(Instant, Arc<Message>)>();
-        let (tx_input, _rx_input) = std_mpsc::channel();
-        let (tx_from_authed, mut rx_from_authed) = mpsc::unbounded_channel::<ipc::Data>();
+        let (mut conn, mut ch) =
+            Self::build(stream, id, server, control_permissions, controlled_context);
         let mut hbbs_rx = crate::hbbs_http::sync::signal_receiver();
-        let (tx_post_seq, rx_post_seq) = mpsc::unbounded_channel();
-        tokio::spawn(async move {
-            Self::post_seq_loop(rx_post_seq).await;
-        });
-
-        #[cfg(not(any(target_os = "android", target_os = "ios")))]
-        let tx_cloned = tx.clone();
-        let mut conn = Self {
-            inner: ConnInner {
-                id,
-                tx: Some(tx),
-                tx_video: Some(tx_video),
-            },
-            require_2fa: crate::auth_2fa::get_2fa(None),
-            awaiting_2fa: false,
-            // Defer display enumeration until login succeeds. Monitor login replaces this
-            // with the primary index returned with the refreshed display snapshot.
-            display_idx: 0,
-            stream,
-            server,
-            hash,
-            read_jobs: Vec::new(),
-            timer: crate::rustdesk_interval(time::interval(SEC30)),
-            file_timer: crate::rustdesk_interval(time::interval(SEC30)),
-            file_transfer: None,
-            view_camera: false,
-            terminal: false,
-            port_forward_socket: None,
-            port_forward_mux: None,
-            port_forward_address: "".to_owned(),
-            tx_to_cm,
-            authorized: false,
-            keyboard: Self::permission(keys::OPTION_ENABLE_KEYBOARD, &control_permissions),
-            clipboard: Self::permission(keys::OPTION_ENABLE_CLIPBOARD, &control_permissions),
-            audio: Self::permission(keys::OPTION_ENABLE_AUDIO, &control_permissions),
-            // to-do: make sure is the option correct here
-            file: Self::permission(keys::OPTION_ENABLE_FILE_TRANSFER, &control_permissions),
-            restart: Self::permission(keys::OPTION_ENABLE_REMOTE_RESTART, &control_permissions),
-            recording: Self::permission(keys::OPTION_ENABLE_RECORD_SESSION, &control_permissions),
-            block_input: Self::permission(keys::OPTION_ENABLE_BLOCK_INPUT, &control_permissions),
-            privacy_mode: Self::permission(keys::OPTION_ENABLE_PRIVACY_MODE, &control_permissions),
-            control_permissions,
-            last_test_delay: None,
-            network_delay: 0,
-            lock_after_session_end: false,
-            show_remote_cursor: false,
-            follow_remote_cursor: false,
-            follow_remote_window: false,
-            multi_ui_session: false,
-            ip: "".to_owned(),
-            disable_audio: false,
-            #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
-            enable_file_transfer: false,
-            disable_clipboard: false,
-            disable_keyboard: false,
-            #[cfg(not(any(target_os = "android", target_os = "ios")))]
-            show_my_cursor: false,
-            tx_input,
-            video_ack_required: false,
-            video_send_max_ms: 0,
-            video_send_sum_ms: 0,
-            video_send_count: 0,
-            server_audit_conn: "".to_owned(),
-            server_audit_file: "".to_owned(),
-            controlled_context,
-            lr: Default::default(),
-            login_scope: None,
-            peer_argb: 0u32,
-            session_last_recv_time: None,
-            chat_unanswered: false,
-            file_transferred: false,
-            #[cfg(windows)]
-            portable: Default::default(),
-            from_switch: false,
-            audio_sender: None,
-            voice_call_request_timestamp: None,
-            voice_calling: false,
-            options_in_login: None,
-            #[cfg(not(any(target_os = "ios")))]
-            pressed_modifiers: Default::default(),
-            closed: false,
-            #[cfg(not(any(target_os = "android", target_os = "ios")))]
-            start_cm_ipc_para: Some(StartCmIpcPara {
-                rx_to_cm,
-                tx_from_cm,
-            }),
-            auto_disconnect_timer: None,
-            authed_conn_id: None,
-            file_remove_log_control: FileRemoveLogControl::new(id),
-            last_supported_encoding: None,
-            services_subed: false,
-            delayed_read_dir: None,
-            #[cfg(target_os = "macos")]
-            retina: Retina::default(),
-            tx_from_authed,
-            tx_post_seq,
-            cm_read_job_ids: HashSet::new(),
-            terminal_service_id: "".to_owned(),
-            terminal_persistent: false,
-            scope_violation_messages: HashSet::new(),
-            #[cfg(not(any(target_os = "android", target_os = "ios")))]
-            terminal_user_token: None,
-            terminal_generic_service: None,
-            conn_audit_primary_auth: ConnAuditPrimaryAuth::None,
-            conn_audit_two_factor: ConnAuditTwoFactor::None,
-        };
         let addr = hbb_common::try_into_v4(addr);
         if !conn.on_open(addr).await {
             conn.closed = true;
@@ -147,35 +29,8 @@ impl Connection {
             return;
         }
         #[cfg(target_os = "android")]
-        start_channel(rx_to_cm, tx_from_cm);
-        #[cfg(target_os = "android")]
-        conn.send_permission(Permission::Keyboard, conn.keyboard)
-            .await;
-        #[cfg(not(target_os = "android"))]
-        if !conn.keyboard {
-            conn.send_permission(Permission::Keyboard, false).await;
-        }
-        if !conn.clipboard {
-            conn.send_permission(Permission::Clipboard, false).await;
-        }
-        if !conn.audio {
-            conn.send_permission(Permission::Audio, false).await;
-        }
-        if !conn.file {
-            conn.send_permission(Permission::File, false).await;
-        }
-        if !conn.restart {
-            conn.send_permission(Permission::Restart, false).await;
-        }
-        if !conn.recording {
-            conn.send_permission(Permission::Recording, false).await;
-        }
-        if !conn.block_input {
-            conn.send_permission(Permission::BlockInput, false).await;
-        }
-        if !conn.privacy_mode {
-            conn.send_permission(Permission::PrivacyMode, false).await;
-        }
+        start_channel(ch.rx_to_cm, ch.tx_from_cm);
+        conn.send_denied_permissions().await;
         let mut test_delay_timer =
             crate::rustdesk_interval(time::interval_at(Instant::now(), TEST_DELAY_TIMEOUT));
         let mut last_recv_time = Instant::now();
@@ -185,7 +40,7 @@ impl Connection {
         conn.stream.set_send_timeout(SEND_TIMEOUT_VIDEO);
 
         #[cfg(not(any(target_os = "android", target_os = "ios")))]
-        std::thread::spawn(move || Self::handle_input(_rx_input, tx_cloned));
+        std::thread::spawn(move || Self::handle_input(ch.rx_input, ch.tx_cloned));
         let mut second_timer = crate::rustdesk_interval(time::interval(Duration::from_secs(1)));
 
         #[cfg(feature = "unix-file-copy-paste")]
@@ -214,7 +69,7 @@ impl Connection {
             tokio::select! {
                 // biased; // video has higher priority // causing test_delay_timer failed while transferring big file
 
-                Some(data) = rx_from_cm.recv() => {
+                Some(data) = ch.rx_from_cm.recv() => {
                     if !conn.handle_cm_data(data).await {
                         break;
                     }
@@ -273,7 +128,7 @@ impl Connection {
                         break;
                     }
                 }
-                Some((instant, value)) = rx_video.recv() => {
+                Some((instant, value)) = ch.rx_video.recv() => {
                     if !conn.video_ack_required {
                         if let Some(message::Union::VideoFrame(vf)) = &value.union {
                             video_service::notify_video_frame_fetched(vf.display as usize, id, Some(instant.into()));
@@ -291,18 +146,18 @@ impl Connection {
                         conn.video_send_count += 1;
                     }
                 },
-                Some((instant, value)) = rx.recv() => {
+                Some((instant, value)) = ch.rx.recv() => {
                     if !conn.send_queued(instant, value).await {
                         break;
                     }
                 },
-                Some(data) = rx_from_authed.recv() => {
+                Some(data) = ch.rx_from_authed.recv() => {
                     match data {
                         _ => {}
                     }
                 }
                 _ = second_timer.tick() => {
-                    if !conn.on_second_tick(rx_video.len()).await {
+                    if !conn.on_second_tick(ch.rx_video.len()).await {
                         break;
                     }
                 }
@@ -326,35 +181,6 @@ impl Connection {
             }
         }
 
-        #[cfg(feature = "unix-file-copy-paste")]
-        {
-            conn.try_empty_file_clipboard();
-        }
-
-        if let Some(video_privacy_conn_id) = privacy_mode::get_privacy_mode_conn_id() {
-            if video_privacy_conn_id == id {
-                let _ = Self::turn_off_privacy_to_msg(id, String::new());
-            }
-        }
-        video_service::notify_video_frame_fetched_by_conn_id(id, None);
-        if conn.authorized {
-            password::update_temporary_password();
-        }
-        if let Err(err) = conn.try_port_forward_loop(&mut rx_from_cm).await {
-            conn.on_close(&err.to_string(), false).await;
-            raii::AuthedConnID::check_remove_session(conn.inner.id(), conn.session_key());
-        }
-
-        conn.post_conn_audit(json!({
-            "action": "close",
-        }));
-        if let Some(s) = conn.server.upgrade() {
-            let mut s = s.write().unwrap();
-            s.remove_connection(&conn.inner);
-            #[cfg(not(any(target_os = "android", target_os = "ios")))]
-            try_stop_record_cursor_pos();
-        }
-        conn.on_close("End", true).await;
-        log::info!("#{} connection loop exited", id);
+        conn.finish(&mut ch.rx_from_cm).await;
     }
 }
