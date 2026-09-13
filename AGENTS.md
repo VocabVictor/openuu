@@ -93,7 +93,6 @@ broken up.
 
 | File | Reason |
 | --- | --- |
-| `src/client/start_inner.rs` | single `_start_inner` function (~570 lines) |
 | `src/client/io_loop/ui_msg.rs` | single `Remote::handle_msg_from_ui` function (~470 lines) |
 | `src/server/terminal_service/proxy_open.rs` | single `TerminalServiceProxy::handle_open` function (~330 lines) |
 | `src/server/video_service/run_loop.rs` | single `run(vs: VideoService)` function (~380 lines) |
