@@ -92,6 +92,12 @@ extension _RemotePageBody on _RemotePageState {
                         ])
                       : remoteToolbar(context)),
               _ffi.ffiModel.pi.isSet.isFalse ? emptyOverlay() : Offstage(),
+              SessionStatusBar(
+                controller: _statusController,
+                onReconnect: () => _ffi.ffiModel
+                    .reconnect(_ffi.dialogManager, sessionId, false),
+                onDisconnect: closeConnection,
+              ),
             ],
           ),
         ],
@@ -99,11 +105,6 @@ extension _RemotePageBody on _RemotePageState {
     }
 
     return Scaffold(
-      bottomNavigationBar: widget.viewOnly || _ffi.viewOnlySession
-          ? Container(color: const Color(0xffe8f0fa), padding: const EdgeInsets.all(6),
-              child: Text('${translate('View Mode')} · ${translate('Read-only')}',
-                  textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Color(0xff24476b))))
-          : null,
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Obx(() {
         final imageReady = _ffi.ffiModel.pi.isSet.isTrue &&

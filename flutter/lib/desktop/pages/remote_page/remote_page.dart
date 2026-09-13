@@ -27,7 +27,9 @@ import '../../widgets/tabbar_widget.dart';
 import '../macos_full_screen_focus_recovery.dart';
 
 import 'package:flutter_hbb/native/custom_cursor.dart';
+import '../../widgets/session_status_bar.dart';
 part 'view.dart';
+part 'status.dart';
 part 'macos.dart';
 part 'body.dart';
 part 'widgets.dart';
