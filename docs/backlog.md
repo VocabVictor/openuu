@@ -56,6 +56,20 @@ with its own tests.
   change upstream. A third, worse way exists if only our side may change:
   `WsFramedStream` exposes no accessor for the inner `TcpStream`, so setting
   the option after connecting would need an accessor added there anyway.
+* **Taking the video write out of the connection's main loop.** A write that
+  blocks holds the whole `select!`, so while a frame is going out the loop is
+  not reading the socket either: input, clipboard and the probe replies wait
+  behind the picture. Measured at up to 1.4 s on a 2 Mbps link. The design
+  that fixes it is a writer task with the control messages ahead of the
+  video, and it needs the socket split into a reading half and a writing
+  half. `Stream` is `hbb_common`'s enum over TCP, WebSocket and WebRTC, and
+  its send path carries the encryption sequence, which only one writer may
+  own; splitting it is a change to the submodule, not to this repository.
+  What was done instead bounds the damage rather than removing it: the
+  capture loop holds the encode while a frame is unfetched, the controller
+  measures the link from the blocked send and cuts the bitrate to fit, and a
+  write that stalls now ends the session in five seconds rather than twelve.
+  The remaining coupling is bounded by how long one frame takes to flush.
 * **Whether to fork `hbb_common` at all.** The submodule points at
   `rustdesk/hbb_common`, the upstream repository, and the commits in this
   repository that touch it only move the pointer to one of theirs. OpenUU is
