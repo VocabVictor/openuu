@@ -54,8 +54,8 @@ pub fn new(source: VideoSource, idx: usize) -> GenericService {
         .unwrap()
         .entry(idx)
         .or_insert_with(|| {
-            let (tx, rx) = unbounded_channel();
-            (tx, Arc::new(TokioMutex::new(rx)))
+            let (tx, rx) = std::sync::mpsc::channel();
+            (tx, Arc::new(Mutex::new(rx)))
         });
     let vs = VideoService {
         sp: GenericService::new(get_service_name(source, idx), true),

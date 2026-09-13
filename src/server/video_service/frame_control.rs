@@ -60,13 +60,13 @@ impl VideoFrameController {
         }
     }
 
-    #[tokio::main(flavor = "current_thread")]
-    pub(super) async fn try_wait_next(&mut self, fetched_conn_ids: &mut HashSet<i32>, timeout_millis: u64) {
+    /// Block for up to `timeout_millis` until one connection reports the current frame
+    /// fetched, then drain whatever else has arrived. A timeout adds nothing.
+    pub(super) fn try_wait_next(&mut self, fetched_conn_ids: &mut HashSet<i32>, timeout_millis: u64) {
         if self.send_conn_ids.is_empty() {
             return;
         }
 
-        let timeout_dur = Duration::from_millis(timeout_millis as u64);
         let receiver = {
             match FRAME_FETCHED_NOTIFIERS
                 .lock()
@@ -79,29 +79,18 @@ impl VideoFrameController {
                 }
             }
         };
-        let mut receiver_guard = receiver.lock().await;
-        match tokio::time::timeout(timeout_dur, receiver_guard.recv()).await {
-            Err(_) => {
-                // break if timeout
-                // log::error!("blocking wait frame receiving timeout {}", timeout_millis);
+        let receiver = receiver.lock().unwrap();
+        let mut note = |(id, instant): (i32, Option<Instant>)| {
+            if let Some(tm) = instant {
+                log::trace!("Channel recv latency: {}", tm.elapsed().as_secs_f32());
             }
-            Ok(Some((id, instant))) => {
-                if let Some(tm) = instant {
-                    log::trace!("Channel recv latency: {}", tm.elapsed().as_secs_f32());
-                }
-                fetched_conn_ids.insert(id);
-            }
-            Ok(None) => {
-                // this branch would never be reached
-            }
+            fetched_conn_ids.insert(id);
+        };
+        if let Ok(first) = receiver.recv_timeout(Duration::from_millis(timeout_millis)) {
+            note(first);
         }
-        while !receiver_guard.is_empty() {
-            if let Some((id, instant)) = receiver_guard.recv().await {
-                if let Some(tm) = instant {
-                    log::trace!("Channel recv latency: {}", tm.elapsed().as_secs_f32());
-                }
-                fetched_conn_ids.insert(id);
-            }
+        while let Ok(next) = receiver.try_recv() {
+            note(next);
         }
     }
 }

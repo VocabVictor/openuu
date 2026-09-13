@@ -30,14 +30,7 @@ use crate::{
     privacy_mode::{is_current_privacy_mode_impl, PRIVACY_MODE_IMPL_WIN_MAG},
     ui_interface::is_installed,
 };
-use hbb_common::{
-    anyhow::anyhow,
-    config,
-    tokio::sync::{
-        mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
-        Mutex as TokioMutex,
-    },
-};
+use hbb_common::{anyhow::anyhow, config};
 #[cfg(feature = "hwcodec")]
 use scrap::hwcodec::{HwRamEncoder, HwRamEncoderConfig};
 #[cfg(feature = "vram")]
@@ -62,8 +55,9 @@ use std::{
 
 pub const OPTION_REFRESH: &'static str = "refresh";
 
-type FrameFetchedNotifierSender = UnboundedSender<(i32, Option<Instant>)>;
-type FrameFetchedNotifierReceiver = Arc<TokioMutex<UnboundedReceiver<(i32, Option<Instant>)>>>;
+// A plain channel: the capture thread blocks on it with a timeout, so it needs no runtime.
+type FrameFetchedNotifierSender = std::sync::mpsc::Sender<(i32, Option<Instant>)>;
+type FrameFetchedNotifierReceiver = Arc<Mutex<std::sync::mpsc::Receiver<(i32, Option<Instant>)>>>;
 
 lazy_static::lazy_static! {
     static ref FRAME_FETCHED_NOTIFIERS: Mutex<HashMap<usize, (FrameFetchedNotifierSender, FrameFetchedNotifierReceiver)>> = Mutex::new(HashMap::default());
@@ -81,6 +75,8 @@ lazy_static::lazy_static! {
 }
 
 mod frame_control;
+#[cfg(test)]
+mod frame_control_tests;
 pub use frame_control::*;
 mod entry;
 pub use entry::*;
