@@ -231,3 +231,38 @@ class UiSession {
   static const double dialogButtonGap = UiSpace.s2;
   static const double dialogControlHeight = UiSpace.controlHeight;
 }
+
+/// Connection manager, the window the controlled side sees when someone asks
+/// to control this device (docs/cm-restyle-plan.md). Sizes only; colours and
+/// type come from [UiColor] / [UiType]. This is a consent surface: see the
+/// rule in AGENTS.md before changing how the accept and reject controls look.
+class UiCm {
+  // request banner
+  static const double bannerPaddingX = UiSpace.s4;
+  static const double bannerPaddingY = UiSpace.s4;
+  static const double bannerGap = UiSpace.s3;
+  static const double avatarSize = UiSpace.s12;
+  static const double avatarRadius = UiSpace.s2;
+  static const double avatarInitialSize = 22;
+  static const double appIconSize = 30;
+  static const double titleBarIconSize = 18;
+  static const double titleBarPaddingX = UiSpace.s1;
+
+  // accept / reject controls
+  static const double controlBarPaddingX = UiSpace.s4;
+  static const double controlBarPaddingY = UiSpace.s3;
+  static const double controlGap = UiSpace.s3;
+  static const double controlHeight = UiSpace.controlHeight;
+  static const double controlRadius = 6;
+  static const double controlMinWidth = 96;
+  static const double controlIconSize = 16;
+
+  // permission board and transfer log
+  static const double boardPadding = UiSpace.s4;
+  static const double boardRowHeight = UiSpace.s8;
+  static const double boardRowGap = UiSpace.s2;
+  static const double boardIconSize = 18;
+  static const double logRowHeight = UiSpace.s10;
+  static const double tabStripHeight = UiSpace.s10;
+}
+
