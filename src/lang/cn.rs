@@ -771,5 +771,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Check for updates", "检查更新"),
         ("Up to date", "已是最新版本"),
         ("Scan to import configuration", "扫码导入配置"),
+        ("Permanent password", "固定密码"),
     ].iter().cloned().collect();
 }

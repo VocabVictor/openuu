@@ -769,6 +769,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("pinned-windows-session-tip", ""),
         ("pinned-windows-session-service-tip", ""),
         ("Scan to import configuration", ""),
+        ("Permanent password", ""),
     ].iter().cloned().collect();
 }
 

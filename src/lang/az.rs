@@ -763,5 +763,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Check for updates", ""),
         ("Up to date", ""),
         ("Scan to import configuration", ""),
+        ("Permanent password", ""),
     ].iter().cloned().collect();
 }
