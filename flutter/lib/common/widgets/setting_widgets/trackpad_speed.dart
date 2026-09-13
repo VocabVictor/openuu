@@ -132,15 +132,15 @@ extension _CompactTrackpadSpeed on TrackpadSpeedWidgetState {
   Widget _compact() {
     final border = OutlineInputBorder(
         borderRadius: BorderRadius.circular(UiSpace.inputRadius),
-        borderSide: const BorderSide(color: UiColor.inputBorder));
+        borderSide: BorderSide(color: UiColor.of(context).inputBorder));
     return Row(mainAxisSize: MainAxisSize.min, children: [
       SizedBox(
           width: UiSpace.settingsSliderWidth,
           child: SliderTheme(
               data: SliderThemeData(
                   trackHeight: 4,
-                  activeTrackColor: UiColor.primary,
-                  inactiveTrackColor: UiColor.border,
+                  activeTrackColor: UiColor.of(context).primary,
+                  inactiveTrackColor: UiColor.of(context).border,
                   thumbColor: Colors.white,
                   thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 7, elevation: 1),
@@ -163,7 +163,7 @@ extension _CompactTrackpadSpeed on TrackpadSpeedWidgetState {
               textAlign: TextAlign.right,
               onChanged: updateTextValue,
               onSubmitted: submitTextValue,
-              style: UiType.rowTitle
+              style: UiType.of(context).rowTitle
                   .copyWith(fontSize: 13, fontWeight: FontWeight.w400),
               decoration: InputDecoration(
                   isDense: true,
@@ -172,7 +172,7 @@ extension _CompactTrackpadSpeed on TrackpadSpeedWidgetState {
                   border: border,
                   enabledBorder: border))),
       const SizedBox(width: UiSpace.s1),
-      Text('%', style: UiType.caption),
+      Text('%', style: UiType.of(context).caption),
     ]);
   }
 }

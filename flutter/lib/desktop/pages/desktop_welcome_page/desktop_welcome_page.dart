@@ -32,7 +32,7 @@ class DesktopWelcomePage extends StatelessWidget {
       this.favoritesSelected = false,
       this.settingsSelected = false});
 
-  static const blue = UiColor.primary;
+  static const blue = UiColor.of(context).primary;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +64,7 @@ class DesktopWelcomePage extends StatelessWidget {
                   _item(t('开始协助', 'Start assistance'), Icons.screen_share,
                       assistanceSelected, onAssistance),
                   const Spacer(),
-                  const Divider(height: 1, color: UiColor.border),
+                  Divider(height: 1, color: UiColor.of(context).border),
                   const SizedBox(height: UiSpace.sidebarFooterDividerGap),
                   if (onSettings != null)
                     _item(t('设置', 'Settings'), Icons.settings_outlined,
@@ -94,7 +94,7 @@ class DesktopWelcomePage extends StatelessWidget {
                                           : favoritesSelected
                                               ? t('收藏设备', 'Favorites')
                                               : t('全部设备', 'All devices'),
-                                      style: UiType.pageTitle)),
+                                      style: UiType.of(context).pageTitle)),
                           Expanded(child: content ?? _welcomeContent(zh)),
                         ]))),
           ]);
@@ -113,7 +113,7 @@ class DesktopWelcomePage extends StatelessWidget {
           math.min(contentWidth * .78, 640.0) / 1.6,
           math.max(64.0, bounds.maxHeight - 180.0 - gap * 2),
         );
-        final textStyle = UiType.rowTitle.copyWith(
+        final textStyle = UiType.of(context).rowTitle.copyWith(
             fontWeight: FontWeight.w400, height: 1.6, fontSize: 15);
         return Center(
             child: SingleChildScrollView(
@@ -158,11 +158,11 @@ class DesktopWelcomePage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
               horizontal: UiSpace.sidebarPaddingX + UiSpace.sidebarIndentL1),
           child: Row(children: [
-            Icon(icon, size: UiSpace.sidebarIconSize, color: UiColor.muted),
+            Icon(icon, size: UiSpace.sidebarIconSize, color: UiColor.of(context).muted),
             const SizedBox(width: UiSpace.sidebarIconGap),
-            Expanded(child: Text(title, style: UiType.sidebarGroup)),
-            const Icon(Icons.keyboard_arrow_up,
-                size: 16, color: UiColor.faint)
+            Expanded(child: Text(title, style: UiType.of(context).sidebarGroup)),
+            Icon(Icons.keyboard_arrow_up,
+                size: 16, color: UiColor.of(context).faint)
           ])));
 
   Widget _item(
@@ -193,7 +193,7 @@ class DesktopWelcomePage extends StatelessWidget {
                         Expanded(
                             child: Text(title,
                                 style: selected
-                                    ? UiType.sidebarItemSelected
-                                    : UiType.sidebarItem)),
+                                    ? UiType.of(context).sidebarItemSelected
+                                    : UiType.of(context).sidebarItem)),
                       ])))));
 }

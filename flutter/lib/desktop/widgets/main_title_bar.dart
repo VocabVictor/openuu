@@ -27,7 +27,7 @@ class MainTitleBar extends StatelessWidget {
           const BrandIcon(size: 20),
           const SizedBox(width: UiSpace.s2),
           Text('OpenUU',
-              style: UiType.rowTitle.copyWith(fontWeight: FontWeight.w500)),
+              style: UiType.of(context).rowTitle.copyWith(fontWeight: FontWeight.w500)),
           Expanded(
               child: DragToMoveArea(
                   child: GestureDetector(
