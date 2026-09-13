@@ -9,6 +9,9 @@ class _RectValueThumbShape extends SliderComponentShape {
   final double height;
   final double radius;
   final String unit;
+  /// Content colour for the value printed on the thumb. A painter has no
+  /// BuildContext, so the palette is resolved by the caller and passed in.
+  final Color labelColor;
   // Optional mapper to compute display value from normalized position [0,1]
   // If null, falls back to linear interpolation between min and max.
   final int Function(double normalized)? displayValueForNormalized;
@@ -19,6 +22,7 @@ class _RectValueThumbShape extends SliderComponentShape {
     required this.width,
     required this.height,
     required this.radius,
+    required this.labelColor,
     this.displayValueForNormalized,
     this.unit = '%',
   });
@@ -67,8 +71,8 @@ class _RectValueThumbShape extends SliderComponentShape {
         : (min + value * (max - min)).round();
     final TextSpan span = TextSpan(
       text: '$displayValue$unit',
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: labelColor,
         fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
@@ -218,6 +222,7 @@ class EdgeThicknessControl extends StatelessWidget {
           width: 52,
           height: 24,
           radius: 4,
+          labelColor: UiColor.of(context).onPrimary,
           unit: 'px',
         ),
       ),

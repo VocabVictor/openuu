@@ -212,6 +212,7 @@ class _CustomScaleMenuControlsState
             width: 52,
             height: 24,
             radius: 4,
+            labelColor: UiColor.of(context).onPrimary,
             displayValueForNormalized: (t) => mapPosToPercent(t),
           ),
         ),

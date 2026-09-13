@@ -118,14 +118,14 @@ extension _FileManagerViewFileList on _FileManagerViewState {
             child: Obx(() => Container(
                 decoration: BoxDecoration(
                   color: selectedItems.items.contains(entry)
-                      ? MyTheme.button
+                      ? UiColor.of(context).primaryFill
                       : Theme.of(context).cardColor,
                   borderRadius: BorderRadius.all(
                     Radius.circular(5.0),
                   ),
                   border: rightClickEntry.value == entry
                       ? Border.all(
-                          color: MyTheme.button,
+                          color: UiColor.of(context).primaryFill,
                           width: 1.0,
                         )
                       : null,
@@ -175,7 +175,8 @@ extension _FileManagerViewFileList on _FileManagerViewState {
                                                 style: TextStyle(
                                                     color: selectedItems.items
                                                             .contains(entry)
-                                                        ? Colors.white
+                                                        ? UiColor.of(context)
+                                                            .onPrimary
                                                         : null),
                                                 overflow:
                                                     TextOverflow.ellipsis))
@@ -203,7 +204,9 @@ extension _FileManagerViewFileList on _FileManagerViewState {
                                           fontSize: 12,
                                           color: selectedItems.items
                                                   .contains(entry)
-                                              ? Colors.white70
+                                              ? UiColor.of(context)
+                                                  .onPrimary
+                                                  .withOpacity(.7)
                                               : MyTheme.darkGray,
                                         ),
                                       )),
@@ -234,7 +237,9 @@ extension _FileManagerViewFileList on _FileManagerViewState {
                                         fontSize: 10,
                                         color:
                                             selectedItems.items.contains(entry)
-                                                ? Colors.white70
+                                                ? UiColor.of(context)
+                                                    .onPrimary
+                                                    .withOpacity(.7)
                                                 : MyTheme.darkGray),
                                   ),
                                 ),
