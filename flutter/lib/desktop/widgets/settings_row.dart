@@ -37,12 +37,12 @@ class SettingsRow extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(label, style: UiType.rowTitle),
+                Text(label, style: UiType.of(context).rowTitle),
                 if (sub.isNotEmpty)
                   Text(sub,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: subtitleStyle ?? UiType.caption),
+                      style: subtitleStyle ?? UiType.of(context).caption),
               ])),
           const SizedBox(width: UiSpace.settingsControlGap),
           control,
@@ -53,7 +53,7 @@ class SettingsRow extends StatelessWidget {
     if (onTap == null) return body;
     return InkWell(
         onTap: enabled ? onTap : null,
-        hoverColor: UiColor.settingsRowHover,
+        hoverColor: UiColor.of(context).settingsRowHover,
         child: body);
   }
 }
@@ -67,10 +67,10 @@ class SettingsChildRow extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
       padding: const EdgeInsets.only(left: UiSpace.settingsChildIndent),
       child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
               border: Border(
                   left: BorderSide(
-                      color: UiColor.border, width: UiSpace.settingsChildRail))),
+                      color: UiColor.of(context).border, width: UiSpace.settingsChildRail))),
           child: child));
 }
 
@@ -104,11 +104,11 @@ class _SettingsGroupState extends State<SettingsGroup> {
         AnimatedRotation(
             turns: _open ? 0 : -.25,
             duration: UiSpace.panelDuration,
-            child: const Icon(Icons.expand_more,
-                size: UiSpace.groupChevronSize, color: UiColor.muted)),
+            child: Icon(Icons.expand_more,
+                size: UiSpace.groupChevronSize, color: UiColor.of(context).muted)),
         const SizedBox(width: UiSpace.groupChevronGap),
       ],
-      Expanded(child: Text(title ?? '', style: UiType.groupTitle)),
+      Expanded(child: Text(title ?? '', style: UiType.of(context).groupTitle)),
       if (widget.titleTrailing != null) widget.titleTrailing!,
     ]);
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -128,16 +128,16 @@ class _SettingsGroupState extends State<SettingsGroup> {
                 color: Colors.white,
                 borderRadius:
                     BorderRadius.circular(UiSpace.settingsGroupRadius),
-                border: Border.all(color: UiColor.border)),
+                border: Border.all(color: UiColor.of(context).border)),
             clipBehavior: Clip.antiAlias,
             child: Column(children: [
               for (var i = 0; i < widget.children.length; i++) ...[
                 if (i > 0)
-                  const Divider(
+                  Divider(
                       height: 1,
                       indent: UiSpace.settingsRowPaddingX,
                       endIndent: UiSpace.settingsRowPaddingX,
-                      color: UiColor.settingsDivider),
+                      color: UiColor.of(context).settingsDivider),
                 widget.children[i],
               ],
             ])),
@@ -160,9 +160,9 @@ class SettingsSwitch extends StatelessWidget {
           child: Switch(
               value: value,
               activeColor: Colors.white,
-              activeTrackColor: UiColor.primary,
+              activeTrackColor: UiColor.of(context).primary,
               inactiveThumbColor: Colors.white,
-              inactiveTrackColor: UiColor.settingsSwitchOff,
+              inactiveTrackColor: UiColor.of(context).settingsSwitchOff,
               trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               onChanged: onChanged)));

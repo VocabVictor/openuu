@@ -25,10 +25,10 @@ class SettingsDropdown extends StatelessWidget {
     var index = keys.indexOf(current);
     if (index < 0) index = 0;
     final label = values.isEmpty ? '' : values[index];
-    final textStyle = UiType.rowTitle.copyWith(
+    final textStyle = UiType.of(context).rowTitle.copyWith(
         fontSize: 13,
         fontWeight: FontWeight.w400,
-        color: enabled ? UiColor.text : UiColor.faint);
+        color: enabled ? UiColor.of(context).text : UiColor.of(context).faint);
     return SizedBox(
         width: width,
         height: UiSpace.settingsControlHeight,
@@ -41,7 +41,7 @@ class SettingsDropdown extends StatelessWidget {
             padding: EdgeInsets.zero,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(UiSpace.menuRadius),
-                side: const BorderSide(color: UiColor.border)),
+                side: BorderSide(color: UiColor.of(context).border)),
             elevation: 4,
             color: Colors.white,
             onSelected: onChanged,
@@ -57,11 +57,11 @@ class SettingsDropdown extends StatelessWidget {
                               child: Text(values[i],
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: UiType.rowTitle.copyWith(
+                                  style: UiType.of(context).rowTitle.copyWith(
                                       fontWeight: FontWeight.w400))),
                           if (i == index)
-                            const Icon(Icons.check,
-                                size: 14, color: UiColor.primary),
+                            Icon(Icons.check,
+                                size: 14, color: UiColor.of(context).primary),
                         ])),
                 ],
             child: Container(
@@ -71,14 +71,14 @@ class SettingsDropdown extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(UiSpace.inputRadius),
-                    border: Border.all(color: UiColor.inputBorder)),
+                    border: Border.all(color: UiColor.of(context).inputBorder)),
                 child: Row(children: [
                   Expanded(
                       child: Text(label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: textStyle)),
-                  const Icon(Icons.expand_more, size: 14, color: UiColor.muted),
+                  Icon(Icons.expand_more, size: 14, color: UiColor.of(context).muted),
                 ]))));
   }
 }

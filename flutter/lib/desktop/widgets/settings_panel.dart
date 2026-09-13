@@ -38,13 +38,13 @@ class _SettingsExpandPanelState extends State<SettingsExpandPanel> {
               AnimatedOpacity(
                   opacity: _open ? 0 : 1,
                   duration: UiSpace.panelFadeDuration,
-                  child: Text(widget.summary, style: UiType.caption)),
+                  child: Text(widget.summary, style: UiType.of(context).caption)),
               const SizedBox(width: UiSpace.s2),
               AnimatedRotation(
                   turns: _open ? .5 : 0,
                   duration: UiSpace.panelDuration,
-                  child: const Icon(Icons.expand_more,
-                      size: 16, color: UiColor.muted)),
+                  child: Icon(Icons.expand_more,
+                      size: 16, color: UiColor.of(context).muted)),
             ])),
         AnimatedSize(
             duration: UiSpace.panelDuration,
@@ -52,7 +52,7 @@ class _SettingsExpandPanelState extends State<SettingsExpandPanel> {
             alignment: Alignment.topCenter,
             child: _open
                 ? Container(
-                    color: UiColor.panelBg,
+                    color: UiColor.of(context).panelBg,
                     padding: const EdgeInsets.fromLTRB(
                         UiSpace.panelPaddingLeft,
                         UiSpace.panelPaddingY,
@@ -92,13 +92,13 @@ class SettingsPanelField extends StatelessWidget {
     OutlineInputBorder border(Color color) => OutlineInputBorder(
         borderRadius: BorderRadius.circular(UiSpace.inputRadius),
         borderSide: BorderSide(color: color));
-    final style = UiType.rowTitle.copyWith(
+    final style = UiType.of(context).rowTitle.copyWith(
         fontSize: monospace ? 12 : 13,
         fontWeight: FontWeight.w400,
         fontFamily: monospace ? 'Consolas' : null,
         fontFamilyFallback: monospace ? const ['Courier New'] : null);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: UiType.caption),
+      Text(label, style: UiType.of(context).caption),
       const SizedBox(height: UiSpace.fieldLabelGap),
       SizedBox(
           width: UiSpace.panelFieldWidth,
@@ -113,17 +113,17 @@ class SettingsPanelField extends StatelessWidget {
               style: style,
               decoration: InputDecoration(
                   hintText: hint,
-                  hintStyle: UiType.caption.copyWith(color: UiColor.faint),
+                  hintStyle: UiType.of(context).caption.copyWith(color: UiColor.of(context).faint),
                   filled: true,
                   fillColor: Colors.white,
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: UiSpace.inputPaddingX, vertical: 8),
-                  border: border(UiColor.inputBorder),
+                  border: border(UiColor.of(context).inputBorder),
                   enabledBorder:
-                      border(error.isEmpty ? UiColor.inputBorder : UiColor.danger),
+                      border(error.isEmpty ? UiColor.of(context).inputBorder : UiColor.of(context).danger),
                   focusedBorder:
-                      border(error.isEmpty ? UiColor.primary : UiColor.danger)))),
+                      border(error.isEmpty ? UiColor.of(context).primary : UiColor.of(context).danger)))),
       SizedBox(
           height: UiSpace.panelErrorHeight,
           child: error.isEmpty
@@ -131,7 +131,7 @@ class SettingsPanelField extends StatelessWidget {
               : Text(error,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: UiType.caption.copyWith(color: UiColor.danger))),
+                  style: UiType.of(context).caption.copyWith(color: UiColor.of(context).danger))),
     ]);
   }
 }
