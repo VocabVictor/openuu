@@ -43,16 +43,21 @@ own STUN/TURN.
 carries the operating system, its version, the CPU architecture and a
 **device fingerprint**.
 
-| Path | Gate | Gate position | Default |
-| --- | --- | --- | --- |
-| Automatic check (`check_software_update`) | `is_custom_client()`, then `enable-check-update` | call site | **not reached**: this build's app name is not "RustDesk", so it returns before the option is read |
-| Automatic check via the updater thread | `allow-auto-update` | call site | **off** (`allow-` keys are true only when set to `Y`) |
-| Manual check (the user clicks) | none | — | **runs**, and does not check `is_custom_client()` |
+| Path | Gate | Default |
+| --- | --- | --- |
+| Start-up check (`check_software_update`) | `enable-check-update`, and the capability gate below | on by default, but the request is refused for a rebranded build |
+| Updater thread, on its timer | `allow-auto-update`, and the capability gate below | off unless the user ticks the switch |
+| `manually_check_update` | the capability gate below | **no callers**; dead code today |
 
-So nothing is sent unprompted, but a user who asks this build to check for
-updates sends a device fingerprint to upstream's server, which is both a
-third party to this deployment and the wrong place for an OpenUU build to ask.
-Worth fixing; not fixed here.
+The gate now sits inside `do_check_software_update`, so a rebranded build
+never sends the request whichever path asked. That is the fix for what this
+audit originally found, and the original description was wrong in an
+instructive way: the exposure was not a "manual check" button, which does not
+exist, but the **Auto update switch**, which Windows showed on every install
+including rebranded ones while only the macOS branch excluded them. A user
+who ticked it got periodic requests to upstream carrying a device
+fingerprint. The switch is now hidden for a rebranded build as well, so no
+control is left that quietly does nothing.
 
 ### 3. `admin.rustdesk.com` — API fallback
 
@@ -96,10 +101,9 @@ accepts a punch port only from the rendezvous server's own reply.
 
 ## Open items, for triage rather than for fixing here
 
-1. A manual update check contacts `api.rustdesk.com` with a device
-   fingerprint, bypassing the custom-client guard that the automatic path
-   honours. The gate is on the call site, not the capability — the pattern
-   that produced the IPv6 bug.
-2. The mobile connection page links to upstream's download page.
-3. None of this is stated in the README, although it is the kind of thing a
-   self-hosted product is chosen for.
+1. The mobile connection page links to upstream's download page.
+2. None of this is stated in the README, although it is the kind of thing a
+   self-hosted product is chosen for. Confirm the audit with a packet capture
+   before quoting it there: this is a reading of the source, not of the wire.
+
+The update check that stood here has been fixed; see the row above.
