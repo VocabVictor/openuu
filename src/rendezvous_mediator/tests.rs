@@ -1,4 +1,5 @@
 use super::{mpsc, socket_client, tokio, IceRoute, ICE_DEDUP_WINDOW, MAX_PENDING_REMOTE_ICE};
+use super::punch::answers_webrtc_only;
 use hbb_common::tcp::new_listener;
 use std::net::SocketAddr;
 
@@ -245,4 +246,12 @@ async fn a_punch_in_flight_runs_the_grace_past_the_deadline_and_no_further() {
         until + Duration::from_millis(PUNCH_GRACE),
         "must return when the grace runs out, not a backoff later"
     );
+}
+
+// A controller that offered WebRTC still dials the punched address when this side could not
+// answer; that dial needs the TCP punch and its listener, so only a real answer skips them.
+#[test]
+fn an_unanswered_webrtc_offer_still_gets_the_tcp_punch() {
+    assert!(!answers_webrtc_only(""));
+    assert!(answers_webrtc_only("v=0"));
 }

@@ -95,11 +95,16 @@ impl RendezvousMediator {
                 .await?;
             return Ok(());
         }
-        if !ph.webrtc_sdp_offer.is_empty() {
+        if answers_webrtc_only(&msg_punch.webrtc_sdp_answer) {
             // Return the answer over its own short-lived TCP connection rather than the mediator
             // channel: that channel is UDP by default, and hbbs applies UDP-punch semantics
             // (source-address observation) to a PunchHoleSent that arrives on it. No TCP punch
             // is made — the controller keeps its request socket for trickled ICE.
+            //
+            // Only with an answer. An offer this side could not answer (proxy, relay-only
+            // without TURN, answerer failure) still gets the TCP punch below: hbbs hands the
+            // controller the address of whatever socket carried PunchHoleSent, and the
+            // controller dials it, so that socket has to be the one a listener takes over.
             let mut msg_out = Message::new();
             msg_out.set_punch_hole_sent(msg_punch);
             let mut socket = connect_tcp(&*self.host, CONNECT_TIMEOUT).await?;
@@ -151,4 +156,9 @@ impl RendezvousMediator {
         udp_nat_listen(socket_cloned.clone(), peer_addr, peer_addr, server, meta).await?;
         Ok(())
     }
+}
+
+/// Whether the punch ends with the WebRTC answer alone, leaving no TCP listener behind.
+pub(super) fn answers_webrtc_only(webrtc_sdp_answer: &str) -> bool {
+    !webrtc_sdp_answer.is_empty()
 }
