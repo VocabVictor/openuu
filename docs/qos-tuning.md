@@ -70,6 +70,33 @@ frame rate back at the limit. The cost is a few seconds of deliberately poor pic
 while it drains, which is the trade the whole entry is about: a thin link can have low
 latency or a sharp picture in that moment, not both.
 
-Not addressed: the first three to six seconds, where nothing is known about the link and
-the stream goes out at the preset. Shortening that needs evidence sooner than the first
-probe round trip.
+Not addressed here: the first three to six seconds, where nothing is known about the link
+and the stream goes out at the preset. See the next entry.
+
+## 2026-09-13: the send path as the first evidence
+
+Probes are the controller's only measurement, and the first one comes back no sooner
+than the queue it had to cross. On a link that cannot carry the preset those seconds
+were the whole backlog; the drain above was cleaning up after a decision taken blind.
+
+A send that blocks is waiting for the link rather than for frames, so the bits that get
+out over a second of blocking are the link. `VideoQoS::note_link_capacity` takes that as
+a lower bound, fits the bitrate under it (90 percent of it), downwards only and never
+below the steady floor, and only when the path was blocked for half the second. An idle
+or frame-limited path reports nothing, which is why no other scenario moved: a link with
+headroom never fills the socket buffer.
+
+On the same relay_0_3x_30 scenario, against the drain alone:
+
+| | first cut | peak queue | drained at | steady queue p95 |
+| --- | --- | --- | --- | --- |
+| drain only | 7 s | 20 s | 31 s | 0.6 s |
+| with the send-path evidence | 1 s | 2.2-3.0 s | 7-8 s | 0.4 s |
+
+Against where this started, the backlog a thin link builds went from 33 seconds that
+never drained to 3 seconds that are gone by the eighth.
+
+The simulator models the socket the way one behaves, blocking once the buffer holds more
+than a quarter second of video. That constant and `BLOCKED_MS_FOR_CAPACITY` are the two
+places where this mechanism could be mistuned: too small a buffer and a healthy link
+would report a capacity it does not have.
