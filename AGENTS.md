@@ -438,6 +438,34 @@ service status, configuration file content and service log checks. When a
 screen has to be judged by eye, produce one screenshot for the user and stop;
 do not automate the interaction.
 
+### Running the desktop widget tests
+
+The whole suite is one command on the build machine, and it has two
+preconditions that are silent when unmet:
+
+* `ftest.ps1 <branch>` **with no test paths** runs all of them. Named paths run
+  a subset, and a subset is what let a red suite survive five green runs on
+  2026-09-13: every run named the files it was interested in, and the failing
+  one was never among them. The gap that day was not "nobody runs the widget
+  tests" but "every run used part of the entry point".
+* It does **not** update the worktree. Run `check.ps1 <branch> -Flutter` first,
+  or the answer belongs to the previous commit. The script prints the commit
+  its answer belongs to; read that line.
+* Do not delete the proxy-clearing lines in it. The machine sets
+  `HTTP_PROXY`/`HTTPS_PROXY`/`ALL_PROXY` to a local proxy, the test harness
+  talks to its own `127.0.0.1` socket, and through the proxy **every** suite
+  fails to load with `Connection closed before full header was received` --
+  a message that points nowhere near a proxy.
+
+**Before building a tool for the build machine, list what is already there.**
+On 2026-09-13 a session wrote its own runner without looking, left out the
+proxy step, and reported "flutter test cannot run on the build machine"; the
+true finding was "my invocation was missing a step", and the two point at
+different repairs. The same session then quoted "clear the six proxy
+variables" from another machine's notes; this one has three, all uppercase.
+**A number copied from another context is a claim about this one, and has to
+be measured here.**
+
 ### Changing a shared script on the build machine
 
 `C:\build\check.ps1`, `build-flutter.ps1` and their neighbours are shared by
