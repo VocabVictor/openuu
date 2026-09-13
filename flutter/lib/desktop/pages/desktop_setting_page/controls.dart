@@ -143,6 +143,12 @@ Widget _Radio<T>(BuildContext context,
 // ignore: non_constant_identifier_names
 Widget _Button(String label, Function() onPressed,
     {bool enabled = true, String? tip, ButtonStyle? style}) {
+  if (isWindows && !bind.isIncomingOnly()) {
+    final button = _secondaryButton(label, enabled ? onPressed : null);
+    return tip == null
+        ? button
+        : Tooltip(message: translate(tip), child: button);
+  }
   var button = ElevatedButton(
     onPressed: enabled ? onPressed : null,
     child: Text(
@@ -182,6 +188,10 @@ Widget _SubButton(String label, Function() onPressed, [bool enabled = true]) {
 // ignore: non_constant_identifier_names
 Widget _SubLabeledWidget(BuildContext context, String label, Widget child,
     {bool enabled = true}) {
+  if (isWindows && !bind.isIncomingOnly()) {
+    return _childRow(
+        _settingRow(context, label, child, enabled: enabled, description: ''));
+  }
   return Row(
     children: [
       Text(

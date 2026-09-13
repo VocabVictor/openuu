@@ -151,8 +151,12 @@ extension _SafetyTfa on _SafetyState {
     return ChangeNotifierProvider.value(
         value: gFFI.serverModel,
         child: Consumer<ServerModel>(builder: ((context, model, child) {
-          return _Button('Change ID', changeIdDialog,
+          final button = _Button('Change ID', changeIdDialog,
               enabled: !locked && model.connectStatus > 0);
+          if (isWindows && !bind.isIncomingOnly()) {
+            return _settingRow(context, 'Change ID', button, description: '');
+          }
+          return button;
         })));
   }
 }

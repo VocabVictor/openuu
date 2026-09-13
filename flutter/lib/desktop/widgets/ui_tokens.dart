@@ -104,6 +104,7 @@ class UiSpace {
   static const double settingsStatusBarHeight = 44;
   static const double settingsBrandHeadHeight = 72;
   static const double settingsBrandIconSize = 48;
+  static const double settingsNumberFieldWidth = 56;
 }
 
 class UiColor {

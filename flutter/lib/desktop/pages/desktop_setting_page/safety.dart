@@ -105,38 +105,25 @@ extension _SafetyMisc on _SafetyState {
           child: _SubLabeledWidget(
             context,
             'Timeout in minutes',
-            Row(children: [
-              SizedBox(
-                width: 95,
-                child: TextField(
-                  controller: controller,
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              _numberField(controller,
                   enabled: enabled && !locked && !isOptFixed,
+                  hint: '10',
                   onChanged: (_) => applyEnabled.value = true,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(
                         r'^([0-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$')),
-                  ],
-                  decoration: const InputDecoration(
-                    hintText: '10',
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  ),
-                ).workaroundFreezeLinuxMint().marginOnly(right: 15),
-              ),
-              Obx(() => ElevatedButton(
-                    onPressed:
-                        applyEnabled.value && enabled && !locked && !isOptFixed
-                            ? () async {
-                                applyEnabled.value = false;
-                                await bind.mainSetOption(
-                                    key: kOptionAutoDisconnectTimeout,
-                                    value: controller.text);
-                              }
-                            : null,
-                    child: Text(
-                      translate('Apply'),
-                    ),
-                  ))
+                  ]),
+              const SizedBox(width: UiSpace.s2),
+              Obx(() => _applyButton(
+                  applyEnabled.value && enabled && !locked && !isOptFixed
+                      ? () async {
+                          applyEnabled.value = false;
+                          await bind.mainSetOption(
+                              key: kOptionAutoDisconnectTimeout,
+                              value: controller.text);
+                        }
+                      : null))
             ]),
             enabled: enabled && !locked && !isOptFixed,
           ),

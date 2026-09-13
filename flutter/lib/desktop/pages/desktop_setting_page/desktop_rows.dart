@@ -49,3 +49,55 @@ Widget _secretRow(BuildContext context, String label, bool isSet,
 
 /// A child row: indented under its parent with the rail on the left.
 Widget _childRow(Widget row) => SettingsChildRow(child: row);
+
+/// The Apply button next to a numeric field: secondary on the desktop shell.
+Widget _applyButton(VoidCallback? onPressed) => isWindows &&
+        !bind.isIncomingOnly()
+    ? _secondaryButton('Apply', onPressed)
+    : ElevatedButton(onPressed: onPressed, child: Text(translate('Apply')));
+
+/// A numeric field, 56 wide and 28 high on the desktop shell.
+Widget _numberField(TextEditingController controller,
+        {required bool enabled,
+        required String hint,
+        required ValueChanged<String> onChanged,
+        required List<TextInputFormatter> inputFormatters}) =>
+    isWindows && !bind.isIncomingOnly()
+        ? SizedBox(
+            width: UiSpace.settingsNumberFieldWidth,
+            height: UiSpace.settingsControlHeight,
+            child: TextField(
+                controller: controller,
+                enabled: enabled,
+                onChanged: onChanged,
+                inputFormatters: inputFormatters,
+                textAlign: TextAlign.right,
+                style: UiType.rowTitle.copyWith(
+                    fontSize: 13, fontWeight: FontWeight.w400),
+                decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: UiType.caption.copyWith(color: UiColor.faint),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: UiSpace.s2, vertical: 6),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(UiSpace.inputRadius),
+                        borderSide: const BorderSide(color: UiColor.inputBorder)),
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(UiSpace.inputRadius),
+                        borderSide:
+                            const BorderSide(color: UiColor.inputBorder)))))
+        : SizedBox(
+            width: 95,
+            child: TextField(
+              controller: controller,
+              enabled: enabled,
+              onChanged: onChanged,
+              inputFormatters: inputFormatters,
+              decoration: InputDecoration(
+                hintText: hint,
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              ),
+            ).workaroundFreezeLinuxMint().marginOnly(right: 15),
+          );
