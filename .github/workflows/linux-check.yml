@@ -112,6 +112,47 @@ jobs:
         shell: bash
         run: cargo check --locked --lib --features flutter,drm --target ${{ env.TARGET }}
 
+
+  # The Dart tests had no gate at all until 2026-09-13: a renamed button left
+  # all nine cases of one suite red and nothing caught it. They take about ten
+  # seconds, so they run here beside the compile check rather than in their own
+  # workflow.
+  flutter-test:
+    name: flutter test (ubuntu-22.04)
+    needs: [generate-bridge]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          submodules: recursive
+
+      - name: Restore bridge files
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bridge-artifact
+          path: ./
+
+      - name: Install flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: "stable"
+          flutter-version: "3.24.5"
+
+      - name: Run the widget tests
+        shell: bash
+        working-directory: ./flutter
+        # flutter test talks to the test process over loopback. A proxy in the
+        # environment swallows that connection and the suite fails to load at
+        # all, with an HttpException instead of a test failure -- which is how
+        # it behaves on the build machine, where ALL_PROXY is set. Clearing
+        # these here means a proxy added to the runner later cannot reproduce
+        # that puzzle.
+        run: |
+          unset ALL_PROXY all_proxy HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
+          flutter pub get
+          flutter test
+
   # A prerequisite that never ran must not read as a pass. When the bridge job
   # cannot start (an account spending stop did exactly that on 2026-09-13), the
   # job below it is skipped, and a skipped job shows as a grey tick rather than
@@ -119,7 +160,7 @@ jobs:
   # non-success prerequisite, skipped and cancelled included, into a red run.
   guard:
     name: prerequisites actually ran
-    needs: [generate-bridge, linux-check]
+    needs: [generate-bridge, linux-check, flutter-test]
     if: always()
     runs-on: ubuntu-22.04
     steps:
@@ -128,10 +169,12 @@ jobs:
         env:
           BRIDGE_RESULT: ${{ needs.generate-bridge.result }}
           CHECK_RESULT: ${{ needs.linux-check.result }}
+          TEST_RESULT: ${{ needs.flutter-test.result }}
         run: |
           echo "generate-bridge: $BRIDGE_RESULT"
           echo "linux-check: $CHECK_RESULT"
-          if [ "$BRIDGE_RESULT" != success ] || [ "$CHECK_RESULT" != success ]; then
+          echo "flutter-test: $TEST_RESULT"
+          if [ "$BRIDGE_RESULT" != success ] || [ "$CHECK_RESULT" != success ]              || [ "$TEST_RESULT" != success ]; then
             echo "::error::a prerequisite did not succeed; skipped or cancelled counts as a failure"
             exit 1
           fi
