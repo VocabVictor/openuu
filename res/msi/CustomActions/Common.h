@@ -14,4 +14,7 @@ bool MyStopServiceW(LPCWSTR serviceName);
 
 std::wstring ReadConfig(const std::wstring& filename, const std::wstring& key);
 
+// Processes.cpp
+bool TerminateProcessesByNameW(LPCWSTR processName, LPCWSTR excludeParam);
+
 void UninstallDriver(LPCWSTR hardwareId, BOOL &rebootRequired);
