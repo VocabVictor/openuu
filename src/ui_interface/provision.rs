@@ -2,7 +2,7 @@
 //! (docs/server-config-provisioning.md §3–4). Both return a JSON object so the
 //! UI gets the report or the error without a second call.
 
-use base::config::provision::{self, Provision, Server, Source};
+use base::config::provision::{self, Connect, Provision, Server, Source};
 use hbb_common::config::Config;
 use serde_json::json;
 
@@ -29,6 +29,7 @@ pub fn preview_config_text(text: String) -> String {
             "server": p.server,
             "options": p.options.keys().collect::<Vec<_>>(),
             "locked": p.locked,
+            "connect": p.connect,
         })
         .to_string(),
         Err(err) => json!({"ok": false, "error": err.to_string()}).to_string(),
@@ -38,6 +39,11 @@ pub fn preview_config_text(text: String) -> String {
 /// The QR / deep-link payload for the current server settings plus the given
 /// option keys (secrets are dropped, the size cap applies).
 pub fn encode_share_config(option_keys: Vec<String>) -> String {
+    encode_share_config_with_connect(option_keys, String::new(), String::new())
+}
+
+/// Same payload plus the device the receiver should connect to (assistance page).
+pub fn encode_share_config_with_connect(option_keys: Vec<String>, id: String, password: String) -> String {
     let p = Provision {
         version: provision::VERSION,
         server: Server {
@@ -54,6 +60,7 @@ pub fn encode_share_config(option_keys: Vec<String>) -> String {
             })
             .filter(|(_, v)| !v.is_empty())
             .collect(),
+        connect: (!id.is_empty()).then(|| Connect { id, password }),
         ..Default::default()
     };
     match provision::encode_share(&p) {

@@ -2623,6 +2623,14 @@ pub fn main_encode_share_config(option_keys: Vec<String>) -> String {
     encode_share_config(option_keys)
 }
 
+pub fn main_encode_share_config_with_connect(
+    option_keys: Vec<String>,
+    id: String,
+    password: String,
+) -> String {
+    encode_share_config_with_connect(option_keys, id, password)
+}
+
 pub fn main_check_hwcodec() {
     check_hwcodec()
 }

@@ -42,6 +42,11 @@ fn parses_every_accepted_form() {
     assert_eq!(q.server, p.server);
     assert!(!q.options.contains_key("permanent-password"), "secrets never enter the payload");
     assert!(q.local.is_empty() && q.locked.is_empty());
+    assert!(q.connect.is_none());
+    let mut with_connect = p.clone();
+    with_connect.connect = Some(Connect { id: "123456789".into(), password: "otp".into() });
+    let c = parse(&encode_share(&with_connect).unwrap()).unwrap().connect.unwrap();
+    assert_eq!((c.id.as_str(), c.password.as_str()), ("123456789", "otp"));
     assert_eq!(parse(share.trim_start_matches(URI_PREFIX)).unwrap(), q);
 
     let legacy_json = r#"{"host":"rs.legacy","relay":"","api":"http://rs.legacy:21114","key":"k"}"#;

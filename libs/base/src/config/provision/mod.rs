@@ -50,6 +50,17 @@ pub struct Server {
     pub key: String,
 }
 
+/// Optional target for the assistance flow: a device id and its one-time
+/// password, carried only in a share payload so the receiver can connect at
+/// once. Not a server secret; never installed into any table.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Connect {
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub id: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub password: String,
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Provision {
     /// Mandatory; a file without it is not a provisioning file.
@@ -63,6 +74,8 @@ pub struct Provision {
     pub local: BTreeMap<String, String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub locked: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub connect: Option<Connect>,
 }
 
 /// Where a text came from. Only file-like sources may lock keys or carry secrets.
@@ -215,6 +228,7 @@ pub fn encode_share(p: &Provision) -> ResultType<String> {
     let share = Provision {
         version: VERSION,
         server: p.server.clone(),
+        connect: p.connect.clone().filter(|c| !c.id.is_empty()),
         options: p
             .options
             .iter()
