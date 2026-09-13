@@ -90,7 +90,7 @@ extension _ViewCameraActions on _ViewCameraPageState {
         TTextMenu(
           child: Text(translate(label), style: labelStyle),
           trailingIcon: Transform.scale(
-            scale: (isDesktop || isWebDesktop) ? 0.8 : 1,
+            scale: isDesktop ? 0.8 : 1,
             child: IgnorePointer(
               child: IconButton(
                 onPressed: null,

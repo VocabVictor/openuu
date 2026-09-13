@@ -205,9 +205,6 @@ extension _ConnectionPageIdField on _ConnectionPageState {
       ),
     );
     final child = Column(children: [
-      if (isWebDesktop)
-        getConnectionPageTitle(context, true)
-            .marginOnly(bottom: 10, top: 15, left: 12),
       w
     ]);
     return Align(

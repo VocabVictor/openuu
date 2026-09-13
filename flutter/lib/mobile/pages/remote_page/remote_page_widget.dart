@@ -21,7 +21,7 @@ class RemotePage extends StatefulWidget {
 class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
   void _setState(VoidCallback fn) => setState(fn);
   Timer? _timer;
-  bool _showBar = !isWebDesktop;
+  bool _showBar = true;
   bool _showGestureHelp = false;
   String _value = '';
   Orientation? _currentOrientation;
@@ -227,9 +227,7 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
                 OverlayEntry(builder: (context) {
                   return Container(
                     color: kColorCanvas,
-                    child: isWebDesktop
-                        ? getBodyForDesktopWithListener()
-                        : SafeArea(
+                    child: SafeArea(
                             child:
                                 OrientationBuilder(builder: (ctx, orientation) {
                               if (_currentOrientation != orientation) {

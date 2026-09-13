@@ -108,7 +108,7 @@ void showServerSettingsWithValue(
     Widget buildField(
         String label, TextEditingController controller, String errorMsg,
         {String? Function(String?)? validator, bool autofocus = false}) {
-      if (isDesktop || isWeb) {
+      if (isDesktop) {
         return Row(
           children: [
             SizedBox(
@@ -156,7 +156,7 @@ void showServerSettingsWithValue(
                   buildField(translate('ID Server'), idCtrl, idServerMsg.value,
                       autofocus: true),
                   SizedBox(height: 8),
-                  if (!isIOS && !isWeb) ...[
+                  if (!isIOS) ...[
                     buildField(translate('Relay Server'), relayCtrl,
                         relayServerMsg.value),
                     SizedBox(height: 8),

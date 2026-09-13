@@ -13,8 +13,6 @@ import 'package:flutter_hbb/models/terminal_copy_shortcut.dart';
 import 'package:flutter_hbb/models/terminal_model.dart';
 import 'package:flutter_hbb/models/terminal_mouse_handler.dart';
 import 'package:flutter_hbb/mobile/terminal_keyboard_utils.dart';
-import 'package:flutter_hbb/native/unsupported_web.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:xterm/xterm.dart';
 import '../../../desktop/pages/terminal_connection_manager.dart';
 import '../../../consts.dart';
@@ -122,10 +120,7 @@ class _TerminalPageState extends State<TerminalPage>
   final _terminalClipboardNotice = TerminalClipboardNoticeCoordinator<int>();
 
   // For web only.
-  // 'monospace' does not work on web, use Google Fonts, `??` is only for null safety.
-  final String _robotoMonoFontFamily = isWeb
-      ? (GoogleFonts.robotoMono().fontFamily ?? 'monospace')
-      : 'monospace';
+  final String _robotoMonoFontFamily = 'monospace';
 
   SessionID get sessionId => _ffi.sessionId;
 
@@ -134,9 +129,6 @@ class _TerminalPageState extends State<TerminalPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    if (isWeb) {
-      loadLocalTerminalFontIfNeeded();
-    }
 
     debugPrint(
         '[TerminalPage] Initializing terminal ${widget.terminalId} for peer ${widget.id}');
@@ -177,7 +169,7 @@ class _TerminalPageState extends State<TerminalPage>
 
     // Web desktop users have full hardware keyboard access, so the on-screen
     // terminal extra keys bar is unnecessary and disabled.
-    _showTerminalExtraKeys = !isWebDesktop &&
+    _showTerminalExtraKeys =
         mainGetLocalBoolOptionSync(kOptionEnableShowTerminalExtraKeys);
     _terminalModel.isCtrlLocked = () => _ctrlLocked;
     _terminalModel.clearCtrlLock = () {

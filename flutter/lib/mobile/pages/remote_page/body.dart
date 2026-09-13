@@ -44,7 +44,7 @@ extension _RemotePageBody on _RemotePageState {
                       },
                     )
                   ] +
-                  (isWebDesktop || ffiModel.viewOnly || !ffiModel.keyboard
+                  (ffiModel.viewOnly || !ffiModel.keyboard
                       ? []
                       : gFFI.ffiModel.isPeerAndroid
                           ? [
@@ -73,9 +73,7 @@ extension _RemotePageBody on _RemotePageState {
                                     () => _showGestureHelp = !_showGestureHelp),
                               ),
                             ]) +
-                  (isWeb
-                      ? []
-                      : <Widget>[
+                  (<Widget>[
                           futureBuilder(
                               future: gFFI.invokeMethod(
                                   "get_value", "KEY_IS_SUPPORT_VOICE_CALL"),
@@ -183,17 +181,4 @@ extension _RemotePageBody on _RemotePageState {
         }()));
   }
 
-  Widget getBodyForDesktopWithListener() {
-    final ffiModel = Provider.of<FfiModel>(context);
-    var paints = <Widget>[ImagePaint(ffiModel: ffiModel)];
-    if (showCursorPaint) {
-      final cursor = bind.sessionGetToggleOptionSync(
-          sessionId: sessionId, arg: 'show-remote-cursor');
-      if (ffiModel.keyboard || cursor) {
-        paints.add(CursorPaint(widget.id));
-      }
-    }
-    return Container(
-        color: MyTheme.canvasColor, child: Stack(children: paints));
-  }
 }

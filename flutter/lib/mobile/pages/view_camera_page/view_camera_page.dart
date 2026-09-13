@@ -61,7 +61,7 @@ class _ViewCameraPageState extends State<ViewCameraPage>
     with WidgetsBindingObserver {
   void _setState(VoidCallback fn) => setState(fn);
   Timer? _timer;
-  bool _showBar = !isWebDesktop;
+  bool _showBar = true;
   bool _showGestureHelp = false;
   Orientation? _currentOrientation;
   double _viewInsetsBottom = 0;

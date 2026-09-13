@@ -14,7 +14,7 @@ extension _TerminalPageBody on _TerminalPageState {
                 builder: (context, constraints) {
                   final heightPx = constraints.maxHeight;
                   return _buildTerminalViewForPlatform(
-                    reportMouseInput: isWebDesktop || isAndroid,
+                    reportMouseInput: isAndroid,
                     reportTouchInput: isIOS,
                     terminal: _terminalModel.terminal,
                     controller: _terminalModel.terminalController,

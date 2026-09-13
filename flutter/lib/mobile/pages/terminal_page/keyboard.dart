@@ -229,11 +229,6 @@ extension _TerminalPageKeyboard on _TerminalPageState {
   // https://github.com/TerminalStudio/xterm.dart/issues/42#issuecomment-877495472
   // https://github.com/TerminalStudio/xterm.dart/issues/198#issuecomment-2526548458
   TerminalStyle _getTerminalStyle() {
-    return isWeb
-        ? TerminalStyle(
-            fontFamily: _robotoMonoFontFamily,
-            fontSize: 14,
-          )
-        : const TerminalStyle();
+    return const TerminalStyle();
   }
 }

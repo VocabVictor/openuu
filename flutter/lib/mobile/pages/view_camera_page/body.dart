@@ -41,9 +41,7 @@ extension _ViewCameraBody on _ViewCameraPageState {
                       },
                     )
                   ] +
-                  (isWeb
-                      ? []
-                      : <Widget>[
+                  (<Widget>[
                           futureBuilder(
                               future: gFFI.invokeMethod(
                                   "get_value", "KEY_IS_SUPPORT_VOICE_CALL"),

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hbb/common/formatter/id_formatter.dart';
-import 'package:flutter_hbb/common/widgets/connection_page_title.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +53,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
   Iterable<Peer> _autocompleteOpts = [];
 
   _ConnectionPageState() {
-    if (!isWeb) _uniLinksSubscription = listenUniLinks();
+    _uniLinksSubscription = listenUniLinks();
     _idController.addListener(() {
       _idEmpty.value = _idController.text.isEmpty;
     });

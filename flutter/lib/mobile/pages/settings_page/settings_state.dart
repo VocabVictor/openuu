@@ -74,8 +74,7 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
     _hideNetwork =
         bind.mainGetBuildinOption(key: kOptionHideNetworkSetting) == 'Y';
     _hideWebSocket =
-        bind.mainGetBuildinOption(key: kOptionHideWebSocketSetting) == 'Y' ||
-            isWeb;
+        bind.mainGetBuildinOption(key: kOptionHideWebSocketSetting) == 'Y';
     _enableTrustedDevices = mainGetBoolOptionSync(kOptionEnableTrustedDevices);
     _enableTcpPunch = mainGetLocalBoolOptionSync(kOptionEnableTcpPunch);
     _enableUdpPunch = mainGetLocalBoolOptionSync(kOptionEnableUdpPunch);
