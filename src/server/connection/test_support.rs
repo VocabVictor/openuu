@@ -12,6 +12,19 @@ impl Connection {
     /// nothing is spawned. Audit posts and CM messages go to channels whose
     /// receivers are dropped.
     pub(super) async fn for_test(id: i32) -> (Self, super::super::Stream) {
+        let (conn, controller, _rx) = Self::for_test_with_sender(id).await;
+        (conn, controller)
+    }
+
+    /// Like `for_test`, also returning the receiver behind `inner.send`, the
+    /// channel the message loop would drain into the stream.
+    pub(super) async fn for_test_with_sender(
+        id: i32,
+    ) -> (
+        Self,
+        super::super::Stream,
+        mpsc::UnboundedReceiver<(Instant, Arc<Message>)>,
+    ) {
         let listener = TcpListener::bind("127.0.0.1:0")
             .await
             .expect("bind loopback");
@@ -27,7 +40,7 @@ impl Connection {
             ..Default::default()
         };
         let (tx_to_cm, _rx_to_cm) = mpsc::unbounded_channel::<ipc::Data>();
-        let (tx, _rx) = mpsc::unbounded_channel::<(Instant, Arc<Message>)>();
+        let (tx, rx) = mpsc::unbounded_channel::<(Instant, Arc<Message>)>();
         let (tx_video, _rx_video) = mpsc::unbounded_channel::<(Instant, Arc<Message>)>();
         let (tx_input, _rx_input) = std_mpsc::channel();
         let (tx_from_authed, _rx_from_authed) = mpsc::unbounded_channel::<ipc::Data>();
@@ -126,7 +139,7 @@ impl Connection {
             conn_audit_primary_auth: ConnAuditPrimaryAuth::None,
             conn_audit_two_factor: ConnAuditTwoFactor::None,
         };
-        (conn, controller)
+        (conn, controller, rx)
     }
 
     /// The `LoginRequest.password` a controller would send for `password`:
@@ -145,10 +158,20 @@ impl Connection {
 
 /// Read the next protobuf message the connection sent to the controller.
 pub(super) async fn next_message(controller: &mut super::super::Stream) -> Message {
-    let bytes = timeout(3_000, controller.next())
+    try_next_message(controller, 3_000)
         .await
         .expect("no message within 3 s")
+}
+
+/// Like `next_message`, but `None` when nothing arrives within `ms`.
+pub(super) async fn try_next_message(
+    controller: &mut super::super::Stream,
+    ms: u64,
+) -> Option<Message> {
+    let bytes = timeout(ms, controller.next())
+        .await
+        .ok()?
         .expect("stream closed")
         .expect("stream error");
-    Message::parse_from_bytes(&bytes).expect("parse message")
+    Some(Message::parse_from_bytes(&bytes).expect("parse message"))
 }
