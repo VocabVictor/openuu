@@ -34,3 +34,20 @@ use super::*;
         assert!(!is_public("api.rustdesk.com.evil.test"));
         assert!(!is_public("https://rustdesk.com@evil.test"));
     }
+
+    /// Hole punching used to be switched off for every self-hosted deployment,
+    /// which read a deployment's shape as a statement about its capability. Only
+    /// WebRTC still defaults off, and only while the deployment has no ICE
+    /// servers of its own, because it would otherwise fall back to the built-in
+    /// public STUN list.
+    #[test]
+    fn webrtc_waits_for_ice_servers_only_on_a_self_hosted_server() {
+        // unset + self-hosted + no ICE servers of its own: the one case that stays off
+        assert!(webrtc_off_by_default("", false, false));
+
+        // any one of those three conditions lifting is enough to honour the default
+        assert!(!webrtc_off_by_default("", true, false), "a public server has ICE behind it");
+        assert!(!webrtc_off_by_default("", false, true), "the deployment configured its own");
+        assert!(!webrtc_off_by_default("Y", false, false), "an explicit choice is not a default");
+        assert!(!webrtc_off_by_default("N", false, false), "an explicit no is already no");
+    }
