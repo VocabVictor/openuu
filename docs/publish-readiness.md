@@ -26,7 +26,7 @@ SSH public keys, Windows SIDs, local user profile paths.
 | A colleague's Windows account name (test fixture and a Windows sessions doc) | `alice`, `<other-user>` |
 | A VM account name in a profile path | `<user>` |
 | Two test accounts on the production account service | `<test-account-1>`, `<test-account-2>` |
-| Cloud instance id | `ins-xxxxxxxx` |
+| Cloud instance id and security group id | `ins-xxxxxxxx`, `sg-0123456789` |
 | Operator's build directory on the server | `/home/<user>/...` |
 | Production rendezvous/relay/account server address | `rs.example.com` |
 | Build machine, VM and public addresses seen in smoke tests | RFC 5737 documentation addresses (`192.0.2.x`, `198.51.100.x`) |
