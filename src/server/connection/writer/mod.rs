@@ -29,10 +29,8 @@
 
 use super::*;
 use crate::stream_split::ConnWriter;
-use hbb_common::{
-    message_proto::Message,
-    tokio::{self, sync::Notify},
-};
+use base::message_proto::Message;
+use hbb_common::tokio::{self, sync::Notify};
 use std::{
     sync::{Arc, Mutex},
     time::Instant,

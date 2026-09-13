@@ -1,6 +1,6 @@
 //! What is waiting to go to the peer, and what happens when it piles up.
 
-use hbb_common::message_proto::Message;
+use base::message_proto::Message;
 use std::{collections::VecDeque, sync::Arc, time::Instant};
 
 /// How many video messages may wait. A frame is worth sending only while it is still
