@@ -145,7 +145,7 @@ impl ClipboardContext {
     }
 
     #[cfg(target_os = "linux")]
-    fn set_with_owner_marker_for_linux(&mut self, data: &[ClipboardData]) -> ResultType<()> {
+    pub(super) fn set_with_owner_marker_for_linux(&mut self, data: &[ClipboardData]) -> ResultType<()> {
         let _lock = ARBOARD_MTX.lock().unwrap();
         self.inner
             .set()
