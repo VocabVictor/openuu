@@ -170,8 +170,46 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   were each verified only by `flutter analyze`. They need one look on a real
   screen. Precondition: the Android build works again
   (`docs/android-build-restore-plan.md`).
-* **Dark-mode tokens** — see the entry above; mobile ships a live dark theme,
-  so the light-only `UiColor` hurts there first.
+* **Dark-mode tokens.** Dark is now a supported appearance and the naming and
+  resolution mechanism are decided (`docs/dark-token-decision.md`,
+  `UiPalette extends ThemeExtension`, `UiColor.of(context)`).
+  **Status as of this entry: the decision is written, the implementation is
+  not. `UiPalette` does not exist in `ui_tokens.dart` yet, so no file can be
+  hooked up.** Once it lands, each file is three steps: take
+  `final ui = UiColor.of(context);` at the top of `build`, swap `UiColor.x` for
+  `ui.x` (and `UiType.y` for `type.y`), and drop the `const` that no longer
+  holds. Files are independent, so they can be migrated one at a time.
+
+  Route map for the session-window and dialog files, counted on the master of
+  this entry — 132 token references across 16 files, 11 of them inside a
+  `const` expression:
+
+  | refs | in const | file (under `flutter/lib/`) |
+  | ---: | ---: | --- |
+  | 19 | 1 | `desktop/pages/terminal_sessions_page.dart` |
+  | 14 | 0 | `common/widgets/ui_fields.dart` |
+  | 14 | 1 | `desktop/pages/port_forward_page/tunnels.dart` |
+  | 13 | 0 | `desktop/widgets/session_status_bar.dart` |
+  | 12 | 1 | `desktop/widgets/file_transfer_layout.dart` |
+  | 12 | 0 | `desktop/pages/file_manager_page/view_head_tools.dart` |
+  | 11 | 3 | `common/widgets/ui_dialog.dart` |
+  | 8 | 0 | `desktop/widgets/tabbar_widget/tab_item.dart` |
+  | 7 | 3 | `desktop/widgets/remote_toolbar/theme.dart` |
+  | 5 | 0 | `desktop/widgets/remote_toolbar/monitor_menu.dart` |
+  | 5 | 0 | `desktop/widgets/tabbar_widget/action_buttons.dart` |
+  | 5 | 1 | `mobile/pages/server_page/connection_manager.dart` |
+  | 3 | 0 | `desktop/widgets/remote_toolbar/toolbar_layout.dart` |
+  | 2 | 0 | `desktop/widgets/remote_toolbar/small_menus.dart` |
+  | 1 | 1 | `desktop/widgets/remote_toolbar/menu_buttons.dart` |
+  | 1 | 0 | `desktop/widgets/remote_toolbar/draggable_show_hide.dart` |
+
+  Two things that are not a mechanical swap: `ui_dialog.dart` and
+  `ui_fields.dart` hard-code `Colors.white` for button and field faces, which
+  becomes `ui.panelBg` rather than anything derived from black — a dark surface
+  is not the light one inverted. And `remote_toolbar/theme.dart` still holds
+  five literal colours for the dark appearance (the active hover tint, two
+  danger tints, the dark icon colour, the dark bar background); those are the
+  ones the palette should absorb, not the light values beside them.
 * **Mobile has no design tokens at all.** Zero files under `flutter/lib/mobile/`
   reference `UiColor`/`UiSpace`/`UiType` (the connection manager's trust
   controls, `8ae053ef2`, are the first and only exception). Bringing mobile
