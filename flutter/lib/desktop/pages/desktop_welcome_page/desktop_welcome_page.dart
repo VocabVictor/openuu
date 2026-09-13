@@ -32,7 +32,9 @@ class DesktopWelcomePage extends StatelessWidget {
       this.favoritesSelected = false,
       this.settingsSelected = false});
 
-  static const blue = UiColor.of(context).primary;
+  /// The light primary, kept as a constant because callers use it in
+  /// const expressions; a themed caller reads UiColor.of(context).primary.
+  static const blue = UiColor.primary;
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +49,9 @@ class DesktopWelcomePage extends StatelessWidget {
                 width: UiSpace.sidebarWidth,
                 child: Column(children: [
                   const SizedBox(height: UiSpace.sidebarPaddingTop),
-                  _group(t('我的设备', 'My devices'), Icons.devices_outlined),
+                  _group(context, t('我的设备', 'My devices'), Icons.devices_outlined),
                   if (deviceItem != null) deviceItem!,
-                  _item(
+                  _item(context, 
                       t('全部设备', 'All devices'),
                       Icons.grid_view_rounded,
                       !settingsSelected &&
@@ -57,17 +59,17 @@ class DesktopWelcomePage extends StatelessWidget {
                           !favoritesSelected &&
                           deviceItem == null,
                       onDevices ?? () {}),
-                  _item(t('收藏设备', 'Favorites'), Icons.bookmark,
+                  _item(context, t('收藏设备', 'Favorites'), Icons.bookmark,
                       favoritesSelected, onFavorites),
                   const SizedBox(height: UiSpace.sidebarGroupGap),
-                  _group(t('远程协助', 'Remote assistance'), Icons.crop_free),
-                  _item(t('开始协助', 'Start assistance'), Icons.screen_share,
+                  _group(context, t('远程协助', 'Remote assistance'), Icons.crop_free),
+                  _item(context, t('开始协助', 'Start assistance'), Icons.screen_share,
                       assistanceSelected, onAssistance),
                   const Spacer(),
                   Divider(height: 1, color: UiColor.of(context).border),
                   const SizedBox(height: UiSpace.sidebarFooterDividerGap),
                   if (onSettings != null)
-                    _item(t('设置', 'Settings'), Icons.settings_outlined,
+                    _item(context, t('设置', 'Settings'), Icons.settings_outlined,
                         settingsSelected, onSettings!),
                   const SizedBox(height: UiSpace.s3),
                 ])),
@@ -152,7 +154,7 @@ class DesktopWelcomePage extends StatelessWidget {
         ));
       });
 
-  Widget _group(String title, IconData icon) => SizedBox(
+  Widget _group(BuildContext context, String title, IconData icon) => SizedBox(
       height: UiSpace.sidebarGroupLabelHeight,
       child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -166,6 +168,7 @@ class DesktopWelcomePage extends StatelessWidget {
           ])));
 
   Widget _item(
+      BuildContext context,
           String title, IconData icon, bool selected, VoidCallback onTap) =>
       Padding(
           padding: const EdgeInsets.symmetric(
