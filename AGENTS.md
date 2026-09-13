@@ -563,6 +563,26 @@ author's own reasoning is worth the lines it costs.
   the build machine); the `linux-check.yml` workflow is only a backstop on
   pushes to `master`.
 
+## Before claiming "nobody", "never" or "cannot", read it now
+
+An assertion of absence is a claim about the current state of the machine, the
+repository or the workflow, and it is the kind most likely to be wrong, because
+nothing in the session contradicts it. Three in one day, all from the same
+session, all withdrawn by that session an hour later:
+
+* "`flutter test` cannot run on the build machine" -- it had run five times
+  that day. A hand-written runner had left out a step, and listing
+  `C:uild\*.ps1` would have shown the runner that already existed.
+* "clear the six proxy variables" -- copied from another machine's notes. This
+  one has three, all uppercase. **A number carried in from another context is
+  a claim about this one and has to be measured here.**
+* "nobody runs the full widget suite" -- CI runs it on every push to master,
+  and `gh run list` would have said so in one command.
+
+The first cost a withdrawn proposal, the second a wrong number in a report,
+the third an approval given on a false premise. **Read the thing once, at the
+moment of the claim.** The reading is always cheaper than the correction.
+
 ## Documentation and test data
 
 * Documents, commit messages and test fixtures must not contain real IP
