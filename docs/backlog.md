@@ -274,3 +274,17 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   `common/config_import.dart` for mobile and in
   `desktop_setting_page/network_provision.dart` for the desktop, over the same
   pair of FFI calls.
+* **The remote toolbar recovers a button's meaning from its colour.**
+  `_ToolbarTheme.iconColor` takes the background colour and compares it
+  against the active and danger tints to decide whether the icon is primary,
+  danger or secondary text. Since `d03513f5d` it compares against the
+  resolved palette, so it holds in both themes — but it is still a reverse
+  lookup, and it breaks silently the moment two states share a tint. The fix
+  is to pass the state (`normal` / `active` / `danger`) and derive the colour
+  from it. **What is missing: one signature change across six part files** of
+  `flutter/lib/desktop/widgets/remote_toolbar/` — `chat_voice_menu.dart`,
+  `display_menu.dart`, `draggable_show_hide.dart`, `icon_buttons.dart`,
+  `monitor_menu.dart`, `small_menus.dart`. No environment, no device and no
+  CI capacity is needed; it was left out of the palette commit because
+  changing what a call site says is a different kind of change from changing
+  what a colour resolves to.
