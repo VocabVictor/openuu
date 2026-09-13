@@ -1,7 +1,7 @@
 # Android APK build, revived from the dormant job in playground.yml
-# (docs/android-build-restore-plan.md, option A). Manual only for now: it
-# answers "can the mobile target still be built" without spending minutes on
-# every push. Nothing else builds the Rust core for Android — Gradle only ever
+# (docs/android-build-restore-plan.md, option A). It answers "can the mobile
+# target still be built", and it does so for real: nothing else builds the
+# Rust core for Android — Gradle only ever
 # calls `cargo metadata` — so this workflow stages librustdesk.so itself and
 # then asserts the APK actually contains it.
 name: Android build
