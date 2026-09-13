@@ -94,7 +94,23 @@ grep -E 'event=punch_hole|event=relay_request|event=relay_response|event=relay_p
 grep -E 'New relay request|got paired|event=relay_denied'
 ```
 
-## 5. 耗时与风险
+## 5. 一键脚本
+
+三项的命令与断言已经写成 `scripts/wan-smoke.ps1`：
+
+```
+pwsh -File scripts/wan-smoke.ps1 -Peer <peer-id> -Case all -ServerSsh <ssh 别名> -Out .\wan-smoke
+```
+
+它每轮起一次 `--connect`，按上面的断言判定并输出 PASS/FAIL 表格与 csv，有失败时退出码为 1。
+约束与本方案一致：服务端只读（ssh 跑 `journalctl` 抓那几条 `event=` 行），全局配置一律不动；
+唯一的写入是主控侧该 peer 的 `force-always-relay`，改前做带时间戳的备份，恢复后比对文件哈希，
+哈希一致才删备份，且写在 `finally` 里，中途失败也会恢复。密码按 peer id 从私有文件提取，
+不进命令行历史也不入日志：客户端 stdout 会回显启动参数，脚本只保留判定用的行并当场删除原始输出。
+
+T3 需要**被控端**打洞失败，脚本不会去改被控端的配置，那一步仍由人来做（或靠环境天然的对称 NAT）。
+
+## 6. 耗时与风险
 
 * 准备（确认出口不同、装包、记录 ID）：约 30 分钟。
 * 每项实验含日志采集与断言：15–25 分钟；三项一轮约 1 小时。
