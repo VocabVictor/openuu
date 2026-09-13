@@ -73,7 +73,12 @@ pub fn import_exe_dir_file() -> Option<ResultType<Report>> {
 
 fn persist(p: &Provision, source_text: &str) -> ResultType<()> {
     let copy = serde_json::to_string_pretty(&sanitized(p))?;
-    std::fs::write(Config::path(PERSISTED_FILE), copy)?;
+    let path = Config::path(PERSISTED_FILE);
+    // The service's config directory does not exist yet on a fresh install.
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
+    std::fs::write(&path, copy)?;
     LocalConfig::set_option(HASH_KEY.to_owned(), sha256_hex(source_text));
     Ok(())
 }
