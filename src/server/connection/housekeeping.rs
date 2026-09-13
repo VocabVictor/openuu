@@ -2,8 +2,21 @@ use super::*;
 
 impl Connection {
     #[inline]
+    /// Runs the pending file-read jobs, which write their blocks straight to the socket.
+    ///
+    /// The blocks of one job must arrive in order or the file is corrupt, so this is not a
+    /// thing to hand to a queue casually; the split form is wired up in its own commit,
+    /// and until then reaching here with a split socket is a mistake worth shouting about
+    /// rather than a no-op worth hiding.
+    pub(super) async fn handle_file_read_jobs(&mut self) -> ResultType<String> {
+        match self.stream.whole() {
+            Some(stream) => fs::handle_read_jobs(&mut self.read_jobs, stream).await,
+            None => bail!("file read jobs on a split connection are not wired up yet"),
+        }
+    }
+
     pub(super) async fn send(&mut self, msg: Message) {
-        allow_err!(self.stream.send(&msg).await);
+        allow_err!(self.stream.send(Arc::new(msg)).await);
     }
 
     pub fn alive_conns() -> Vec<i32> {

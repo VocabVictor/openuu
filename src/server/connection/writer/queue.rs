@@ -13,7 +13,14 @@ use std::{collections::VecDeque, sync::Arc, time::Instant};
 /// than a verified constant; `docs/backlog.md` says what that calibration needs.
 pub(super) const VIDEO_QUEUE_CAP: usize = 30;
 
-pub(super) type Item = (Instant, Arc<Message>);
+/// One thing to write. Raw bytes are messages another process already encoded; they go
+/// out as they are.
+pub(super) enum Out {
+    Msg(Arc<Message>),
+    Raw(Vec<u8>),
+}
+
+pub(super) type Item = (Instant, Out);
 
 #[derive(Default)]
 pub(super) struct Queues {

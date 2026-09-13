@@ -75,7 +75,7 @@ impl Connection {
                         );
                     }
                     _ => {
-                        allow_err!(self.stream.send(&clip_2_msg(clip)).await);
+                        allow_err!(self.stream.send(Arc::new(clip_2_msg(clip))).await);
                     }
                 }
             }

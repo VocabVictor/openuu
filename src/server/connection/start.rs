@@ -106,7 +106,7 @@ impl Connection {
                 _ = conn.file_timer.tick() => {
                     if !conn.read_jobs.is_empty() {
                         conn.send_to_cm(ipc::Data::FileTransferLog(("transfer".to_string(), fs::serialize_transfer_jobs(&conn.read_jobs))));
-                        match fs::handle_read_jobs(&mut conn.read_jobs, &mut conn.stream).await {
+                        match conn.handle_file_read_jobs().await {
                             Ok(log) => {
                                 if !log.is_empty() {
                                     conn.send_to_cm(ipc::Data::FileTransferLog(("transfer".to_string(), log)));
@@ -136,11 +136,16 @@ impl Connection {
                     }
                     let bits = 8 * value.compute_size();
                     let send_begin = Instant::now();
-                    if let Err(err) = conn.stream.send(&value as &Message).await {
+                    let whole = conn.stream.writer().is_none();
+                    if let Err(err) = conn.stream.send_video(instant, value).await {
                         conn.on_close(&err.to_string(), false).await;
                         break;
                     }
-                    conn.note_video_sent(bits, send_begin.elapsed().as_millis() as u32);
+                    // Only the un-split form wrote just now; the writer task does its own
+                    // accounting and reports it once a second.
+                    if whole {
+                        conn.note_video_sent(bits, send_begin.elapsed().as_millis() as u32);
+                    }
                 },
                 Some((instant, value)) = ch.rx.recv() => {
                     if !conn.send_queued(instant, value).await {

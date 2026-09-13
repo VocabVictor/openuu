@@ -142,6 +142,7 @@ mod start;
 mod cm_data;
 mod cm_permission;
 mod start_arms;
+mod wire;
 mod writer;
 mod start_build;
 mod loops;

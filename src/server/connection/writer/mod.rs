@@ -41,7 +41,7 @@ use std::{
 };
 
 mod queue;
-use queue::Queues;
+use queue::{Out, Queues};
 
 #[cfg(test)]
 mod tests;
@@ -77,6 +77,9 @@ struct Shared {
     queues: Mutex<Queues>,
     totals: Mutex<Totals>,
     wake: Notify,
+    /// Set by the loop when the session type becomes known; applied by the task before its
+    /// next write, because only the task owns the socket.
+    send_timeout: std::sync::atomic::AtomicU64,
 }
 
 /// The connection loop's end of the writer. Every method returns immediately; nothing here
@@ -93,9 +96,11 @@ impl Writer {
             queues: Default::default(),
             totals: Default::default(),
             wake: Notify::new(),
+            send_timeout: std::sync::atomic::AtomicU64::new(u64::MAX),
         });
         let task = shared.clone();
         tokio::spawn(async move {
+            let mut applied = u64::MAX;
             loop {
                 let next = {
                     let mut q = task.queues.lock().unwrap();
@@ -105,14 +110,28 @@ impl Writer {
                         None => None,
                     }
                 };
-                let Some((_instant, msg)) = next else {
+                let Some((_instant, item)) = next else {
                     task.wake.notified().await;
                     continue;
                 };
-                let is_video = matches!(msg.union, Some(message::Union::VideoFrame(_)));
-                let bits = if is_video { 8 * msg.compute_size() } else { 0 };
+                let wanted = task.send_timeout.load(std::sync::atomic::Ordering::Relaxed);
+                if wanted != u64::MAX && wanted != applied {
+                    out.set_send_timeout(wanted);
+                    applied = wanted;
+                }
+                let (is_video, bits) = match &item {
+                    Out::Msg(msg) => match msg.union {
+                        Some(message::Union::VideoFrame(_)) => (true, 8 * msg.compute_size()),
+                        _ => (false, 0),
+                    },
+                    Out::Raw(_) => (false, 0),
+                };
                 let began = Instant::now();
-                if out.send(&msg as &Message).await.is_err() {
+                let wrote = match &item {
+                    Out::Msg(msg) => out.send(&**msg as &Message).await,
+                    Out::Raw(bytes) => out.send_raw(bytes.clone()).await,
+                };
+                if wrote.is_err() {
                     task.queues.lock().unwrap().close();
                     break;
                 }
@@ -131,18 +150,39 @@ impl Writer {
 
     /// Queues anything that is not video. Never dropped.
     pub(super) fn send(&self, msg: Arc<Message>) {
+        self.push_control(Out::Msg(msg));
+    }
+
+    /// Queues bytes that are already encoded, from another process.
+    pub(super) fn send_raw(&self, bytes: Vec<u8>) {
+        self.push_control(Out::Raw(bytes));
+    }
+
+    fn push_control(&self, out: Out) {
         self.shared
             .queues
             .lock()
             .unwrap()
-            .push_control((Instant::now(), msg));
+            .push_control((Instant::now(), out));
         self.shared.wake.notify_one();
+    }
+
+    /// The socket's send timeout. Stored rather than applied, because the task owns the
+    /// socket; it takes effect before the next write.
+    pub(super) fn set_send_timeout(&self, ms: u64) {
+        self.shared
+            .send_timeout
+            .store(ms, std::sync::atomic::Ordering::Relaxed);
     }
 
     /// Queues a video message, or a `SwitchDisplay` that must stay ordered with the video.
     /// The oldest goes when the queue is full.
     pub(super) fn send_video(&self, at: Instant, msg: Arc<Message>) {
-        self.shared.queues.lock().unwrap().push_video((at, msg));
+        self.shared
+            .queues
+            .lock()
+            .unwrap()
+            .push_video((at, Out::Msg(msg)));
         self.shared.wake.notify_one();
     }
 

@@ -3,7 +3,7 @@ use super::*;
 pub struct Connection {
     pub(super) inner: ConnInner,
     pub(super) display_idx: usize,
-    pub(super) stream: super::super::Stream,
+    pub(super) stream: wire::Wire,
     pub(super) server: super::super::ServerPtrWeak,
     pub(super) hash: Hash,
     pub(super) read_jobs: Vec<fs::TransferJob>,

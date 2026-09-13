@@ -58,7 +58,7 @@ impl Connection {
             // Defer display enumeration until login succeeds. Monitor login replaces this
             // with the primary index returned with the refreshed display snapshot.
             display_idx: 0,
-            stream,
+            stream: wire::Wire::Whole(stream),
             server,
             hash,
             read_jobs: Vec::new(),

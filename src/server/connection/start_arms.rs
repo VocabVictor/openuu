@@ -47,7 +47,7 @@ impl Connection {
             Some(message::Union::MultiClipboards(_multi_clipboards)) => {
                 #[cfg(not(target_os = "ios"))]
                 if let Some(msg_out) = crate::clipboard::get_msg_if_not_support_multi_clip(&self.lr.version, &self.lr.my_platform, _multi_clipboards) {
-                    if let Err(err) = self.stream.send(&msg_out).await {
+                    if let Err(err) = self.stream.send(Arc::new(msg_out)).await {
                         self.on_close(&err.to_string(), false).await;
                         return false;
                     }
@@ -57,7 +57,6 @@ impl Connection {
             _ => {}
         }
 
-        let msg: &Message = &msg;
         if let Err(err) = self.stream.send(msg).await {
             self.on_close(&err.to_string(), false).await;
             return false;
