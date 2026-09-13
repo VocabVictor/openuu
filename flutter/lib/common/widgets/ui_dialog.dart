@@ -96,12 +96,17 @@ class UiDialog extends StatelessWidget {
           body,
           if (actions.isNotEmpty) ...[
             const SizedBox(height: UiSpace.s6),
-            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              for (var i = 0; i < actions.length; i++) ...[
-                if (i > 0) const SizedBox(width: UiSpace.s2),
-                uiDialogButton(actions[i]),
-              ],
-            ]),
+            // OverflowBar, not Row: this is what AlertDialog gives its own
+            // actions, and it stacks them vertically when the row does not
+            // fit. A three-button dialog (the relay hint) on a narrow window
+            // would otherwise overflow instead of wrapping.
+            OverflowBar(
+              alignment: MainAxisAlignment.end,
+              overflowAlignment: OverflowBarAlignment.end,
+              spacing: UiSpace.s2,
+              overflowSpacing: UiSpace.s2,
+              children: [for (final action in actions) uiDialogButton(action)],
+            ),
           ],
         ],
       ),
