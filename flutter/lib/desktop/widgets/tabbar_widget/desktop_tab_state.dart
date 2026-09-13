@@ -130,12 +130,14 @@ class _DesktopTabState extends State<DesktopTab>
 
   @override
   void onWindowMoved() {
+    if (kWindowType == WindowType.RemoteDesktop) noteSessionWindowFrameEvent();
     _saveFrame();
     super.onWindowMoved();
   }
 
   @override
   void onWindowResized() {
+    if (kWindowType == WindowType.RemoteDesktop) noteSessionWindowFrameEvent();
     _saveFrame();
     super.onWindowResized();
   }

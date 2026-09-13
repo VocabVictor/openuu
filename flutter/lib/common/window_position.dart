@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hbb/common/window_fit.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:flutter_hbb/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
@@ -190,9 +191,12 @@ Future<void> _saveWindowPositionActual(WindowKey key) async {
     await bind.setLocalFlutterOption(
         k: windowFramePrefix + key.type.name, v: pos.toString());
 
+    final userSized =
+        key.type != WindowType.RemoteDesktop || sessionWindowUserSized;
     if ((key.type == WindowType.RemoteDesktop ||
             key.type == WindowType.ViewCamera) &&
-        key.windowId != null) {
+        key.windowId != null &&
+        userSized) {
       await _saveSessionWindowPosition(key.type, key.windowId!,
           pos.isMaximized ?? false, pos.isFullscreen ?? false, pos);
     }
