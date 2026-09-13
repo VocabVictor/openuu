@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../../common.dart';
 import '../../../models/platform_model.dart';
 import '../ui_dialog.dart';
+import '../../../desktop/widgets/ui_tokens.dart';
 import '../ui_fields.dart';
 import 'validation.dart';
 
@@ -263,7 +264,8 @@ void showWaitAcceptDialog(SessionID sessionId, String type, String title,
     return UiDialog(
       title: translate(title),
       onClose: onCancel,
-      body: uiDialogText(translate(text)),
+      body: uiDialogText(
+          UiColor.of(context), UiType.of(context), translate(text)),
       actions: [
         UiDialogAction.secondary('Cancel', onCancel),
       ],

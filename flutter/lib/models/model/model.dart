@@ -25,6 +25,7 @@ import 'package:flutter_hbb/models/server_model.dart';
 import 'package:flutter_hbb/models/user_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:flutter_hbb/common/widgets/ui_dialog.dart';
+import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
 import 'package:flutter_hbb/desktop/widgets/session_status_bar.dart';
 import 'package:flutter_hbb/common/widgets/ui_fields.dart';
 import 'package:window_size/window_size.dart' as window_size;

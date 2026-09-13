@@ -66,7 +66,8 @@ extension FfiModelReconnect on FfiModel {
       return UiDialog(
         title: translate(title),
         onClose: onClose,
-        body: uiDialogText(text2),
+        body: uiDialogText(
+            UiColor.of(context), UiType.of(context), text2),
         actions: [
           UiDialogAction.secondary('Close', onClose),
           if (type == 'relay-hint2')

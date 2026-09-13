@@ -204,7 +204,10 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                             title: translate("Create Folder"),
                             onClose: cancel,
                             body: uiDialogField(
-                                translate("Please enter the folder name"), name,
+                                UiColor.of(context),
+                                UiType.of(context),
+                                translate("Please enter the folder name"),
+                                name,
                                 error: errorText,
                                 autoFocus: true,
                                 onSubmitted: submit),

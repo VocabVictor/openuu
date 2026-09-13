@@ -173,6 +173,7 @@ void enter2FaDialog(
     );
 
     final trustField = Obx(() => uiDialogToggle(
+        UiType.of(context),
         translate("Trust this device"),
         trustThisDevice.value,
         (value) => trustThisDevice.value = value));

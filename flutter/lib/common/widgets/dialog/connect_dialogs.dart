@@ -14,6 +14,10 @@ void wrongPasswordDialog(SessionID sessionId,
     OverlayDialogManager dialogManager, type, title, text) {
   dialogManager.dismissAll();
   dialogManager.show((setState, close, context) {
+    // `type` is already a parameter of this function, so the typeset needs
+    // another name here.
+    final pal = UiColor.of(context);
+    final typeset = UiType.of(context);
     cancel() {
       close();
       closeConnection();
@@ -26,7 +30,7 @@ void wrongPasswordDialog(SessionID sessionId,
     return UiDialog(
       title: translate(title),
       onClose: cancel,
-      body: uiDialogText(translate(text)),
+      body: uiDialogText(pal, typeset, translate(text)),
       actions: [
         UiDialogAction.secondary('Cancel', cancel),
         UiDialogAction.primary('Retry', submit),
@@ -92,6 +96,8 @@ _connectDialog(
 
   dialogManager.dismissAll();
   dialogManager.show((setState, close, context) {
+    final pal = UiColor.of(context);
+    final type = UiType.of(context);
     cancel() {
       close();
       closeConnection();
@@ -129,13 +135,13 @@ _connectDialog(
       }
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if (osAccountDescTip != null) ...[
-          uiDialogText(translate(osAccountDescTip)),
+          uiDialogText(pal, type, translate(osAccountDescTip)),
           const SizedBox(height: UiSpace.s3),
         ],
-        uiDialogField(
+        uiDialogField(pal, type,
             translate(DialogTextField.kUsernameTitle), osUsernameController,
             error: errUsername.value, autoFocus: true, onSubmitted: submit),
-        uiDialogField(translate('Password'), osPasswordController,
+        uiDialogField(pal, type, translate('Password'), osPasswordController,
             obscure: !showPassword,
             onToggleObscure: toggleShow,
             onSubmitted: submit),
@@ -147,14 +153,14 @@ _connectDialog(
         return Offstage();
       }
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        uiDialogText(translate('verify_rustdesk_password_tip')),
+        uiDialogText(pal, type, translate('verify_rustdesk_password_tip')),
         const SizedBox(height: UiSpace.s3),
-        uiDialogField(translate('Password'), passwordController,
+        uiDialogField(pal, type, translate('Password'), passwordController,
             autoFocus: osUsernameController == null,
             obscure: !showPassword,
             onToggleObscure: toggleShow,
             onSubmitted: submit),
-        uiDialogToggle(translate('Remember password'), rememberPassword,
+        uiDialogToggle(type, translate('Remember password'), rememberPassword,
             (v) => setState(() => rememberPassword = v)),
       ]);
     }

@@ -50,6 +50,8 @@ CustomAlertDialog _desktopLoginDialog({
   required Widget thirdAuth,
 }) {
   final zh = Localizations.localeOf(context).languageCode == 'zh';
+  final pal = UiColor.of(context);
+  final typeset = UiType.of(context);
 
   final busy = isInProgress || curOP.value.isNotEmpty;
   return UiDialog(
@@ -71,24 +73,24 @@ CustomAlertDialog _desktopLoginDialog({
                           style: UiType.caption
                               .copyWith(color: UiColor.textSecondary))),
                 ]))),
-        uiDialogField(
+        uiDialogField(pal, typeset,
             translate(DialogTextField.kUsernameTitle), username,
             error: usernameMsg,
             focusNode: userFocusNode,
             enabled: !isInProgress,
             onSubmitted: onLogin),
-        uiDialogField(translate('Password'), password,
+        uiDialogField(pal, typeset, translate('Password'), password,
             error: passwordMsg,
             enabled: !isInProgress,
             obscure: !prefs.showPassword,
             onToggleObscure: () =>
                 setState(() => prefs.showPassword = !prefs.showPassword),
             onSubmitted: onLogin),
-        uiDialogToggle(zh ? '记住账号' : 'Remember account',
+        uiDialogToggle(typeset, zh ? '记住账号' : 'Remember account',
             prefs.rememberAccount,
             isInProgress ? null : (v) => setState(() => prefs.rememberAccount = v)),
         const SizedBox(height: UiSpace.s2),
-        uiDialogToggle(zh ? '记住密码' : 'Remember password',
+        uiDialogToggle(typeset, zh ? '记住密码' : 'Remember password',
             prefs.rememberPassword,
             isInProgress ? null : (v) => setState(() => prefs.rememberPassword = v)),
         if (isInProgress)
