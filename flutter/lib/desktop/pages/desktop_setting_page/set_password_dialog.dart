@@ -1,4 +1,4 @@
-part of 'desktop_home_page.dart';
+part of 'desktop_setting_page.dart';
 
 void setPasswordDialog({VoidCallback? notEmptyCallback}) async {
   final p0 = TextEditingController(text: "");

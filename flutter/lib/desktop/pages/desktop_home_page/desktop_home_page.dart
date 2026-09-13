@@ -29,7 +29,6 @@ import '../../widgets/button.dart';
 part 'help_cards.dart';
 part 'password_board.dart';
 part 'left_pane.dart';
-part 'set_password_dialog.dart';
 part 'home_page_state.dart';
 
 class DesktopHomePage extends StatefulWidget {
