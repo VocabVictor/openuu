@@ -125,6 +125,10 @@ mod toggle_msg;
 mod fps_control;
 mod peer_capabilities;
 mod peer_msg;
+#[cfg(test)]
+mod test_support;
+#[cfg(test)]
+mod peer_tests;
 mod back_msg;
 mod video_thread;
 
