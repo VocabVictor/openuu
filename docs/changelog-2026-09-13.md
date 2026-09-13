@@ -168,6 +168,29 @@ resolves; the hashes here are the current ones.
   `Expanded` child and the icons sit on the card's right edge. `084b443ac`,
   a widget test measures the icon centres across three name lengths.
 
+* **Defects that exist only under one build or platform, where review and
+  static analysis cannot see them.** Three of them today, all of the same
+  shape: code that was never compiled for its platform, tests that were never
+  executed, and a branch only reached in a release build. Each surfaced only
+  by actually running the target form once.
+
+  The third was the desktop preview never being saved. Its capture guard read
+  `RenderRepaintBoundary.debugNeedsPaint`, which assigns its `late bool` inside
+  an `assert`; asserts do not run in a release build, so reading it threw
+  `LateInitializationError` every time. The surrounding `catch` swallowed that
+  and set the 30-second backoff, which disguised a permanent failure as a wait
+  between attempts. No preview was ever written outside a debug build, which is
+  why a machine with remote-desktop sessions in its peer config still showed
+  "no saved preview" and the previews directory existed but stayed empty.
+  `d0349dcd9`.
+
+  Worth recording alongside it: earlier the same day the question "is the
+  preview feature actually implemented, or is that caption an empty promise?"
+  was answered by tracing the code, and the answer — implemented, so keep the
+  caption — was right about the source and wrong about the product. **Code
+  being implemented is not the same as a user being able to use it.** The
+  caption was hollow in every release build until this fix; it is accurate now.
+
 * Two verifications turned out never to have run at all. The Android arms of
   the Rust core had not been compiled since they were written: the first CI run
   of the revived `android-build.yml` found a vector whose element type only
