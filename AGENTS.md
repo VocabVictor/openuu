@@ -438,6 +438,25 @@ service status, configuration file content and service log checks. When a
 screen has to be judged by eye, produce one screenshot for the user and stop;
 do not automate the interaction.
 
+Clicking is not the thing that is banned; **synthesized clicks used as
+evidence** are. Bringing a screen into view so it can be photographed is
+framing, not proof: the test is whether the click itself enters the
+conclusion. Say in the report which click was made, which is what keeps it
+out of the conclusion.
+
+### Say which step you actually reached
+
+**"It compiles" has to name the step.** `flutter analyze` is not a build,
+`cargo check` is not a build, and a test that only compiled is not a test that
+ran. Report the name of the furthest step you actually executed, and keep two
+cases apart: a step that **failed just now** is a regression, while a step that
+**has never succeeded here** means that path was never open. The two print the
+same error and need opposite repairs. On 2026-09-13 a day of styling changes
+was reported as verified when only `flutter analyze` had ever run: the local
+`flutter build windows` had failed for want of Developer Mode every time it was
+tried, and a green analyzer with an exact issue count made it look as though
+something had been proved.
+
 ### A dependency change lands with its lock file
 
 `check.ps1` and `check-server.ps1` pass `--locked`, so cargo refuses to update
