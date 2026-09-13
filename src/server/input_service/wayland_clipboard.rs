@@ -11,7 +11,7 @@ pub(super) const WAYLAND_CLIPBOARD_INPUT_FILTER_WINDOW: std::time::Duration = Du
 #[cfg(target_os = "linux")]
 pub(super) const WAYLAND_CLIPBOARD_INPUT_MAX_RECORDS: usize = 256;
 #[cfg(target_os = "linux")]
-pub(super) const WAYLAND_CLIPBOARD_INPUT_MAX_TEXT_CHARS: usize = 1024;
+pub(in crate::server) const WAYLAND_CLIPBOARD_INPUT_MAX_TEXT_CHARS: usize = 1024;
 
 #[cfg(target_os = "linux")]
 pub(super) fn cleanup_wayland_clipboard_input_records(records: &mut Vec<(Instant, String)>, now: Instant) {
@@ -74,7 +74,7 @@ pub(super) fn rollback_wayland_clipboard_input_record(record: (Instant, String))
 }
 
 #[cfg(target_os = "linux")]
-pub(super) fn is_recent_wayland_clipboard_input(text: &str) -> bool {
+pub(in crate::server) fn is_recent_wayland_clipboard_input(text: &str) -> bool {
     if text.is_empty() || crate::platform::linux::is_x11() {
         return false;
     }
@@ -114,7 +114,7 @@ pub(super) fn set_clipboard_content(text: &str) -> bool {
 /// This trade-off prioritizes input reliability over preserving clipboard state.
 #[cfg(target_os = "linux")]
 #[inline]
-pub(super) fn set_clipboard_for_paste_sync(text: &str) -> bool {
+pub(in crate::server) fn set_clipboard_for_paste_sync(text: &str) -> bool {
     let record = record_wayland_clipboard_input_for_sync_filter(text);
     if !set_clipboard_content(text) {
         if let Some(record) = record {
@@ -129,7 +129,7 @@ pub(super) fn set_clipboard_for_paste_sync(text: &str) -> bool {
 /// Check if a character is ASCII printable (0x20-0x7E).
 #[cfg(target_os = "linux")]
 #[inline]
-pub(super) fn is_ascii_printable(c: char) -> bool {
+pub(in crate::server) fn is_ascii_printable(c: char) -> bool {
     c as u32 >= 0x20 && c as u32 <= 0x7E
 }
 

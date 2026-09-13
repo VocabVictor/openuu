@@ -69,7 +69,7 @@ use key_modifiers::*;
 #[cfg(target_os = "linux")]
 mod wayland_clipboard;
 #[cfg(target_os = "linux")]
-use wayland_clipboard::*;
+pub(super) use wayland_clipboard::*;
 mod keyboard_modes;
 use keyboard_modes::*;
 #[cfg(target_os = "linux")]
