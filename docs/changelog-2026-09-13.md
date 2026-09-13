@@ -494,6 +494,20 @@ The fixture that was read as display corruption belongs here too: an
 unlabelled test pattern cost another session an interrupt and reached the
 user as a suspected bug. Fixtures now carry a banner saying what they are.
 
+An eighth belongs with them, found after the table was written: I reported a
+commit hash that does not exist. The command that made the commit had its
+output filtered, so I never saw the hash and wrote one from memory — and a
+plausible-looking string of hex recalled from memory is not a typo, it is
+invention. A typo means the right value was seen at some point; this was not.
+The two need different defences, and only one is cheap: **quote a hash by
+copying it from `git log --oneline -1`, never from memory.** One command
+against one round trip of other people's time.
+
+It joins the family the three rows above belong to: reporting what I believed
+rather than what was there. Twice that reached a document and a rule, once a
+hash. The shape is always the same — nothing checks memory against fact — and
+so is the remedy: read the fact again at the moment of reporting.
+
 ## Two commits carry changes that are not theirs
 
 Left in the record deliberately, because history was not rewritten and someone
