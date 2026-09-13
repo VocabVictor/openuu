@@ -217,7 +217,10 @@ class UiSession {
   static const double toolbarShadowBlur = 16;
 
   // inline status bar at the top of the canvas
-  static const double statusBarHeight = 28;
+  // 32, not 28: the inline reconnect / disconnect buttons need a 24 hit box
+  // to stay comfortably clickable, and 28 cannot hold one with padding.
+  static const double statusBarHeight = 32;
+  static const double statusBarButtonHeight = 24;
   static const double statusBarPaddingX = UiSpace.s3;
   static const double statusBarHotZone = 8;
   static const Duration statusBarAutoHide = Duration(seconds: 3);

@@ -191,11 +191,13 @@ class SessionStatusBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(UiSpace.tagRadius)),
       child: Text(text, style: UiType.tag));
 
-  /// A 20-high inline button: secondary, or danger for disconnect.
+  /// A 24-high inline button: secondary, or danger for disconnect. Both are
+  /// the same size with a real border, so the safe choice is never harder to
+  /// hit than the one that gives up the session.
   Widget _button(String label, VoidCallback? onPressed,
           {bool danger = false}) =>
       SizedBox(
-          height: UiSpace.tagHeight,
+          height: UiSession.statusBarButtonHeight,
           child: OutlinedButton(
               style: OutlinedButton.styleFrom(
                   foregroundColor: danger ? UiColor.danger : UiColor.text,
