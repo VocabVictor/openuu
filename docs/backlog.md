@@ -300,3 +300,27 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   carries a comment saying so, and it is the only literal left in that file --
   the status pill's near-black was retired when `695ced93d` added
   `inverseSurface`.
+* **Nine files look migrated and are not: they are on the light tokens, never
+  on the palette.** The dark acceptance grep found 60-odd literals in
+  `flutter/lib/desktop/pages/server_page/` (`cm_control_panel_authorized.dart`,
+  `cm_control_panel.dart`, `privilege_board.dart`, `cm_header.dart`,
+  `file_transfer_log.dart`, `connection_manager.dart`),
+  `flutter/lib/desktop/widgets/tabbar_widget/tabbar_theme.dart` and
+  `flutter/lib/common/widgets/overlay/chat_window.dart`.
+
+  **Why they look done.** Each was migrated in the *token* round, whose commits
+  read `... on the design tokens`, and they do reference `UiColor` and `UiType`
+  throughout. But the token round predates the palette: it replaced scattered
+  literals with `UiColor.<name>` **constants**, which are the light values by
+  design. The palette round replaced those constants with
+  `UiColor.of(context).<name>`, and it never reached these files. So a reader
+  grepping for `UiColor` finds hits everywhere and concludes the file is done;
+  the grep that separates the two rounds is `UiColor\.[a-z]` *without*
+  `UiColor\.of(`. **A file on the tokens is not a file on the palette, and the
+  commit subject does not distinguish them.**
+
+  **What is missing: one pass, and nothing else.** No environment, no device,
+  no CI capacity; the mechanical part is the same as the toolbar's. The one
+  judgement call is the connection manager, whose controls are a consent
+  surface (AGENTS.md), so its two buttons must stay distinguishable from each
+  other after the swap, not merely legible.
