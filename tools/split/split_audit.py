@@ -76,9 +76,9 @@ IDENT = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
 
 def skeleton(s):
     """The line with every name blanked, so only its shape is left."""
-    sk = IDENT.sub(lambda m: m.group(0) if m.group(0) in KEYWORDS else '_', s)
-    # A move often drops the qualifier a name needed in its old home, turning
-    # `Owner._field` into `_field`. That is the same line, so the shape ignores the chain.
+    sk = IDENT.sub(lambda m: m.group(0) if m.group(0) in KEYWORDS else '_', s)
+    # A move often drops the qualifier a name needed in its old home, turning
+    # `Owner._field` into `_field`. That is the same line, so the shape ignores the chain.
     return re.sub(r'(_\.)+_', '_', sk)
 
 def classify(missing, after):
