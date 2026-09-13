@@ -34,9 +34,25 @@ impl Capturer {
 
         #[allow(invalid_value)]
         let mut rect = mem::MaybeUninit::uninit().assume_init();
-        if self.fastlane {
-            wrap_hresult((*self.duplication.0).MapDesktopSurface(&mut rect))?;
+        let mapped = if self.fastlane {
+            // Refused when the desktop image is not in system memory. The flag that put us
+            // on this path is what the duplication reported when it was created, and a
+            // driver is free to keep the image elsewhere afterwards; the copy below works
+            // either way. Giving up on the map as a capture error instead costs the
+            // session its duplication: the caller falls back to GDI, which compares and
+            // copies the whole frame on every capture from then on.
+            wrap_hresult((*self.duplication.0).MapDesktopSurface(&mut rect))
+                .inspect_err(|err| {
+                    hbb_common::log::info!(
+                        "dxgi: the desktop surface cannot be mapped ({err}), copying it instead"
+                    );
+                    self.fastlane = false;
+                })
+                .is_ok()
         } else {
+            false
+        };
+        if !mapped {
             self.surface = ComPtr(self.ohgodwhat(frame.0)?);
             wrap_hresult((*self.surface.0).Map(&mut rect, DXGI_MAP_READ))?;
         }
