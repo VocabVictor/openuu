@@ -99,6 +99,8 @@ pub mod sessions;
 mod cursor;
 mod cursor_dc;
 mod service;
+#[cfg(test)]
+mod service_tests;
 mod process_launch;
 mod sas_desktop;
 mod session;

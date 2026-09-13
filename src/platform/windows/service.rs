@@ -18,6 +18,22 @@ pub fn start_os_service() {
 
 pub(super) const SERVICE_TYPE: ServiceType = ServiceType::OWN_PROCESS;
 
+/// How long the service loop waits for an IPC connection before looking at the sessions
+/// again. Windows tells the service when a session changes, so this is a backstop rather
+/// than how a change is noticed: a session that appears without an event waits this long.
+const SESSION_POLL: u64 = 1_000;
+
+/// End the service loop's wait so it looks at the sessions now. Connecting is enough: the
+/// loop is waiting for an IPC connection and any connection ends that wait, so this needs
+/// no message of its own and nothing on the loop's side.
+///
+/// Called from the service control handler, which the SCM runs on its own thread, so this
+/// builds a runtime the way the stop path next to it does.
+#[tokio::main(flavor = "current_thread")]
+pub(super) async fn wake_ipc_loop(postfix: &str) {
+    ipc::connect(300, postfix).await.ok();
+}
+
 pub fn get_current_session_id(share_rdp: bool) -> DWORD {
     unsafe { get_current_session(if share_rdp { TRUE } else { FALSE }) }
 }
@@ -82,6 +98,14 @@ pub(super) async fn run_service(_arguments: Vec<OsString>) -> ResultType<()> {
                 send_close(crate::POSTFIX_SERVICE).ok();
                 ServiceControlHandlerResult::NoError
             }
+            // A user logged on or off, or a session was connected, disconnected, locked or
+            // unlocked: whatever the service loop is running for may now be in the wrong
+            // session, and this is how it hears about it rather than by looking three times
+            // a second for the rest of the machine's uptime.
+            ServiceControl::SessionChange(_) => {
+                wake_ipc_loop(crate::POSTFIX_SERVICE);
+                ServiceControlHandlerResult::NoError
+            }
             _ => ServiceControlHandlerResult::NotImplemented,
         }
     };
@@ -95,7 +119,7 @@ pub(super) async fn run_service(_arguments: Vec<OsString>) -> ResultType<()> {
         // The new state
         current_state: ServiceState::Running,
         // Accept stop events when running
-        controls_accepted: ServiceControlAccept::STOP,
+        controls_accepted: ServiceControlAccept::STOP | ServiceControlAccept::SESSION_CHANGE,
         // Used to report an error when starting or stopping only, otherwise must be zero
         exit_code: ServiceExitCode::Win32(0),
         // Only used for pending states, otherwise must be zero
@@ -140,7 +164,7 @@ pub(super) async fn run_service(_arguments: Vec<OsString>) -> ResultType<()> {
                 }
             }
         }
-        let res = timeout(crate::platform::SERVICE_INTERVAL, incoming.next()).await;
+        let res = timeout(SESSION_POLL, incoming.next()).await;
         match res {
             Ok(res) => match res {
                 Some(Ok(stream)) => {
