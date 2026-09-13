@@ -32,10 +32,39 @@ workspace member. `base::config::keys` re-exports the handful of keys
   - Mobile: `flutter/lib/mobile/`
   - Shared: `flutter/lib/common/` and `flutter/lib/models/`
 
+### Consent surfaces (mandatory)
+
+A screen that asks the user to grant control, authorise access or confirm a
+destructive action is a decision surface, not decoration.
+
+* The affirmative and the negative option are **equally reachable and
+  visually distinct**. Neither is reduced to a bare text link, the
+  affirmative is not enlarged relative to the negative, and both keep a full
+  hit area.
+* The affirmative must never become the quiet default the user clicks past:
+  no pre-focus that turns Enter into consent, no styling that reads as "just
+  continue".
+* The line the user judges (who is asking, for what, on which device) is part
+  of the surface; changing its wording needs the same care as changing the
+  buttons.
+* When a visual proposal conflicts with any of the above, the visual gives
+  way. Say so explicitly in review rather than accepting the visual and
+  noting the concern.
+
+This covers at least the connection manager on the controlled side
+(`flutter/lib/desktop/pages/server_page/`), the elevation and permission
+prompts, and any future confirmation of an irreversible action.
+
 ## File Size Rule (mandatory)
 
 OpenUU is an independent product; upstream RustDesk is never merged back, so
 upstream file layout carries no weight.
+
+Comparing against upstream needs care: the history was rewritten twice on
+2026-09-13, so our commits no longer share hashes with upstream and
+`git merge-base` reports an old merge that is not the real fork point. Match
+upstream commits by subject and then confirm each one against the code, as
+`docs/upstream-sync-2026-09.md` does.
 
 * No source file (`.rs`, `.dart`, `.cc`, `.cpp`, `.py`) may exceed **300 lines**
   (blank lines and comments included). `src/lang/*.rs` translation tables,
