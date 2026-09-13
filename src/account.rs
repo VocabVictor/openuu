@@ -142,8 +142,8 @@ ok")
 
     #[test]
     fn unreachable_error_names_host_and_port() {
-        let err = unreachable_error("http://rs.example.com:21114", "connection refused");
-        assert!(err.to_string().contains("rs.example.com:21114"), "{err}");
+        let err = unreachable_error("http://203.0.113.10:21114", "connection refused");
+        assert!(err.to_string().contains("203.0.113.10:21114"), "{err}");
         assert!(!err.to_string().contains("refused"), "the raw error only goes to the log");
         let err = unreachable_error("https://rs.example", "timeout");
         assert!(err.to_string().contains("rs.example:443"), "{err}");

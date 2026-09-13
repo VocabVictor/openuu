@@ -2,7 +2,7 @@
 
 调研日期：2026-09-13。基于 `master`（`bfdc512c0`）只读分析，未改代码、未构建。
 
-痛点：远程控制 Administrator 时，别人用 RDP 登录 `alice`，远程画面跟着跳到 `alice` 的桌面。
+痛点：远程控制 Administrator 时，别人用 RDP 登录 `<other-user>`，远程画面跟着跳到 `<other-user>` 的桌面。
 目标：OpenUU 固定控制某一个会话（Administrator），RDP 登录其他账户互不影响，最好主控端可以选会话。
 
 ## 1. 现状机制
@@ -65,9 +65,9 @@
 服务模式、`share_rdp = true`、主控端从未显式选过会话（`stored_usid == None`）时：
 
 1. Administrator 若是通过 RDP 登录的（云主机常态），或控制台会话不处于 `WTSActive`，`get_current_session(true)` 返回的是"最后一个 Active 的 RDP 会话"。
-2. `alice` 通过 RDP 登录后，多了一个更靠后的 Active RDP 会话，`get_current_session(true)` 的结果变成 `alice` 的 sid。
-3. 300 ms 后超时分支发现 `tmp != session_id`，杀掉 Administrator 会话里的 `--server`，在 `alice` 会话重新拉起 → 画面跳走。
-4. 主控端断线重连后此时 Active 会话数 > 1，才会第一次弹出选会话框；选了 Administrator 后 `stored_usid` 被设置，之后不再自动跳。但每次服务重启、或 `alice` 登录发生在只有一个会话时，都会先跳一次。
+2. `<other-user>` 通过 RDP 登录后，多了一个更靠后的 Active RDP 会话，`get_current_session(true)` 的结果变成 `<other-user>` 的 sid。
+3. 300 ms 后超时分支发现 `tmp != session_id`，杀掉 Administrator 会话里的 `--server`，在 `<other-user>` 会话重新拉起 → 画面跳走。
+4. 主控端断线重连后此时 Active 会话数 > 1，才会第一次弹出选会话框；选了 Administrator 后 `stored_usid` 被设置，之后不再自动跳。但每次服务重启、或 `<other-user>` 登录发生在只有一个会话时，都会先跳一次。
 
 若 Administrator 在物理控制台且控制台 Active，`get_current_session(true)` 会优先返回控制台，不会被 RDP 抢走；此时抢占只会在 `share_rdp=false` 之外的其他原因（如控制台被锁到 Disconnected）发生。
 
@@ -98,7 +98,7 @@
 | 设置 UI | `flutter/lib/desktop/pages/desktop_setting_page.dart:1447` 附近 | 在"共享 RDP"旁加一个"固定到会话"下拉（列表来自新 FFI `main_get_windows_sessions`，`src/flutter_ffi.rs` 包一层 `get_available_sessions(true)`）。 |
 | 远程工具栏 | `flutter/lib/desktop/widgets/remote_toolbar.dart` | 可选：加"切换会话"菜单，复用 `showWindowsSessionsDialog`；需要被控端在 `PeerInfo` 之外能回传会话列表（新增一个 `Misc` 请求，`libs/base/protos/message.proto`）。第一版可跳过，靠重连弹框。 |
 
-行为：服务启动即在固定会话里起 `--server`；`alice` RDP 登录只是多一个 Active 会话，不触发切换；主控端连上就是 Administrator。想控 `alice` 时通过弹框/菜单选，选后固定值更新。
+行为：服务启动即在固定会话里起 `--server`；`<other-user>` RDP 登录只是多一个 Active 会话，不触发切换；主控端连上就是 Administrator。想控 `<other-user>` 时通过弹框/菜单选，选后固定值更新。
 
 风险：
 
@@ -130,7 +130,7 @@
 
 便携模式（当前用户级安装、无服务）：
 
-- 进程绑定在启动它的会话，天然不会被 RDP 抢占；`alice` 会话里没有 OpenUU 实例（若 `alice` 也启动一份，会因主管道被占用而退出，`src/server.rs:588-599`）。
+- 进程绑定在启动它的会话，天然不会被 RDP 抢占；`<other-user>` 会话里没有 OpenUU 实例（若 `<other-user>` 也启动一份，会因主管道被占用而退出，`src/server.rs:588-599`）。
 - 代价：无法切换到其他会话、锁屏/UAC/安全桌面不可控、Administrator 的 RDP 会话断开后无画面、用户注销即离线。
 - `is_installed()` 为 false，方案 B 的所有新逻辑不会启用；若要在便携模式也支持"选会话"，需要 SYSTEM 权限跨会话拉进程，等价于服务模式。
 
@@ -157,7 +157,7 @@
 1. 被控机以 MSI/服务模式安装 OpenUU，保持"允许 RDP 会话共享"开启。
 2. 在被控机（或远程连上后）打开 设置 → 安全 → "固定被控会话到 Windows 用户"，选择 `Console: Administrator` 或 `RDP-Tcp#N: Administrator`。
 3. 之后无论谁通过 RDP 登录其他账户，主控端看到的始终是 Administrator 的会话；主控端连接时不再弹出选会话框（若弹出并选择了其他会话，固定值会随之改为该用户）。
-4. 要临时控制 alice：在下拉里选 alice，或在连接弹框中选 alice；改回 Administrator 同理。
+4. 要临时控制 <other-user>：在下拉里选 <other-user>，或在连接弹框中选 <other-user>；改回 Administrator 同理。
 5. 选"跟随当前活动会话（默认）"即恢复上游行为。
 
 限制：固定的用户未登录时退回自动跟随（日志有 warn）；被固定的 RDP 会话若被断开（非注销）会黑屏，属 Windows 行为；主控端一侧不持久化选择（`PeerConfig.options` 方案本阶段未做）。

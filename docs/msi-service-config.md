@@ -24,9 +24,9 @@ MSI 安装（服务模式）后登录框报
 
 ```powershell
 cd "D:\Program Files\OpenUU"
-.\OpenUU.exe --option custom-rendezvous-server rs.example.com:21116
-.\OpenUU.exe --option relay-server rs.example.com:21117
-.\OpenUU.exe --option api-server http://rs.example.com:21114
+.\OpenUU.exe --option custom-rendezvous-server 203.0.113.10:21116
+.\OpenUU.exe --option relay-server 203.0.113.10:21117
+.\OpenUU.exe --option api-server http://203.0.113.10:21114
 .\OpenUU.exe --option key <ID 服务器公钥>
 .\OpenUU.exe --option api-server   # 回读确认
 ```
@@ -43,15 +43,15 @@ GUI 每秒从服务同步一次选项，无需重启即可登录。服务侧文�
 - 已弃用的方案：让 `--server` 首次启动时读活动用户的 `%APPDATA%`（`bbe6fcc73`，已 revert）；
   多用户机器上"活动用户"不确定，且服务进程读用户文件属于新增行为。
 
-## 装机验证（2026-09-13，Hyper-V 虚机 vm）
+## 装机验证（2026-09-13，Hyper-V 虚机 <vm>）
 
 MSI `OpenUU-1.5.0-x86_64.msi`（编译机 build-flutter 8f = master c120a979e，含 a1443182b；sha256 前缀 bb729afe476231f5），
 每轮前停删旧服务并删除 `C:\Windows\ServiceProfiles\LocalService\AppData\Roaming\OpenUU`，用户侧只保留含四项的 `OpenUU2.toml`。
 
 | 轮次 | 用户侧 `OpenUU.toml` | 服务侧 `OpenUU2.toml` 四项 | import-config 日志 | server 日志 |
 | --- | --- | --- | --- | --- |
-| 1 | 空文件（0 字节） | custom-rendezvous-server / relay-server / api-server / key 全部落位 | `Empty source config, skipped`（只跳过它自己） | `start rendezvous mediator of rs.example.com:21116` |
+| 1 | 空文件（0 字节） | custom-rendezvous-server / relay-server / api-server / key 全部落位 | `Empty source config, skipped`（只跳过它自己） | `start rendezvous mediator of 203.0.113.10:21116` |
 | 2 | `--get-id` 生成的 287 字节（只有 id，无 key_pair） | 同上 | 同上：`Config::is_empty` 要求有 key_pair，所以只含 id 的文件仍按空处理，ID 由服务侧重新生成（本机 gen_id 结果相同） | 同上 |
 
-两轮 MSI 日志都能看到 `CreateStartService` 收到 `…--service|C:\Users\user\AppData\Roaming\OpenUU\config\OpenUU.toml` 并执行 `Import user config`。
+两轮 MSI 日志都能看到 `CreateStartService` 收到 `…--service|C:\Users\<user>\AppData\Roaming\OpenUU\config\OpenUU.toml` 并执行 `Import user config`。
 验证脚本：会话 scratchpad 的 `vm-msi-verify.ps1`（backup / 1 / 2 / restore 四步）。

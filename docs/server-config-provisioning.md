@@ -64,7 +64,7 @@ needs no separate vocabulary and the parser validates against those lists.
     "id": "rs.example.com",
     "relay": "rs.example.com",
     "api": "https://rs.example.com:21114",
-    "key": "SERVER_PUBLIC_KEY_PLACEHOLDER="
+    "key": "<server-public-key>"
   },
   "options": {
     "verification-method": "use-permanent-password",
