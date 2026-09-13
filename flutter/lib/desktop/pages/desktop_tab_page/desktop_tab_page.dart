@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/consts.dart';
@@ -48,6 +49,29 @@ class DesktopTabPage extends StatefulWidget {
       {SettingsTabKey initialPage = SettingsTabKey.general}) {
     final page = Get.find<_DesktopTabPageState>();
     page.showSettings(initialPage);
+  }
+
+  /// Development start page, `--page assistance|favorites|settings[:tab]`,
+  /// honoured by portable and debug builds so a screenshot needs no click.
+  static void openDevPage(List<String> args) {
+    if (bind.mainIsInstalled() && !kDebugMode) return;
+    final i = args.indexOf('--page');
+    if (i < 0 || i + 1 >= args.length) return;
+    final parts = args[i + 1].split(':');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      switch (parts.first) {
+        case 'assistance':
+          showHome(assistance: true);
+        case 'favorites':
+          showHome(favorites: true);
+        case 'settings':
+          final tab = parts.length > 1 ? parts[1] : '';
+          onAddSetting(
+              initialPage: SettingsTabKey.values.firstWhere(
+                  (t) => t.name == tab,
+                  orElse: () => SettingsTabKey.general));
+      }
+    });
   }
 }
 

@@ -169,6 +169,7 @@ void runMainApp(bool startService) async {
       windowManager.focus();
       // Move registration of active main window here to prevent from async visible check.
       rustDeskWinManager.registerActiveWindow(kWindowMainId);
+      DesktopTabPage.openDevPage(kBootArgs);
     }
     windowManager.setOpacity(1);
     windowManager.setTitle(isWindows ? 'OpenUU' : getWindowName());
