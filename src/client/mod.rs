@@ -213,4 +213,6 @@ use udp_nat::*;
 mod webrtc_race_tests;
 #[cfg(test)]
 mod view_only_session_tests;
+#[cfg(test)]
+mod start_relay_tests;
 
