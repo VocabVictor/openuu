@@ -249,6 +249,33 @@ service status, configuration file content and service log checks. When a
 screen has to be judged by eye, produce one screenshot for the user and stop;
 do not automate the interaction.
 
+### Changing a shared script on the build machine
+
+`C:\build\check.ps1`, `build-flutter.ps1` and their neighbours are shared by
+every session, so a bad copy blocks everyone until someone notices. Four
+steps, all of them:
+
+* **Transfer a file; never pipe the content through a shell heredoc.** Write
+  the script locally, then `scp` it. A heredoc carrying a Windows path turns
+  `\build` into a backspace character, which is not visible in the output and
+  produces a script that dies on a line that looks correct. This happened
+  twice on 2026-09-13, to `check.ps1` and then to `build-flutter.ps1`. Where
+  a path is built inside the script, derive it (`Join-Path (Split-Path $bare
+  -Parent) ...`) rather than repeating a literal with a backslash in it.
+* **Diff the remote copy before overwriting it.** Someone else may have fixed
+  or extended it since you last fetched; if the remote differs from what you
+  started from, ask before replacing. Overwriting another session's fix
+  without noticing is how the same repair got done twice on 2026-09-13.
+* **Run it once after installing it**, with the flags that matter. An install
+  that is never exercised is an untested change to shared infrastructure.
+* **Say in the group which script you changed**, so the next person to hit an
+  oddity knows where to look.
+
+The same day, the artifact assertion added to `build-flutter.ps1` caught a
+mistake in its own first version: it demanded a fresh Rust core even under
+`-SkipRust`, which deliberately reuses one. An assertion that can fail its
+author's own reasoning is worth the lines it costs.
+
 ## Rust Rules
 
 * Avoid `unwrap()` / `expect()` in production code.
