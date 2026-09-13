@@ -32,4 +32,13 @@ with its own tests.
   bundle was lost. Any such script names the backup with
   `Get-Date -Format yyyyMMdd-HHmmss` and asserts the restore with `Test-Path`
   (and a file-hash or timestamp check) before deleting a backup.
+* **The MSI logs two expected failures as plain failures.** The one-shot
+  configuration import service never reports to the service control manager,
+  so its start request is meant to fail, and the pre-install sweep for a
+  stale temporary service is meant to find nothing; both go through
+  `MyStartServiceW` / `OpenServiceW` and are logged as
+  `Failed to start service ... 0x41D` and `Failed to open service ... 0x424`,
+  which reads like a defect during installer review. Reword them on the
+  import path the next time the WiX custom actions are touched, rather than
+  rebuilding and revalidating the MSI for a log string.
 

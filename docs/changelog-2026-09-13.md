@@ -264,11 +264,15 @@ Measurements and their limits are in `docs/perf-baseline-2026-09-13.md`
   and one carrying the configuration environment variable, which imported
   two settings and locked four. The service, its two firewall rules, the
   four server settings and the registration log were all checked, and the
-  device id is unchanged. `53d706b2c`. One non-fatal warning is open: the
-  first round logged `CreateStartService: Failed to start service:
-  OpenUUConfigImport, error: 0x41D` (a 1053 timeout) before the one-shot
-  import service was removed; configuration and registration were correct
-  and the second round did not reproduce it.
+  device id is unchanged. `53d706b2c`. The first round's
+  `Failed to start service: OpenUUConfigImport, error: 0x41D` is a designed-in
+  expected path, not a fault: `--import-config` exits without reporting to
+  the service control manager, so the start request always fails once the
+  process has finished (`res/msi/CustomActions/ServiceActions.cpp`, which says
+  so in a comment), and `MyStartServiceW` logs every failure with the same
+  wording. The paired `Failed to open service ... 0x424` comes from the
+  pre-install sweep for a stale temporary service, which a first install has
+  no reason to find. The import itself succeeded in both rounds.
 * The server was deployed again for the UDP NAT fix, with the usual backup,
   health check and rollback path.
 * A restyle plan for the session window was written before the work started.
@@ -290,8 +294,6 @@ Measurements and their limits are in `docs/perf-baseline-2026-09-13.md`
   the wait path never approaches the ceiling the change addresses.
 * **A direct session to the VM peer** is impossible: it sits on the Hyper-V
   internal subnet, which the controller cannot route to. Relay only.
-* **The `OpenUUConfigImport` one-shot service start timeout** seen once
-  during MSI validation has not been chased.
 * **Remote-session screenshots** for the restyled window are still open.
 * **Start-up drain, P0-c and tokenising the file-transfer and terminal
   pages** have not been started.
