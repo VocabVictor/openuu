@@ -245,8 +245,8 @@ impl<T: InvokeUiSession> Remote<T> {
                 if let Some(job) = fs::get_job(c.id, &mut self.read_jobs) {
                     job.confirm(&c).await;
                 }
-        }
-        _ => {}
+            }
+            _ => {}
         }
     }
 }
