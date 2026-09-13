@@ -10,11 +10,17 @@ on:
   pull_request:
     paths-ignore:
       - "docs/**"
-      - "README.md"
+      # See ci.yml: the root AGENTS.md and CLAUDE.md are markdown too.
+      - "**/*.md"
   push:
     branches:
       - master
       - "ci/**"
+    # This one had no filter at all, so every documentation commit ran a
+    # Linux build and a WSL check behind it.
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
 
 env:
   RUST_VERSION: "1.75" # https://github.com/rustdesk/rustdesk/discussions/7503

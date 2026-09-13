@@ -12,14 +12,16 @@ on:
   pull_request:
     paths-ignore:
       - "docs/**"
-      - "README.md"
+      # Every markdown file, not only README: AGENTS.md and CLAUDE.md sit in
+      # the repository root and were triggering full builds.
+      - "**/*.md"
   push:
     branches:
       - master
     paths-ignore:
       - ".github/**"
       - "docs/**"
-      - "README.md"
+      - "**/*.md"
       - "res/**"
       - "appimage/**"
       - "flatpak/**"

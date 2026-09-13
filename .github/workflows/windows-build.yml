@@ -21,13 +21,14 @@ on:
   pull_request:
     paths-ignore:
       - "docs/**"
-      - "README.md"
+      # See ci.yml: the root AGENTS.md and CLAUDE.md are markdown too.
+      - "**/*.md"
   push:
     branches:
       - master
     paths-ignore:
       - "docs/**"
-      - "README.md"
+      - "**/*.md"
 
 env:
   RUST_VERSION: "1.92.0"
