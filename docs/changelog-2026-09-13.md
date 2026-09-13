@@ -422,3 +422,23 @@ Measurements and their limits are in `docs/perf-baseline-2026-09-13.md`
 * **Remote-session screenshots** for the restyled window are still open.
 * **Start-up drain, P0-c and tokenising the file-transfer and terminal
   pages** have not been started.
+
+## Appendix: what went wrong in this session, and what it became
+
+Seven mistakes of my own, each with what it cost and what now prevents it.
+They are recorded because five of them turned into rules, which is the only
+reason they are worth keeping.
+
+| What I got wrong | How it surfaced | What prevents it now |
+| --- | --- | --- |
+| Reported a build as finished by reading the last line of its log; it had been killed and its output directory was already empty | The task notification said `killed`, contradicting what I had just said | `build-flutter.ps1` asserts the shipped files exist and were written by that run; AGENTS.md: judge a background task by its exit code or its artifacts |
+| Blamed the build for the machine's memory pressure, as did the person who asked | Measured it instead of arguing: ssh and scp held 22 MB, eight editor processes held 3.1 GB | Nothing to fix in the product; the lesson is that "who used the memory" is a measurement, not a deduction |
+| Broke the shared build script by piping a Windows path through a heredoc, turning `\build` into a backspace, then overwrote another session's fix of the same line | Another session hit the broken script and repaired it independently | AGENTS.md: transfer a file rather than pipe content, diff the remote copy before overwriting, run it once after installing, say which script changed |
+| Wrote my own test-method error into the baseline as if it were a product defect: `codec-preference` had been put in the wrong file | Re-read the option's only call site while auditing something else | The option's real location is documented; the habit is to suspect the method before the product when an experiment fails |
+| Stated in a new rule that IPv6 punching only contacts our own server, and defaulted it on accordingly — so my own change broke the rule I had just written | Read `test_ipv6` while writing the explanatory document | The rule now says to check what the code does when nothing is configured, not what the feature's name suggests |
+| Called an unreachable path the exposure: the "manual update check" has no callers, while the reachable path was a switch Windows showed on every install | Went to fix it and could not find the button to fix | Judge reachability by walking the whole path from interface to implementation, not from one side's call graph |
+| Wrote a test that proved a request is not sent by calling the thing that sends it; under test the app name is still upstream's default, so it would have sent a device fingerprint from the build machine | An unrelated assertion on the same line failed first and stopped it | The rule is asserted as a pure function of the name; to verify that something does not happen, do not execute it |
+
+The fixture that was read as display corruption belongs here too: an
+unlabelled test pattern cost another session an interrupt and reached the
+user as a suspected bug. Fixtures now carry a banner saying what they are.
