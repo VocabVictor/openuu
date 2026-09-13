@@ -1,0 +1,193 @@
+name: Windows build
+
+# OpenUU ships one target: Windows x64 with the Flutter UI. This is the
+# GitHub-hosted counterpart of openuu-toolchain/build-local.ps1 (vcpkg
+# x64-windows-static, Flutter 3.24.5, cargo --features flutter,hwcodec,vram,
+# dylib_virtual_display) and build-msi.ps1 (res/msi, WiX v4). It runs on every
+# push to master and every pull request and always uploads the portable zip,
+# the MSI and their SHA-256 sums as a workflow artifact; release.yml calls it
+# for tags and publishes the same files to a GitHub Release.
+#
+# Windows runners are billed at 2x; a cold run is about 45-60 minutes, a warm
+# one (rust-cache + vcpkg binary cache hit) about 25-30.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      version:
+        description: Crate version the artifacts were built from
+        value: ${{ jobs.build-windows-x64.outputs.version }}
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "README.md"
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "docs/**"
+      - "README.md"
+
+env:
+  RUST_VERSION: "1.92.0"
+  LLVM_VERSION: "15.0.6"
+  FLUTTER_VERSION: "3.24.5"
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  # vcpkg 2026.07.29; if this changes run `vcpkg x-update-baseline` for vcpkg.json.
+  VCPKG_COMMIT_ID: "9e593bb18ea69cc5095e012465dcd675a822ed0d"
+
+jobs:
+  generate-bridge:
+    uses: ./.github/workflows/bridge.yml
+
+  build-windows-x64:
+    name: x86_64-pc-windows-msvc
+    needs: [generate-bridge]
+    runs-on: windows-2022
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    env:
+      TARGET: x86_64-pc-windows-msvc
+      VCPKG_TRIPLET: x64-windows-static
+    steps:
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Checkout source code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          submodules: recursive
+
+      - name: Read the crate version
+        id: version
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path Cargo.toml -Pattern '^version = "([^"]+)"' | Select-Object -First 1).Matches[0].Groups[1].Value
+          "version=$v" >> $env:GITHUB_OUTPUT
+          "VERSION=$v" >> $env:GITHUB_ENV
+          Write-Host "crate version $v"
+
+      - name: Restore bridge files
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bridge-artifact
+          path: ./
+
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@ebc0426251bc40c7cd31162802432c68818ab8f0 # v2.0.9
+        with:
+          version: ${{ env.LLVM_VERSION }}
+
+      - name: Install flutter
+        uses: subosito/flutter-action@2783a3f08e1baf891508463f8c6653c258246225 # v2.12.0
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          architecture: x64
+
+      - name: Patch flutter
+        shell: bash
+        run: |
+          cp .github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff $(dirname $(dirname $(which flutter)))
+          cd $(dirname $(dirname $(which flutter)))
+          git apply flutter_3.24.4_dropdown_menu_enableFilter.diff
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: ${{ env.TARGET }}
+
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          prefix-key: windows-2022
+
+      - name: Setup vcpkg with Github Actions binary cache
+        uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11
+        with:
+          vcpkgDirectory: C:\vcpkg
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+          doNotCache: false
+
+      - name: Install vcpkg dependencies
+        env:
+          VCPKG_DEFAULT_HOST_TRIPLET: ${{ env.VCPKG_TRIPLET }}
+        shell: bash
+        run: |
+          if ! $VCPKG_ROOT/vcpkg \
+            install \
+            --triplet ${{ env.VCPKG_TRIPLET }} \
+            --x-install-root="$VCPKG_ROOT/installed"; then
+            find "${VCPKG_ROOT}/" -name "*.log" | while read -r _1; do
+              echo "$_1:"
+              echo "======"
+              cat "$_1"
+              echo "======"
+              echo ""
+            done
+            exit 1
+          fi
+
+      - name: Build the Rust core and the Flutter bundle
+        shell: pwsh
+        run: |
+          python3 .\build.py --flutter --skip-portable-pack --hwcodec --vram
+          if ($LASTEXITCODE -ne 0) { throw "build.py failed" }
+          $bundle = ".\flutter\build\windows\x64\runner\Release"
+          # The crate still builds librustdesk.dll; the bundle step renames it to libopenuu.dll.
+          if ((Get-FileHash .\target\release\librustdesk.dll).Hash -ne (Get-FileHash "$bundle\libopenuu.dll").Hash) {
+            throw "Packaged Rust core does not match the source build"
+          }
+          foreach ($stale in 'librustdesk.dll', 'rustdesk.exe') {
+            Remove-Item -LiteralPath "$bundle\$stale" -Force -ErrorAction SilentlyContinue
+          }
+          Move-Item $bundle .\openuu
+          Get-ChildItem .\openuu
+
+      - name: Build portable zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path .\SignOutput | Out-Null
+          Compress-Archive -Path .\openuu\* -DestinationPath ".\SignOutput\openuu-$env:VERSION-x86_64-portable.zip" -CompressionLevel Optimal
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
+
+      - name: Build msi
+        # res/msi is WiX v4 (SDK-style wixproj + native CustomActions). windows-2022
+        # carries VS2022 MSBuild 17 and a .NET SDK, so msbuild builds both projects.
+        shell: pwsh
+        run: |
+          pushd .\res\msi
+          python3 preprocess.py -d ..\..\openuu --version $env:VERSION
+          if ($LASTEXITCODE -ne 0) { throw "preprocess.py failed" }
+          nuget restore msi.sln
+          if ($LASTEXITCODE -ne 0) { throw "nuget restore failed" }
+          msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10
+          if ($LASTEXITCODE -ne 0) { throw "msbuild failed" }
+          $msi = Get-ChildItem .\Package\bin\*\Release\en-us\Package.msi | Select-Object -First 1
+          Move-Item $msi.FullName "..\..\SignOutput\openuu-$env:VERSION-x86_64.msi"
+          popd
+
+      - name: Write checksums
+        shell: pwsh
+        run: |
+          $lines = Get-ChildItem .\SignOutput\openuu-* | ForEach-Object { "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $($_.Name)" }
+          $lines | Set-Content -Path ".\SignOutput\openuu-$env:VERSION-SHA256SUMS.txt" -Encoding ascii
+          Get-Content ".\SignOutput\openuu-$env:VERSION-SHA256SUMS.txt"
+          Get-ChildItem .\SignOutput | Format-Table Name, Length
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: openuu-windows-x86_64
+          if-no-files-found: error
+          path: |
+            ./SignOutput/openuu-*.msi
+            ./SignOutput/openuu-*.zip
+            ./SignOutput/openuu-*-SHA256SUMS.txt
