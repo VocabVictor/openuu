@@ -194,6 +194,19 @@ split them before a check exists:
 `libs/scrap/examples/benchmark.rs` is a sample, not product source, and is
 left as it is.
 
+### Test fixtures must identify themselves
+
+A fixture that paints the screen (a synthetic capture pattern, a load
+generator, anything full-screen) is visible to whoever looks at that machine,
+including through a remote session and including the user. It must carry a
+banner naming itself and saying it is not a fault, for example
+`PERF FIXTURE - synthetic test pattern, NOT a rendering bug`, plus how to
+stop it.
+
+This is not hypothetical: on 2026-09-13 an unlabelled pattern of random
+rectangles on black was reported as severe display corruption, and another
+session was interrupted to rule out a regression in its own work.
+
 ## Verification is command-line only
 
 No end-to-end or GUI automation on virtual machines or any desktop: no
