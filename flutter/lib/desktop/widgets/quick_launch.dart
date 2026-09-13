@@ -44,7 +44,7 @@ class _QuickLaunchPanelState extends State<QuickLaunchPanel> {
                   width: UiSpace.rowActionHitSize,
                   height: UiSpace.rowActionHitSize),
               padding: EdgeInsets.zero,
-              icon: const Icon(Icons.refresh, color: UiColor.muted)),
+              icon: Icon(Icons.refresh, color: UiColor.of(context).muted)),
         ]),
       );
 
@@ -57,11 +57,10 @@ class _QuickLaunchPanelState extends State<QuickLaunchPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     return Container(width: double.infinity,
       padding: const EdgeInsets.all(UiSpace.sectionCardPadding),
       decoration: BoxDecoration(
-        border: Border.all(color: UiColor.border),
+        border: Border.all(color: UiColor.of(context).border),
         borderRadius: BorderRadius.circular(UiSpace.sectionCardRadius)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _header(),
@@ -71,23 +70,23 @@ class _QuickLaunchPanelState extends State<QuickLaunchPanel> {
           TextButton(onPressed: () { final app = Map<String, dynamic>.from(apps[i])..remove('icon'); widget.onOpen(jsonEncode(app)); }, child: Column(children: [
             _appIcon(apps[i]), const SizedBox(height: 8),
             Text(apps[i]['name'] ?? '', maxLines: 2, overflow: TextOverflow.ellipsis)])),
-          PopupMenuButton<String>(tooltip: zh ? '管理快捷方式' : 'Manage shortcut',
+          PopupMenuButton<String>(tooltip: translate('Manage shortcut'),
             onSelected: (value) async {
               if (value == 'remove') { apps.removeAt(i); }
               if (value == 'up' && i > 0) { final item = apps.removeAt(i); apps.insert(i - 1, item); }
               if (value == 'rename') {
                 final controller = TextEditingController(text: apps[i]['name']);
                 final name = await showDialog<String>(context: context, builder: (ctx) => AlertDialog(
-                  title: Text(zh ? '重命名' : 'Rename'), content: TextField(controller: controller),
+                  title: Text(translate('Rename')), content: TextField(controller: controller),
                   actions: [TextButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('OK'))]));
                 controller.dispose();
                 if (name != null && name.isNotEmpty) apps[i]['name'] = name;
               }
               await _save(widget.peer, apps); if (mounted) setState(() {});
             }, itemBuilder: (_) => [
-              PopupMenuItem(value: 'rename', child: Text(zh ? '重命名' : 'Rename')),
-              PopupMenuItem(value: 'up', child: Text(zh ? '向前移动' : 'Move earlier')),
-              PopupMenuItem(value: 'remove', child: Text(zh ? '移除快捷方式' : 'Remove shortcut')),
+              PopupMenuItem(value: 'rename', child: Text(translate('Rename'))),
+              PopupMenuItem(value: 'up', child: Text(translate('Move earlier'))),
+              PopupMenuItem(value: 'remove', child: Text(translate('Remove shortcut'))),
             ])])),
         SizedBox(width: 112, height: 110, child: TextButton(
           onPressed: () => widget.onOpen(''), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -110,7 +109,6 @@ class _QuickLaunchDialogState extends State<_QuickLaunchDialog> {
   List<Map<String, dynamic>> apps = [];
   String session = '', user = '', error = '', query = '';
   bool busy = true;
-  bool get zh => Localizations.localeOf(context).languageCode == 'zh';
   Future<Map<String, dynamic>> request(Map<String, dynamic> data) {
     if (widget.ffi.viewOnlySession || widget.ffi.ffiModel.viewOnly) {
       return Future.error(StateError('Quick launch is unavailable in view-only mode.'));
@@ -159,40 +157,40 @@ class _QuickLaunchDialogState extends State<_QuickLaunchDialog> {
     saved.removeWhere((a) => a['id'] == app['id'] && a['session'] == session);
     saved.add({...app, 'session': session, 'user': user});
     await _save(widget.ffi.id, saved);
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(zh ? '已添加快捷方式' : 'Shortcut added')));
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(translate('Shortcut added'))));
   }
   Future<void> custom() async {
     final path = TextEditingController(); final args = TextEditingController();
     final app = await showDialog<Map<String, dynamic>>(context: context, builder: (ctx) => AlertDialog(
-      title: Text(zh ? '手动添加程序' : 'Add executable'),
+      title: Text(translate('Add executable')),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: path, decoration: InputDecoration(labelText: zh ? '远端程序绝对路径' : 'Remote executable absolute path')),
-        TextField(controller: args, minLines: 2, maxLines: 4, decoration: InputDecoration(labelText: zh ? '启动参数（每行一个，可留空）' : 'Arguments (one per line, optional)'))]),
-      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(zh ? '取消' : 'Cancel')),
+        TextField(controller: path, decoration: InputDecoration(labelText: translate('Remote executable absolute path'))),
+        TextField(controller: args, minLines: 2, maxLines: 4, decoration: InputDecoration(labelText: translate('Arguments (one per line, optional)')))]),
+      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(translate('Cancel'))),
         TextButton(onPressed: () {
           try { final values = args.text.split('\n').where((s) => s.isNotEmpty).toList(); if (path.text.trim().isEmpty) return;
             Navigator.pop(ctx, {'id': path.text.trim(), 'name': path.text.trim().split(RegExp(r'[/\\]')).last,
               'custom': true, 'arguments': values});
-          } catch (_) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(zh ? '请检查程序路径和启动参数' : 'Check the application path and arguments'))); }
-        }, child: Text(zh ? '添加' : 'Add'))]));
+          } catch (_) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(translate('Check the application path and arguments')))); }
+        }, child: Text(translate('Add')))]));
     path.dispose(); args.dispose(); if (app != null) await add(app);
   }
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: Text(zh ? '快速启动' : 'Quick launch'),
+    title: Text(translate('Quick launch')),
     content: SizedBox(width: 600, height: MediaQuery.of(context).size.height * .55, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      if (user.isNotEmpty) Text('${zh ? '当前桌面用户' : 'Desktop user'}: $user · $session'),
-      if (error.isNotEmpty) Padding(padding: const EdgeInsets.all(8), child: Text(error, style: const TextStyle(color: Colors.red))),
+      if (user.isNotEmpty) Text('${translate('Desktop user')}: $user · $session'),
+      if (error.isNotEmpty) Padding(padding: const EdgeInsets.all(8), child: Text(error, style: TextStyle(color: UiColor.of(context).danger))),
       if (busy) const Expanded(child: Center(child: CircularProgressIndicator()))
       else ...[
-        TextField(onChanged: (s) => setState(() => query = s), decoration: InputDecoration(hintText: zh ? '搜索应用' : 'Search applications', prefixIcon: const Icon(Icons.search))),
+        TextField(onChanged: (s) => setState(() => query = s), decoration: InputDecoration(hintText: translate('Search applications'), prefixIcon: const Icon(Icons.search))),
         Expanded(child: ListView(children: [for (final app in apps.where((a) => (a['name'] as String).toLowerCase().contains(query.toLowerCase())))
           ListTile(leading: const Icon(Icons.apps), title: Text(app['name']),
-            trailing: IconButton(tooltip: zh ? '添加快捷方式' : 'Add shortcut', icon: const Icon(Icons.add), onPressed: () => add(app)),
+            trailing: IconButton(tooltip: translate('Add shortcut'), icon: const Icon(Icons.add), onPressed: () => add(app)),
             onTap: () => launch({...app, 'session': session}))])),
       ]]),),
-    actions: [if (!busy && session.isNotEmpty) TextButton(onPressed: custom, child: Text(zh ? '手动添加' : 'Add executable')),
-      TextButton(onPressed: () => Navigator.pop(context), child: Text(zh ? '关闭' : 'Close'))]);
+    actions: [if (!busy && session.isNotEmpty) TextButton(onPressed: custom, child: Text(translate('Add executable'))),
+      TextButton(onPressed: () => Navigator.pop(context), child: Text(translate('Close')))]);
 }
 
 Widget _appIcon(Map<String, dynamic> app) {
