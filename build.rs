@@ -2,9 +2,16 @@
 fn build_windows() {
     let file = "src/platform/windows.cc";
     let file2 = "src/platform/windows_delete_test_cert.cc";
-    cc::Build::new().file(file).file(file2).compile("windows");
+    cc::Build::new()
+        .file(file)
+        .file("src/platform/windows_session.cc")
+        .file("src/platform/windows_keyboard.cc")
+        .file(file2)
+        .compile("windows");
     println!("cargo:rustc-link-lib=WtsApi32");
     println!("cargo:rerun-if-changed={}", file);
+    println!("cargo:rerun-if-changed=src/platform/windows_session.cc");
+    println!("cargo:rerun-if-changed=src/platform/windows_keyboard.cc");
     println!("cargo:rerun-if-changed={}", file2);
 }
 
