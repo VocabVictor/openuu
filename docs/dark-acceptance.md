@@ -9,6 +9,21 @@ Every item below is either a command whose output is the verdict, or a named
 control on a named screen with a stated expectation. "It looks right" is not
 an item.
 
+## 0. The baseline the checks are read against
+
+Measured on the tree these items were written for, and the number each item
+is compared with afterwards:
+
+* `flutter analyze` — **222 issues, zero errors.** The count is the detector:
+  any item below that leaves it at 222 changed nothing, and one that raises it
+  has to say which line it added.
+* `ftest.ps1 <branch>` with no path — **160 tests, all passing.** The full
+  suite, not a selected file: a suite that is never run whole is a suite whose
+  red is discovered by whoever happens to run it.
+
+Both are taken after `check.ps1 <branch> -Flutter`, which is what moves the
+worktree to the commit being measured.
+
 ## 1. Nothing is left outside the palette
 
 Three commands. Each should print nothing, and each line it does print is a

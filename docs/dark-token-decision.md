@@ -137,6 +137,13 @@ meaning does not fit is worse than leaving the literal, because the literal is
 at least honest.** A literal that stays keeps a comment saying which meaning
 it is waiting for.
 
+**A member is named for its meaning, never for the first thing that used
+it.** The status pill asked for a colour, and `chipInverse` was the obvious
+name — until the next inverted surface, a toast or a tooltip, arrives and has
+to invent `toastInverse` beside it. One meaning then has two names and
+neither can be corrected without touching both. `inverseSurface` says what it
+is, so the toast simply uses it.
+
 The same reasoning produces new members rather than a bad fit. A badge that
 must stand out *of* the page rather than sit on it — the device page's status
 pill, near-black with white text in the light appearance — has no honest
