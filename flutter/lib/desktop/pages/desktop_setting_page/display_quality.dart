@@ -60,6 +60,15 @@ extension _DisplayQuality on _DisplayState {
       // But it may also be ok to take effect in the next connection.
     }
 
+    if (isWindows && !bind.isIncomingOnly()) {
+      return _group(null, [
+        _settingRow(
+            context,
+            'Default trackpad speed',
+            TrackpadSpeedWidget(
+                value: curSpeed, onDebouncer: onDebouncer, compact: true)),
+      ]);
+    }
     return _Card(title: 'Default trackpad speed', children: [
       TrackpadSpeedWidget(
         value: curSpeed,

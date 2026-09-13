@@ -8,6 +8,8 @@ class TrackpadSpeedWidget extends StatefulWidget {
   // IME actions call TextField.onSubmitted without reaching the dialog's
   // raw Enter handler, so the dialog needs a separate submission callback.
   final ValueChanged<String>? onTextSubmitted;
+  // The settings-row form: a 160 track, a 56x28 field and the unit outside.
+  final bool compact;
 
   TrackpadSpeedWidget({
     Key? key,
@@ -15,6 +17,7 @@ class TrackpadSpeedWidget extends StatefulWidget {
     this.onDebouncer,
     this.onTextChanged,
     this.onTextSubmitted,
+    this.compact = false,
   });
 
   @override
@@ -82,6 +85,7 @@ class TrackpadSpeedWidgetState extends State<TrackpadSpeedWidget> {
     if (_controller.text.isEmpty) {
       _controller.text = value.toString();
     }
+    if (widget.compact) return _compact();
     return Row(
       children: [
         Expanded(
@@ -121,5 +125,54 @@ class TrackpadSpeedWidgetState extends State<TrackpadSpeedWidget> {
             )),
       ],
     );
+  }
+}
+
+extension _CompactTrackpadSpeed on TrackpadSpeedWidgetState {
+  Widget _compact() {
+    final border = OutlineInputBorder(
+        borderRadius: BorderRadius.circular(UiSpace.inputRadius),
+        borderSide: const BorderSide(color: UiColor.inputBorder));
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      SizedBox(
+          width: UiSpace.settingsSliderWidth,
+          child: SliderTheme(
+              data: SliderThemeData(
+                  trackHeight: 4,
+                  activeTrackColor: UiColor.primary,
+                  inactiveTrackColor: UiColor.border,
+                  thumbColor: Colors.white,
+                  thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 7, elevation: 1),
+                  overlayShape: SliderComponentShape.noOverlay),
+              child: Slider(
+                value: value.toDouble(),
+                min: kMinTrackpadSpeed.toDouble(),
+                max: kMaxTrackpadSpeed.toDouble(),
+                divisions:
+                    ((kMaxTrackpadSpeed - kMinTrackpadSpeed) / 10).round(),
+                onChanged: (double v) => updateValue(v.round()),
+              ))),
+      const SizedBox(width: UiSpace.s3),
+      SizedBox(
+          width: UiSpace.settingsNumberFieldWidth,
+          height: UiSpace.settingsControlHeight,
+          child: TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.right,
+              onChanged: updateTextValue,
+              onSubmitted: submitTextValue,
+              style: UiType.rowTitle
+                  .copyWith(fontSize: 13, fontWeight: FontWeight.w400),
+              decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: UiSpace.s2, vertical: 6),
+                  border: border,
+                  enabledBorder: border))),
+      const SizedBox(width: UiSpace.s1),
+      Text('%', style: UiType.caption),
+    ]);
   }
 }
