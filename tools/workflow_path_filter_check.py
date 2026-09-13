@@ -10,6 +10,20 @@ So both directions are checked, not just the one being asked for: a
 documentation-only set must skip, and each kind of code file must still run.
 
     python tools/workflow_path_filter_check.py .github/workflows/*.yml
+
+There is one source of evidence the Actions tab does not have, and it belongs
+to whoever pushed: they know what was in the push. On 2026-09-14 the session
+that pushes master ran
+
+    git diff --name-only origin/master..master | grep -vE '^docs/|\\.md$'
+
+got no output, pushed four documentation commits ending at 9dc2824b9, and no
+workflow fired. That is a real negative sample -- a doc-only push that was
+correctly skipped -- and nothing in the run history could have supplied it,
+because a skipped push leaves no row and its commits are folded into the next
+push that does run. **An observer who is also the producer holds information
+the record does not.** Reconstructing pushes from consecutive run heads, as
+one session did, cannot see it: the doc-only push simply is not there.
 """
 import re, sys, pathlib
 
