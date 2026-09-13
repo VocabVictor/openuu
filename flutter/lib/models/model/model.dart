@@ -44,10 +44,8 @@ import '../input_model.dart';
 import '../platform_model.dart';
 import 'package:flutter_hbb/utils/scale.dart';
 
-import 'package:flutter_hbb/generated_bridge.dart'
-    if (dart.library.html) 'package:flutter_hbb/web/bridge.dart';
-import 'package:flutter_hbb/native/custom_cursor.dart'
-    if (dart.library.html) 'package:flutter_hbb/web/custom_cursor.dart';
+import 'package:flutter_hbb/generated_bridge.dart';
+import 'package:flutter_hbb/native/custom_cursor.dart';
 
 part 'canvas_model.dart';
 part 'canvas_model_layout.dart';

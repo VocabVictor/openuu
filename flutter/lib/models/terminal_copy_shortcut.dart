@@ -6,8 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_hbb/consts.dart';
 import 'package:xterm/xterm.dart';
 
-import 'terminal_clipboard_writer.dart'
-    if (dart.library.html) 'terminal_clipboard_writer_web.dart';
+import 'terminal_clipboard_writer.dart';
 
 const _controlShiftVPasteShortcut = SingleActivator(
   LogicalKeyboardKey.keyV,

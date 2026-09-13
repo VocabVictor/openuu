@@ -7,8 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../models/platform_model.dart';
 
-import 'package:flutter_hbb/native/common.dart'
-    if (dart.library.html) 'package:flutter_hbb/web/common.dart';
+import 'package:flutter_hbb/native/common.dart';
 import 'package:flutter_hbb/utils/http_service.dart' as http;
 import 'windows_misc.dart';
 

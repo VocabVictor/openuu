@@ -15,8 +15,7 @@ import 'package:window_manager/window_manager.dart';
 import '../../consts.dart';
 import '../models/platform_model.dart';
 
-import 'package:flutter_hbb/native/win32.dart'
-    if (dart.library.html) 'package:flutter_hbb/web/win32.dart';
+import 'package:flutter_hbb/native/win32.dart';
 import 'ffi_options.dart';
 import 'globals.dart';
 import 'my_theme.dart';

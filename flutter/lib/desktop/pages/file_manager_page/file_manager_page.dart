@@ -17,8 +17,7 @@ import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
 import 'package:flutter_hbb/models/file_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:flutter_hbb/native/unsupported_web.dart'
-    if (dart.library.html) 'package:flutter_hbb/web/web_unique.dart';
+import 'package:flutter_hbb/native/unsupported_web.dart';
 
 import '../../../consts.dart';
 import '../../../desktop/widgets/material_mod_popup_menu.dart' as mod_menu;

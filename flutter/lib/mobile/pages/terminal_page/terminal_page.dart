@@ -13,8 +13,7 @@ import 'package:flutter_hbb/models/terminal_copy_shortcut.dart';
 import 'package:flutter_hbb/models/terminal_model.dart';
 import 'package:flutter_hbb/models/terminal_mouse_handler.dart';
 import 'package:flutter_hbb/mobile/terminal_keyboard_utils.dart';
-import 'package:flutter_hbb/native/unsupported_web.dart'
-    if (dart.library.html) 'package:flutter_hbb/web/terminal_font.dart';
+import 'package:flutter_hbb/native/unsupported_web.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:xterm/xterm.dart';
 import '../../../desktop/pages/terminal_connection_manager.dart';

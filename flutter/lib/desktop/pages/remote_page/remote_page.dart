@@ -26,8 +26,7 @@ import '../../widgets/kb_layout_type_chooser.dart';
 import '../../widgets/tabbar_widget.dart';
 import '../macos_full_screen_focus_recovery.dart';
 
-import 'package:flutter_hbb/native/custom_cursor.dart'
-    if (dart.library.html) 'package:flutter_hbb/web/custom_cursor.dart';
+import 'package:flutter_hbb/native/custom_cursor.dart';
 part 'view.dart';
 part 'macos.dart';
 part 'body.dart';
