@@ -23,6 +23,9 @@ class UiPalette extends ThemeExtension<UiPalette> {
     required this.faint,
     required this.primary,
     required this.primaryTint,
+    required this.primaryTintHover,
+    required this.dangerTint,
+    required this.dangerTintHover,
     required this.border,
     required this.borderHover,
     required this.surface,
@@ -50,6 +53,9 @@ class UiPalette extends ThemeExtension<UiPalette> {
   final Color faint;
   final Color primary;
   final Color primaryTint;
+  final Color primaryTintHover;
+  final Color dangerTint;
+  final Color dangerTintHover;
   final Color border;
   final Color borderHover;
   final Color surface;
@@ -77,6 +83,9 @@ class UiPalette extends ThemeExtension<UiPalette> {
     faint: Color(0xffb2b8c2),
     primary: Color(0xff2b6cf6),
     primaryTint: Color(0xffeaf1ff),
+    primaryTintHover: Color(0xffdce8ff),
+    dangerTint: Color(0xfffff0ef),
+    dangerTintHover: Color(0xffffe1df),
     border: Color(0xffe5e6eb),
     borderHover: Color(0xffc9d4f0),
     surface: Color(0xffffffff),
@@ -105,6 +114,9 @@ class UiPalette extends ThemeExtension<UiPalette> {
     faint: Color(0xff6b7079),
     primary: Color(0xff4d84ff),
     primaryTint: Color(0xff1b2a4a),
+    primaryTintHover: Color(0xff24375e),
+    dangerTint: Color(0xff3a201f),
+    dangerTintHover: Color(0xff4d2724),
     border: Color(0xff33363d),
     borderHover: Color(0xff3d4a66),
     surface: Color(0xff23262e),
@@ -134,6 +146,9 @@ class UiPalette extends ThemeExtension<UiPalette> {
     Color? faint,
     Color? primary,
     Color? primaryTint,
+    Color? primaryTintHover,
+    Color? dangerTint,
+    Color? dangerTintHover,
     Color? border,
     Color? borderHover,
     Color? surface,
@@ -161,6 +176,9 @@ class UiPalette extends ThemeExtension<UiPalette> {
         faint: faint ?? this.faint,
         primary: primary ?? this.primary,
         primaryTint: primaryTint ?? this.primaryTint,
+        primaryTintHover: primaryTintHover ?? this.primaryTintHover,
+        dangerTint: dangerTint ?? this.dangerTint,
+        dangerTintHover: dangerTintHover ?? this.dangerTintHover,
         border: border ?? this.border,
         borderHover: borderHover ?? this.borderHover,
         surface: surface ?? this.surface,
@@ -192,6 +210,9 @@ class UiPalette extends ThemeExtension<UiPalette> {
       faint: Color.lerp(faint, other.faint, t) ?? faint,
       primary: Color.lerp(primary, other.primary, t) ?? primary,
       primaryTint: Color.lerp(primaryTint, other.primaryTint, t) ?? primaryTint,
+      primaryTintHover: Color.lerp(primaryTintHover, other.primaryTintHover, t) ?? primaryTintHover,
+      dangerTint: Color.lerp(dangerTint, other.dangerTint, t) ?? dangerTint,
+      dangerTintHover: Color.lerp(dangerTintHover, other.dangerTintHover, t) ?? dangerTintHover,
       border: Color.lerp(border, other.border, t) ?? border,
       borderHover: Color.lerp(borderHover, other.borderHover, t) ?? borderHover,
       surface: Color.lerp(surface, other.surface, t) ?? surface,
