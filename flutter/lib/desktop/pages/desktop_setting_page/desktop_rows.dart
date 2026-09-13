@@ -34,7 +34,7 @@ Widget _primaryButton(BuildContext context, String label, VoidCallback? onPresse
     height: height,
     child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-            backgroundColor: UiColor.of(context).primary,
+            backgroundColor: UiColor.of(context).primaryFill,
             foregroundColor: Colors.white,
             disabledBackgroundColor: UiColor.of(context).primaryDisabled,
             disabledForegroundColor: Colors.white,

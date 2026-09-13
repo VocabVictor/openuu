@@ -22,6 +22,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
     required this.muted,
     required this.faint,
     required this.primary,
+    required this.primaryFill,
     required this.primaryTint,
     required this.primaryTintHover,
     required this.dangerTint,
@@ -52,6 +53,11 @@ class UiPalette extends ThemeExtension<UiPalette> {
   final Color muted;
   final Color faint;
   final Color primary;
+
+  /// The fill under [onPrimary] content. Darker than [primary] in the dark
+  /// appearance, where a colour light enough to read as text on the dark
+  /// surface is too light to carry white text (docs/dark-acceptance.md).
+  final Color primaryFill;
   final Color primaryTint;
   final Color primaryTintHover;
   final Color dangerTint;
@@ -82,6 +88,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
     muted: Color(0xff8a8f99),
     faint: Color(0xffb2b8c2),
     primary: Color(0xff2b6cf6),
+    primaryFill: Color(0xff2b6cf6),
     primaryTint: Color(0xffeaf1ff),
     primaryTintHover: Color(0xffdce8ff),
     dangerTint: Color(0xfffff0ef),
@@ -113,6 +120,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
     muted: Color(0xff9296a0),
     faint: Color(0xff6b7079),
     primary: Color(0xff4d84ff),
+    primaryFill: Color(0xff2f6ae0),
     primaryTint: Color(0xff1b2a4a),
     primaryTintHover: Color(0xff24375e),
     dangerTint: Color(0xff3a201f),
@@ -145,6 +153,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
     Color? muted,
     Color? faint,
     Color? primary,
+    Color? primaryFill,
     Color? primaryTint,
     Color? primaryTintHover,
     Color? dangerTint,
@@ -175,6 +184,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
         muted: muted ?? this.muted,
         faint: faint ?? this.faint,
         primary: primary ?? this.primary,
+        primaryFill: primaryFill ?? this.primaryFill,
         primaryTint: primaryTint ?? this.primaryTint,
         primaryTintHover: primaryTintHover ?? this.primaryTintHover,
         dangerTint: dangerTint ?? this.dangerTint,
@@ -209,6 +219,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
       muted: Color.lerp(muted, other.muted, t) ?? muted,
       faint: Color.lerp(faint, other.faint, t) ?? faint,
       primary: Color.lerp(primary, other.primary, t) ?? primary,
+      primaryFill: Color.lerp(primaryFill, other.primaryFill, t) ?? primaryFill,
       primaryTint: Color.lerp(primaryTint, other.primaryTint, t) ?? primaryTint,
       primaryTintHover: Color.lerp(primaryTintHover, other.primaryTintHover, t) ?? primaryTintHover,
       dangerTint: Color.lerp(dangerTint, other.dangerTint, t) ?? dangerTint,

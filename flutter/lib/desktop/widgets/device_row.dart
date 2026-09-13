@@ -154,7 +154,7 @@ class DeviceRow extends StatelessWidget {
                           width: UiSpace.rowIconSize,
                           height: UiSpace.rowIconSize,
                           decoration: BoxDecoration(
-                              color: ui.primary,
+                              color: ui.primaryFill,
                               borderRadius:
                                   BorderRadius.circular(UiSpace.rowIconRadius)),
                           child: Icon(
