@@ -4,6 +4,8 @@
 #include <string>
 
 bool AddFirewallRule(bool add, LPWSTR exeName, LPWSTR exeFile);
+// FirewallRules.cpp, used by FirewallRuleAdd.cpp
+BSTR MakeRuleName(LPWSTR exeName);
 
 bool QueryServiceStatusExW(LPCWSTR serviceName, SERVICE_STATUS_PROCESS* status);
 bool IsServiceRunningW(LPCWSTR serviceName);

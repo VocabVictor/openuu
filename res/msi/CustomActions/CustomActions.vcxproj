@@ -98,6 +98,7 @@
     <ClCompile Include="DeviceUtils.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FirewallActions.cpp" />
+    <ClCompile Include="FirewallRuleAdd.cpp" />
     <ClCompile Include="FirewallRules.cpp" />
     <ClCompile Include="MiscActions.cpp" />
     <ClCompile Include="Processes.cpp" />
