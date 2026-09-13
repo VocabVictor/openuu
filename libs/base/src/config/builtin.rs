@@ -34,6 +34,19 @@ pub fn apply() {
         BUILTIN_API_SERVER,
         BUILTIN_KEY,
     );
+    apply_ui_defaults();
+}
+
+/// Product defaults for the remote-control UI, in the same display-settings default
+/// layer a custom client file uses (`UserDefaultConfig` reads it after the user's own
+/// value): the desktop viewer opens remote screens fitted to the window instead of at
+/// 1:1, which upstream only does on mobile.
+pub fn apply_ui_defaults() {
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    config::DEFAULT_DISPLAY_SETTINGS
+        .write()
+        .unwrap()
+        .insert(config::keys::OPTION_VIEW_STYLE.to_owned(), "adaptive".to_owned());
 }
 
 fn apply_values(id: &str, relay: &str, api: &str, key: &str) {
@@ -103,5 +116,28 @@ mod tests {
         }
         drop(d);
         *config::PROD_RENDEZVOUS_SERVER.write().unwrap() = String::new();
+    }
+
+    // The user's own value sits above this layer in UserDefaultConfig::get (it is read
+    // before DEFAULT_DISPLAY_SETTINGS), so a stored choice keeps winning; setting one
+    // here would write the test machine's real user config, so only the default and the
+    // overwrite layer above it are exercised.
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    #[test]
+    fn desktop_view_style_defaults_to_adaptive() {
+        apply_ui_defaults();
+        let key = config::keys::OPTION_VIEW_STYLE;
+        assert_eq!(
+            config::DEFAULT_DISPLAY_SETTINGS.read().unwrap().get(key).map(String::as_str),
+            Some("adaptive")
+        );
+        assert_eq!(config::UserDefaultConfig::load().get(key), "adaptive");
+        config::OVERWRITE_DISPLAY_SETTINGS
+            .write()
+            .unwrap()
+            .insert(key.to_owned(), "original".to_owned());
+        assert_eq!(config::UserDefaultConfig::load().get(key), "original");
+        config::OVERWRITE_DISPLAY_SETTINGS.write().unwrap().remove(key);
+        config::DEFAULT_DISPLAY_SETTINGS.write().unwrap().remove(key);
     }
 }
