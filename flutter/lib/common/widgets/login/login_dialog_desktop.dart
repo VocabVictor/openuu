@@ -50,71 +50,8 @@ CustomAlertDialog _desktopLoginDialog({
   required Widget thirdAuth,
 }) {
   final zh = Localizations.localeOf(context).languageCode == 'zh';
-  OutlineInputBorder border(Color color) => OutlineInputBorder(
-      borderRadius: BorderRadius.circular(UiSpace.inputRadius),
-      borderSide: BorderSide(color: color));
-
-  Widget field(String label, TextEditingController controller, String? error,
-      {FocusNode? focusNode, bool secret = false}) {
-    final hasError = error != null && error.isNotEmpty;
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: UiType.caption),
-      const SizedBox(height: UiSpace.fieldLabelGap),
-      SizedBox(
-          height: UiSpace.controlHeight,
-          child: TextField(
-              controller: controller,
-              focusNode: focusNode,
-              obscureText: secret && !prefs.showPassword,
-              enabled: !isInProgress,
-              style: UiType.rowTitle
-                  .copyWith(fontSize: 13, fontWeight: FontWeight.w400),
-              decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: UiSpace.inputPaddingX, vertical: 8),
-                  border: border(UiColor.inputBorder),
-                  enabledBorder:
-                      border(hasError ? UiColor.danger : UiColor.inputBorder),
-                  focusedBorder:
-                      border(hasError ? UiColor.danger : UiColor.primary),
-                  suffixIcon: secret
-                      ? IconButton(
-                          iconSize: 16,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                              minWidth: 28, minHeight: 28),
-                          icon: Icon(
-                              prefs.showPassword
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                              color: UiColor.muted),
-                          onPressed: () => setState(
-                              () => prefs.showPassword = !prefs.showPassword))
-                      : null))),
-      SizedBox(
-          height: UiSpace.panelErrorHeight,
-          child: hasError
-              ? Text(error,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: UiType.caption.copyWith(color: UiColor.danger))
-              : null),
-    ]);
-  }
-
-  Widget toggle(String label, bool value, ValueChanged<bool> onChanged) =>
-      Row(children: [
-        Expanded(
-            child: Text(label,
-                style: UiType.rowTitle.copyWith(fontWeight: FontWeight.w400))),
-        SettingsSwitch(value: value, onChanged: isInProgress ? null : onChanged),
-      ]);
 
   final busy = isInProgress || curOP.value.isNotEmpty;
-  // DialogBuilder wants the CustomAlertDialog itself; UiDialog builds one.
   return UiDialog(
       title: translate('Login'),
       onClose: close,
@@ -134,14 +71,26 @@ CustomAlertDialog _desktopLoginDialog({
                           style: UiType.caption
                               .copyWith(color: UiColor.textSecondary))),
                 ]))),
-        field(translate(DialogTextField.kUsernameTitle), username, usernameMsg,
-            focusNode: userFocusNode),
-        field(translate('Password'), password, passwordMsg, secret: true),
-        toggle(zh ? '记住账号' : 'Remember account', prefs.rememberAccount,
-            (v) => setState(() => prefs.rememberAccount = v)),
+        uiDialogField(
+            translate(DialogTextField.kUsernameTitle), username,
+            error: usernameMsg,
+            focusNode: userFocusNode,
+            enabled: !isInProgress,
+            onSubmitted: onLogin),
+        uiDialogField(translate('Password'), password,
+            error: passwordMsg,
+            enabled: !isInProgress,
+            obscure: !prefs.showPassword,
+            onToggleObscure: () =>
+                setState(() => prefs.showPassword = !prefs.showPassword),
+            onSubmitted: onLogin),
+        uiDialogToggle(zh ? '记住账号' : 'Remember account',
+            prefs.rememberAccount,
+            isInProgress ? null : (v) => setState(() => prefs.rememberAccount = v)),
         const SizedBox(height: UiSpace.s2),
-        toggle(zh ? '记住密码' : 'Remember password', prefs.rememberPassword,
-            (v) => setState(() => prefs.rememberPassword = v)),
+        uiDialogToggle(zh ? '记住密码' : 'Remember password',
+            prefs.rememberPassword,
+            isInProgress ? null : (v) => setState(() => prefs.rememberPassword = v)),
         if (isInProgress)
           const Padding(
               padding: EdgeInsets.only(top: UiSpace.s3),
@@ -151,5 +100,5 @@ CustomAlertDialog _desktopLoginDialog({
       actions: [
         UiDialogAction.secondary('Cancel', close),
         UiDialogAction.primary('Login', busy ? null : onLogin),
-      ]).build(context) as CustomAlertDialog;
+      ]).alert(context);
 }
