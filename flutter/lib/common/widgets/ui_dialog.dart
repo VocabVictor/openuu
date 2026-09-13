@@ -31,8 +31,13 @@ enum UiDialogActionKind { primary, secondary, danger }
 /// 15/600 left-aligned title with an optional close icon, the body, and a
 /// right-aligned button row. No large icon.
 ///
-/// Enter triggers the primary action, Escape calls [onClose] (or the first
-/// secondary action when [onClose] is null).
+/// Enter triggers the primary action and Escape calls [onClose]; a dialog
+/// that must not be dismissable by Escape simply omits [onClose].
+///
+/// A dialog that asks the user to trust something keeps the permissive and
+/// the safe choice equally reachable (docs/cm-restyle-plan.md): both are
+/// full-size buttons with a border, neither is a bare text link, and the
+/// safe one is the primary.
 class UiDialog extends StatelessWidget {
   UiDialog({
     Key? key,
@@ -66,11 +71,12 @@ class UiDialog extends StatelessWidget {
     final primary = actions.isNotEmpty && actions.last.isPrimary
         ? actions.last.onPressed
         : null;
-    final cancel = onClose ??
-        actions
-            .where((a) => a.kind == UiDialogActionKind.secondary)
-            .map((a) => a.onPressed)
-            .firstWhere((_) => true, orElse: () => null);
+    // Escape runs [onClose] and nothing else. It used to fall back to the
+    // first secondary action, which is unsafe for a dialog that asks the user
+    // to trust something: there the first secondary can be the permissive
+    // choice ("continue anyway"), and Escape must never take it. A dialog
+    // that should be dismissable by Escape passes onClose.
+    final cancel = onClose;
     return CustomAlertDialog(
       titlePadding: EdgeInsets.zero,
       contentBoxConstraints: BoxConstraints(minWidth: width, maxWidth: width),
