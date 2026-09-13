@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../common.dart';
+import '../../models/online_presence.dart';
 import '../../models/peer_model.dart';
 import '../pages/desktop_devices_page.dart' show deviceName;
 import 'ui_tokens.dart';
@@ -49,6 +51,47 @@ class EmptyRow extends StatelessWidget {
       child: Text(text, style: UiType.caption));
 }
 
+/// Whether a device is up, drawn so the three states are told apart without
+/// relying on the colour: filled for up, a ring for down, a dash for not
+/// answered yet (AGENTS.md). The word itself is in the tooltip.
+class PresenceDot extends StatelessWidget {
+  final PeerPresence presence;
+  const PresenceDot({super.key, required this.presence});
+
+  @override
+  Widget build(BuildContext context) {
+    const size = UiSpace.statusDotSize;
+    final Widget mark;
+    switch (presence) {
+      case PeerPresence.online:
+        mark = Container(
+            width: size,
+            height: size,
+            decoration: const BoxDecoration(
+                color: UiColor.ready, shape: BoxShape.circle));
+      case PeerPresence.offline:
+        mark = Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: UiColor.faint, width: 1)));
+      case PeerPresence.unknown:
+        mark = Container(width: size, height: 1, color: UiColor.faint);
+    }
+    return Tooltip(
+        message: translate(switch (presence) {
+          PeerPresence.online => 'Online',
+          PeerPresence.offline => 'Offline',
+          PeerPresence.unknown => 'Status unknown',
+        }),
+        child: SizedBox(
+            width: size,
+            height: UiSpace.rowActionHitSize,
+            child: Center(child: mark)));
+  }
+}
+
 /// One device row, shared by the grouped overview, the favourites and the
 /// recent-connections list. The action column always reserves the star
 /// slot so the icons line up across rows.
@@ -56,6 +99,8 @@ class DeviceRow extends StatelessWidget {
   final Peer peer;
   final bool local;
   final ValueChanged<Peer> onOpen;
+  /// Unknown until the list has asked the server about this device.
+  final PeerPresence presence;
   /// Whether the peer is in the favourites; null hides the star.
   final bool? favorite;
   final ValueChanged<Peer>? onToggleFavorite;
@@ -66,6 +111,7 @@ class DeviceRow extends StatelessWidget {
       required this.peer,
       required this.local,
       required this.onOpen,
+      this.presence = PeerPresence.unknown,
       this.favorite,
       this.onToggleFavorite,
       this.bordered = true});
@@ -108,6 +154,10 @@ class DeviceRow extends StatelessWidget {
                               color: Colors.white,
                               size: 18)),
                       const SizedBox(width: UiSpace.rowIconGap),
+                      if (!local) ...[
+                        PresenceDot(presence: presence),
+                        const SizedBox(width: UiSpace.statusDotGap),
+                      ],
                       // The name and its badge take the whole middle, so the
                       // action icons land on the card's right edge instead of
                       // drifting with the length of the name.

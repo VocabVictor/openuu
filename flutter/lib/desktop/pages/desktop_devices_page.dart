@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../common.dart';
 import '../../common/widgets/login.dart';
 import '../../common/widgets/peer_card.dart';
+import '../../models/online_poller.dart';
 import '../../models/peer_model.dart';
 import '../../models/peer_tab_model.dart';
 import '../../models/platform_model.dart';
@@ -129,21 +130,51 @@ class DeviceGroups extends StatefulWidget {
   /// Favourite ids; when null the rows show no star.
   final Set<String>? favorites;
   final ValueChanged<Peer>? onToggleFavorite;
+
+  /// Supplied by a widget test, which has no bridge to the Rust side.
+  @visibleForTesting
+  final OnlinePoller? poller;
   const DeviceGroups(
       {super.key,
       required this.peers,
       required this.localId,
       required this.onOpen,
       this.favorites,
-      this.onToggleFavorite});
+      this.onToggleFavorite,
+      this.poller});
   @override
   State<DeviceGroups> createState() => _DeviceGroupsState();
 }
 
 class _DeviceGroupsState extends State<DeviceGroups> {
   final _collapsed = <String>{};
+  late final OnlinePoller _poller;
+
+  @override
+  void initState() {
+    super.initState();
+    // The list is where the user decides which device to open, so it is the
+    // list that has to know which ones are up.
+    _poller = widget.poller ??
+        OnlinePoller(
+            name: 'DeviceGroups',
+            onChanged: () {
+              if (mounted) setState(() {});
+            });
+    _poller.start();
+  }
+
+  @override
+  void dispose() {
+    _poller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    _poller.watch(widget.peers
+        .map((p) => p.id)
+        .where((id) => id.isNotEmpty && id != widget.localId));
     final zh = Localizations.localeOf(context).languageCode == 'zh';
     final groups = {
       zh ? '电脑' : 'Computers':
@@ -177,6 +208,7 @@ class _DeviceGroupsState extends State<DeviceGroups> {
         children.add(DeviceRow(
             peer: peer,
             local: peer.id == widget.localId,
+            presence: _poller.presenceOf(peer.id),
             onOpen: widget.onOpen,
             favorite: widget.favorites?.contains(peer.id),
             onToggleFavorite: widget.onToggleFavorite));
