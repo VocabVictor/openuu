@@ -42,3 +42,35 @@ with its own tests.
   import path the next time the WiX custom actions are touched, rather than
   rebuilding and revalidating the MSI for a log string.
 
+
+## Session-window restyle follow-ups
+
+Left behind by the nine-step restyle (`docs/session-window-restyle.md`). None
+of them blocks anything; each says what has to be true before it is worth
+doing and what it can break.
+
+* **Dark-mode tokens are missing.** `UiColor` only defines the light palette,
+  so the parts of the session window that have to look right in dark mode
+  still carry literal values: `_ToolbarTheme` keeps five (the active hover
+  tint, the two danger tints, the dark icon colour and the dark bar
+  background). Precondition: a decision on whether dark mode is a supported
+  appearance at all — if it is, the fix is one `UiColorDark` group plus a
+  resolver, not scattered `Theme.of(context).brightness` checks. Impact: every
+  file that already uses `UiColor`, because the resolver changes how a colour
+  is read; do it in one commit per surface, not repo-wide.
+* **The insecure-connection dialog is the last one not on `UiDialog`.** It
+  still uses `dialogButton` in `common/msgbox.dart`. Its safe default is
+  already correct today (Continue is the outlined secondary, Disconnect the
+  filled primary), so this is consistency work, not a fix. Precondition:
+  agreement that the mobile shell can take the same visual, since
+  `msgbox.dart` serves both. When it moves, **verify the Escape behaviour and
+  the button order explicitly**: this is a trust decision, Escape must not
+  reach "continue", and the permissive choice must not become the primary.
+* **`MenuButton` is shared with the connection-manager window.** The file
+  manager head tools were restyled at the call sites only
+  (`cd9927603`) because `desktop/widgets/menu_button.dart` is also used by
+  `cm_control_panel_authorized.dart`, the toolbar menus and the mod popup
+  menu. Precondition: the CM restyle (`docs/cm-restyle-plan.md`) landing
+  first, so both windows can agree on one button. Impact if changed early:
+  the CM window's accept/reject controls inherit a hover and radius chosen
+  for a file toolbar, which the CM plan explicitly protects.

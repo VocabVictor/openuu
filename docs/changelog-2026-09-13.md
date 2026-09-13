@@ -146,6 +146,13 @@ resolves; the hashes here are the current ones.
 
 ## Defects
 
+* Escape in a `UiDialog` fell back to the first secondary action when no
+  close handler was given. Every call site happened to put the cancelling
+  action first, so nothing misbehaved; but a trust dialog puts the permissive
+  choice there ("continue anyway"), and Escape would have taken it the moment
+  one moved onto the shell. Escape now runs only the explicit close handler.
+  Found by the session-window design self-check, not by a report or a crash;
+  no external trigger existed. `3249bd8e0`, `flutter analyze` 224 -> 223.
 * A cached hardware-codec probe from an earlier boot was still trusted, so
   every VRAM decode context named an adapter that no longer existed and D3D
   decoding fell back to the CPU path with `Failed to get decode context`; the
