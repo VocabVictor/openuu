@@ -111,6 +111,9 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
     let mut try_gdi = 1;
     #[cfg(windows)]
     let capture_started = Instant::now();
+    // Rebuilds of the duplication since the last capture that worked.
+    #[cfg(windows)]
+    let mut rebuilds = 0u32;
     #[cfg(windows)]
     log::info!("gdi: {}", c.is_gdi());
     #[cfg(windows)]
@@ -290,6 +293,7 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
                         VRamEncoder::set_fallback_gdi(sp.name(), false);
                     }
                     try_gdi = 0;
+                    rebuilds = 0;
                 }
                 Ok(())
             }
@@ -358,9 +362,34 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
 
                 #[cfg(windows)]
                 if !c.is_gdi() {
-                    c.set_gdi();
-                    log::info!("dxgi error, fall back to gdi: {:?}", err);
-                    continue;
+                    match gdi_fallback::after_capture_error(err.kind(), rebuilds) {
+                        gdi_fallback::AfterFailure::Rebuild => {
+                            rebuilds += 1;
+                            let wait = gdi_fallback::rebuild_backoff(rebuilds - 1);
+                            log::info!(
+                                "dxgi: {:?}; making the duplication again in {:?} ({rebuilds})",
+                                err,
+                                wait
+                            );
+                            std::thread::sleep(wait);
+                            c = get_capturer(
+                                vs.source,
+                                display_idx,
+                                last_portable_service_running,
+                            )?;
+                            if !scrap::codec::enable_directx_capture() && !c.is_gdi() {
+                                c.set_gdi();
+                            }
+                            #[cfg(feature = "vram")]
+                            c.set_output_texture(encoder.input_texture());
+                            continue;
+                        }
+                        gdi_fallback::AfterFailure::UseGdi => {
+                            c.set_gdi();
+                            log::info!("dxgi error, fall back to gdi: {:?}", err);
+                            continue;
+                        }
+                    }
                 }
                 return Err(err.into());
             }
