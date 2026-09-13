@@ -142,14 +142,10 @@ extension _RemoteToolbarLayout on _RemoteToolbarState {
           padding: const WidgetStatePropertyAll(
               EdgeInsets.symmetric(horizontal: UiSpace.menuItemPaddingX)),
           textStyle: WidgetStatePropertyAll(UiType.sidebarItem),
-          foregroundColor: WidgetStatePropertyAll(
-              Theme.of(context).brightness == Brightness.dark
-                  ? null
-                  : UiColor.text),
-          overlayColor: WidgetStatePropertyAll(
-              Theme.of(context).brightness == Brightness.dark
-                  ? null
-                  : UiColor.settingsRowHover),
+          foregroundColor:
+              WidgetStatePropertyAll(UiColor.of(context).text),
+          overlayColor:
+              WidgetStatePropertyAll(UiColor.of(context).settingsRowHover),
           shape: MaterialStatePropertyAll(RoundedRectangleBorder(
               borderRadius:
                   BorderRadius.circular(_ToolbarTheme.menuButtonBorderRadius))),

@@ -83,8 +83,8 @@ class _MainMonitorSwitchButton extends StatelessWidget {
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: UiColor.text,
+                style: TextStyle(
+                  color: UiColor.of(context).text,
                   fontSize: 10,
                   height: 1,
                   fontWeight: FontWeight.bold,
@@ -236,8 +236,8 @@ class _MinimizedMonitorSwitchButton extends StatelessWidget {
               ),
               Text(
                 label,
-                style: const TextStyle(
-                  color: UiColor.text,
+                style: TextStyle(
+                  color: UiColor.of(context).text,
                   fontSize: 9,
                   height: 1,
                   fontWeight: FontWeight.bold,

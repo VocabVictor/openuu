@@ -169,7 +169,8 @@ class RdoMenuButton<T> extends StatelessWidget {
       leadingIcon: SizedBox(
         width: 14,
         child: value == groupValue
-            ? const Icon(Icons.check, size: 14, color: UiColor.primary)
+            ? Icon(Icons.check,
+                size: 14, color: UiColor.of(context).primary)
             : null,
       ),
       closeOnActivate: closeOnActivate,

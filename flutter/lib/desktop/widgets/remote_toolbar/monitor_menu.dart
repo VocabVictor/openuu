@@ -64,7 +64,8 @@ class _MonitorMenu extends StatelessWidget {
   Widget buildMonitorMenu(BuildContext context) {
     final width = SimpleWrapper<double>(0);
     final monitorsIcon =
-        globalMonitorsWidget(width, Colors.white, Colors.black38);
+        globalMonitorsWidget(context, width, UiColor.of(context).surface,
+            UiColor.of(context).muted);
     return _IconSubmenuButton(
         tooltip: 'Select Monitor',
         icon: monitorsIcon,
@@ -108,10 +109,12 @@ class _MonitorMenu extends StatelessWidget {
         child: Text(translate('Show displays as individual windows')));
   }
 
-  buildOneMonitorButton(i, curDisplay) => Text(
+  buildOneMonitorButton(BuildContext context, i, curDisplay) => Text(
         '${i + 1}',
         style: TextStyle(
-          color: i == curDisplay ? UiColor.primary : UiColor.muted,
+          color: i == curDisplay
+              ? UiColor.of(context).primary
+              : UiColor.of(context).muted,
           fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
@@ -128,8 +131,8 @@ class _MonitorMenu extends StatelessWidget {
           final width = SimpleWrapper<double>(0);
           Widget? monitorsIcon;
           if (isAllMonitors) {
-            monitorsIcon = globalMonitorsWidget(
-                width, UiColor.textSecondary, UiColor.primary);
+            monitorsIcon = globalMonitorsWidget(context, width,
+                UiColor.of(context).textSecondary, UiColor.of(context).primary);
           }
           return _IconMenuButton(
             tooltip: isMulti
@@ -158,10 +161,11 @@ class _MonitorMenu extends StatelessWidget {
                       children: [
                         SvgPicture.asset(
                           "assets/screen.svg",
-                          colorFilter:
-                              ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                          colorFilter: ColorFilter.mode(
+                              UiColor.of(context).surface, BlendMode.srcIn),
                         ),
-                        Obx(() => buildOneMonitorButton(i, display.value)),
+                        Obx(() =>
+                            buildOneMonitorButton(context, i, display.value)),
                       ],
                     ),
                   ),
@@ -178,8 +182,9 @@ class _MonitorMenu extends StatelessWidget {
     return monitorList;
   }
 
-  globalMonitorsWidget(
-      SimpleWrapper<double> width, Color activeTextColor, Color activeBgColor) {
+  globalMonitorsWidget(BuildContext context, SimpleWrapper<double> width,
+      Color activeTextColor, Color activeBgColor) {
+    final pal = UiColor.of(context);
     getMonitors() {
       final pi = ffi.ffiModel.pi;
       RxInt display = CurrentDisplayState.find(id);
@@ -211,16 +216,16 @@ class _MonitorMenu extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: Colors.grey,
+                color: pal.border,
                 width: 1.0,
               ),
-              color: display.value == i ? activeBgColor : Colors.white,
+              color: display.value == i ? activeBgColor : pal.surface,
             ),
             child: Center(
                 child: Text(
               '${i + 1}',
               style: TextStyle(
-                color: display.value == i ? activeTextColor : UiColor.muted,
+                color: display.value == i ? activeTextColor : pal.muted,
                 fontSize: fontSize,
                 fontWeight: FontWeight.bold,
               ),
