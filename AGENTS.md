@@ -567,7 +567,11 @@ steps, all of them:
   document that quotes a Windows path. **Eye review does not work on this
   damage**: Markdown renders 0x08 as nothing, `git diff` prints it as nothing,
   and the page simply shows a path with a letter missing. Its first run found
-  a byte a whole-repository `grep` had missed.
+  a byte a whole-repository `grep` had missed. **It does not cover the other
+  heredoc damage**: an unquoted delimiter runs whatever is in backticks and
+  drops the word, leaving no anomalous byte to find -- only an absence. Quote
+  the delimiter (`<<'EOF'`) and nothing inside is substituted at all, which is
+  the one habit that covers both.
 * **Say in the group which script you changed**, so the next person to hit an
   oddity knows where to look.
 
