@@ -43,6 +43,32 @@ with its own tests.
   rebuilding and revalidating the MSI for a log string.
 
 
+## The hbb_common submodule, and what it blocks
+
+* **Nagle on the WebSocket transport.** `libs/hbb_common/src/websocket.rs`
+  passes a hardcoded `disable_nagle = false` when connecting, so a ws
+  deployment pays Nagle against the peer's delayed acknowledgement on traffic
+  that is all small messages wanted at once. The TCP transport already
+  disables it. Not done because nothing uses ws by default, so the change is
+  worth nothing today, and the file is in a submodule we cannot push to (see
+  below). Precondition: a deployment that actually needs ws for traversal.
+  Two ways in when that day comes: fork the submodule, or send the one-line
+  change upstream. A third, worse way exists if only our side may change:
+  `WsFramedStream` exposes no accessor for the inner `TcpStream`, so setting
+  the option after connecting would need an accessor added there anyway.
+* **Whether to fork `hbb_common` at all.** The submodule points at
+  `rustdesk/hbb_common`, the upstream repository, and the commits in this
+  repository that touch it only move the pointer to one of theirs. OpenUU is
+  an independent product and is now public, so anything that has to change
+  the protocol floor -- the WebSocket transport, KCP, `FramedStream`
+  behaviour, the rendezvous messages -- is currently out of reach. The
+  trigger for deciding is the first change we genuinely cannot route around;
+  the ws item above is not it, because waiting costs nothing. The two paths:
+  fork it and carry the cost of tracking upstream ourselves, or send changes
+  upstream and live with their schedule and their view of what belongs in a
+  shared library. Nothing to do now: the cost of forking is continuous and
+  the cost of waiting is, so far, zero.
+
 ## Session-window restyle follow-ups
 
 Left behind by the nine-step restyle (`docs/session-window-restyle.md`). None
