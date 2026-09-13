@@ -28,7 +28,7 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
           Text(translate('OS Password')),
         ]),
         trailingIcon: Transform.scale(
-          scale: (isDesktop || isWebDesktop) ? 0.8 : 1,
+          scale: isDesktop ? 0.8 : 1,
           child: IconButton(
             onPressed: () {
               if (isMobile && Navigator.canPop(context)) {
@@ -175,7 +175,7 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
     );
   }
   // divider
-  if (isDefaultConn && (isDesktop || isWebDesktop)) {
+  if (isDefaultConn && (isDesktop)) {
     v.add(TTextMenu(child: Offstage(), onPressed: () {}, divider: true));
   }
   // ctrlAltDel
@@ -247,7 +247,7 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
     ));
   }
   // record
-  if (!(isDesktop || isWeb) &&
+  if (!isDesktop &&
       bind.mainGetLocalOption(key: kOptionHideRecordingButton) != 'Y' &&
       (ffi.recordingModel.start || (perms["recording"] != false))) {
     v.add(TTextMenu(
@@ -304,7 +304,7 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
     }
   }
   // fingerprint
-  if (!(isDesktop || isWebDesktop)) {
+  if (!isDesktop) {
     v.add(TTextMenu(
       child: Text(translate('Copy Fingerprint')),
       onPressed: () => onCopyFingerprint(FingerprintState.find(id).value),

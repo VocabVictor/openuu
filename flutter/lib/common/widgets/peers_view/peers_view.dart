@@ -98,7 +98,7 @@ class _PeersViewState extends State<_PeersView>
     LoadEvent.lan: 'empty_lan_tip',
     LoadEvent.addressBook: 'empty_address_book_tip',
   });
-  final space = (isDesktop || isWebDesktop) ? 12.0 : 8.0;
+  final space = isDesktop ? 12.0 : 8.0;
   final _curPeers = <String>{};
   var _lastChangeTime = DateTime.now();
   var _lastQueryPeers = <String>{};
@@ -171,7 +171,7 @@ class _PeersViewState extends State<_PeersView>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (isDesktop || isWebDesktop) return;
+    if (isDesktop) return;
     if (state == AppLifecycleState.resumed) {
       _isActive = true;
       _queryCount = 0;

@@ -14,11 +14,9 @@ extension _PeersViewOnlines on _PeersViewState {
             _queryOnlines(false);
           }
         } else {
-          final skipIfIsWeb =
-              isWeb && !(stateGlobal.isWebVisible && stateGlobal.isInMainPage);
           final skipIfMobile =
               (isAndroid || isIOS) && !stateGlobal.isInMainPage;
-          final skipIfNotActive = skipIfIsWeb || skipIfMobile || !_isActive;
+          final skipIfNotActive = skipIfMobile || !_isActive;
           if (!skipIfNotActive && (_queryCount < _PeersViewState._maxQueryCount || !p)) {
             if (now.difference(_lastQueryTime) >= _queryInterval) {
               if (_curPeers.isNotEmpty) {

@@ -147,9 +147,6 @@ class _OidcAuthController {
     final authAttempt = ++_authAttempt;
     curOP.value = op;
     // Web auth must start during the original user gesture so popups are allowed.
-    if (isWeb) {
-      return _startWeb(authAttempt, op);
-    }
     final completer = Completer<bool>();
     _pendingOperation = _pendingOperation.then((_) async {
       if (!_isCurrent(authAttempt, op)) {
@@ -169,11 +166,6 @@ class _OidcAuthController {
       }
     });
     return completer.future;
-  }
-
-  Future<bool> _startWeb(int authAttempt, String op) async {
-    await bind.mainAccountAuth(op: op, rememberMe: true);
-    return _isCurrent(authAttempt, op);
   }
 
   bool canStart() {

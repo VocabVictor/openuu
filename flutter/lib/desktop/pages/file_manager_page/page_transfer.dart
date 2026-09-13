@@ -114,15 +114,4 @@ extension _FileManagerPageTransfer on _FileManagerPageState {
         child: fileView);
   }
 
-  Widget generateCard(Widget child) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.all(
-          Radius.circular(15.0),
-        ),
-      ),
-      child: child,
-    );
-  }
 }

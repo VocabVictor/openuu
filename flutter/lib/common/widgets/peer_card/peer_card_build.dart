@@ -122,7 +122,7 @@ extension _PeerCardBuild on _PeerCardState {
         .map((e) => gFFI.abModel.getCurrentAbTagColor(e))
         .toList();
     return Tooltip(
-      message: !(isDesktop || isWebDesktop)
+      message: !isDesktop
           ? ''
           : peer.tags.isNotEmpty
               ? '${translate('Tags')}: ${peer.tags.join(', ')}'

@@ -30,8 +30,7 @@ void changeIdDialog() {
       final Iterable violations = rules.where((r) => !r.validate(newId));
       if (violations.isNotEmpty) {
         setState(() {
-          msg = (isDesktop || isWebDesktop)
-              ? '${translate('Prompt')}:  ${violations.map((r) => r.name).join(', ')}'
+          msg = isDesktop ? '${translate('Prompt')}:  ${violations.map((r) => r.name).join(', ')}'
               : violations.map((r) => r.name).join(', ');
         });
         return;
@@ -55,8 +54,7 @@ void changeIdDialog() {
       }
       setState(() {
         isInProgress = false;
-        msg = (isDesktop || isWebDesktop)
-            ? '${translate('Prompt')}: ${translate(status)}'
+        msg = isDesktop ? '${translate('Prompt')}: ${translate(status)}'
             : translate(status);
       });
     }
@@ -92,8 +90,7 @@ void changeIdDialog() {
           const SizedBox(
             height: 8.0,
           ),
-          (isDesktop || isWebDesktop)
-              ? Obx(() => Wrap(
+          isDesktop ? Obx(() => Wrap(
                     runSpacing: 8,
                     spacing: 4,
                     children: rules.map((e) {

@@ -48,9 +48,6 @@ class QualityMonitor extends StatelessWidget {
                       _row(
                           "Codec", qualityMonitorModel.data.codecFormat ?? '-'),
                       _row("Chroma", qualityMonitorModel.data.chroma ?? '-'),
-                      if (qualityMonitorModel.webrtcTransport != null)
-                        _row("Transport",
-                            qualityMonitorModel.webrtcTransport!),
                     ],
                   ),
                 )

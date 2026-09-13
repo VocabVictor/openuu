@@ -32,7 +32,7 @@ class RawKeyFocusScope extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // https://github.com/flutter/flutter/issues/154053
-    final useRawKeyEvents = isLinux && !isWeb;
+    final useRawKeyEvents = isLinux;
     // FIXME: On Windows, `AltGr` will generate `Alt` and `Control` key events,
     // while `Alt` and `Control` are separated key events for en-US input method.
     return FocusScope(
@@ -116,7 +116,7 @@ class _RawTouchGestureDetectorRegionState
   FFI get ffi => widget.ffi;
   FfiModel get ffiModel => widget.ffiModel;
   InputModel get inputModel => widget.inputModel;
-  bool get handleTouch => (isDesktop || isWebDesktop) || ffiModel.touchMode;
+  bool get handleTouch => (isDesktop) || ffiModel.touchMode;
   SessionID get sessionId => ffi.sessionId;
   bool get canvasLocked => isMobile && ffi.canvasModel.locked;
 

@@ -179,7 +179,7 @@ extension _RawTouchTaps on _RawTouchGestureDetectorRegionState {
     // mobile mouse mode or desktop touch screen
     final isMobileMouseMode = isMobile && !ffiModel.touchMode;
     // We can't use `d.localPosition` here because it's always (0, 0) on desktop.
-    final isDesktopInRemoteRect = (isDesktop || isWebDesktop) &&
+    final isDesktopInRemoteRect = (isDesktop) &&
         this.ffi.cursorModel.isInRemoteRect(_doubleFinerTapPosition);
     if (isMobileMouseMode || isDesktopInRemoteRect) {
       await inputModel.tap(MouseButtons.right);

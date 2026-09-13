@@ -112,7 +112,7 @@ Future<List<TToggleMenu>> toolbarDisplayToggle(
         child: Text(translate('Show displays as individual windows'))));
   }
 
-  final isMultiScreens = !isWeb && (await getScreenRectList()).length > 1;
+  final isMultiScreens = (await getScreenRectList()).length > 1;
   if (pi.isSupportMultiDisplay && isMultiScreens) {
     final value = bind.sessionGetUseAllMyDisplaysForTheRemoteSession(
             sessionId: ffi.sessionId) ==

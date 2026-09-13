@@ -72,7 +72,7 @@ extension _PeerTabBars on _PeerTabPageState {
     }
     return Expanded(
         child: child.marginSymmetric(
-            vertical: (isDesktop || isWebDesktop) ? 12.0 : 6.0));
+            vertical: isDesktop ? 12.0 : 6.0));
   }
 
   Widget _createRefresh(

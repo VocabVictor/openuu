@@ -51,7 +51,7 @@ extension _RawTouchPans on _RawTouchGestureDetectorRegionState {
       }
 
       _touchModePanStarted = true;
-      if (isDesktop || isWebDesktop) {
+      if (isDesktop) {
         this.ffi.cursorModel.trySetRemoteWindowCoords();
       }
 
@@ -106,7 +106,7 @@ extension _RawTouchPans on _RawTouchGestureDetectorRegionState {
     if (isNotTouchBasedDevice()) {
       return;
     }
-    if (isDesktop || isWebDesktop) {
+    if (isDesktop) {
       this.ffi.cursorModel.clearRemoteWindowCoords();
     }
     if (handleTouch) {
@@ -153,7 +153,7 @@ extension _RawTouchPans on _RawTouchGestureDetectorRegionState {
 
     if (canvasLocked) return;
 
-    if ((isDesktop || isWebDesktop)) {
+    if ((isDesktop)) {
       final scale = ((d.scale - _scale) * 1000).toInt();
       _scale = d.scale;
 
@@ -178,7 +178,7 @@ extension _RawTouchPans on _RawTouchGestureDetectorRegionState {
     if (isNotTouchBasedDevice()) {
       return;
     }
-    if ((isDesktop || isWebDesktop)) {
+    if ((isDesktop)) {
       if (widget.isCamera) return;
       await bind.sessionSendPointer(
           sessionId: sessionId,

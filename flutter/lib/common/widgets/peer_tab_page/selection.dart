@@ -69,7 +69,7 @@ extension _PeerTabSelection on _PeerTabPageState {
           showToast(translate('Successful'));
         },
         child: Icon(PeerTabModel.icons[PeerTabIndex.fav.index]),
-      ).marginOnly(left: !(isDesktop || isWebDesktop) ? 11 : 6),
+      ).marginOnly(left: !isDesktop ? 11 : 6),
     );
   }
 
@@ -90,7 +90,7 @@ extension _PeerTabSelection on _PeerTabPageState {
           model.setMultiSelectionMode(false);
         },
         child: Icon(PeerTabModel.icons[PeerTabIndex.ab.index]),
-      ).marginOnly(left: !(isDesktop || isWebDesktop) ? 11 : 6),
+      ).marginOnly(left: !isDesktop ? 11 : 6),
     );
   }
 
@@ -113,7 +113,7 @@ extension _PeerTabSelection on _PeerTabPageState {
                 });
               },
               child: Icon(Icons.tag))
-          .marginOnly(left: !(isDesktop || isWebDesktop) ? 11 : 6),
+          .marginOnly(left: !isDesktop ? 11 : 6),
     );
   }
 

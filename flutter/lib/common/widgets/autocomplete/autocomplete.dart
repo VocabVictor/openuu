@@ -226,7 +226,7 @@ class AutocompletePeerTileState extends State<AutocompletePeerTile> {
         .map((e) => gFFI.abModel.getCurrentAbTagColor(e))
         .toList();
     return Tooltip(
-      message: !(isDesktop || isWebDesktop)
+      message: !isDesktop
           ? ''
           : widget.peer.tags.isNotEmpty
               ? '${translate('Tags')}: ${widget.peer.tags.join(', ')}'

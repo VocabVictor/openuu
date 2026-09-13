@@ -112,11 +112,10 @@ Future<bool?> _openLoginDialog() async {
               // Workaround for web, close the dialog first, then show the verification code dialog.
               // Otherwise, the text field will keep selecting the text and we can't input the code.
               // Not sure why this happens.
-              if (isWeb && close != null) close(null);
               final res = await verificationCodeDialog(
                   resp.user, resp.secret, isEmailVerification);
               if (res == true) {
-                if (!isWeb && close != null) close(false);
+                if (close != null) close(false);
                 return;
               }
             }

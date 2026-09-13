@@ -44,7 +44,7 @@ class _TabEntry {
 }
 
 EdgeInsets? _menuPadding() {
-  return (isDesktop || isWebDesktop) ? kDesktopMenuPadding : null;
+  return isDesktop ? kDesktopMenuPadding : null;
 }
 
 class _PeerTabPageState extends State<PeerTabPage>

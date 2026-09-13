@@ -35,7 +35,6 @@ List<TToggleMenu> toolbarKeyboardToggles(FFI ffi) {
   final isWayland = isDesktop && isLinux && bind.mainCurrentIsWayland();
   if (isDesktop &&
       isDefaultConn &&
-      !isWeb &&
       !isWayland &&
       ffiModel.keyboard &&
       !ffiModel.viewOnly &&

@@ -21,7 +21,6 @@ class StateGlobal {
   final RxBool isFocused = false.obs;
   // for mobile and web
   bool isInMainPage = true;
-  bool isWebVisible = true;
 
   final isPortrait = false.obs;
 

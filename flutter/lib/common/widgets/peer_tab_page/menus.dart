@@ -36,7 +36,7 @@ extension _PeerTabMenus on _PeerTabPageState {
   }
 
   Widget visibleContextMenuListener(Widget child) {
-    if (!(isDesktop || isWebDesktop)) {
+    if (!isDesktop) {
       return GestureDetector(
         onLongPressDown: (e) {
           final x = e.globalPosition.dx;

@@ -48,8 +48,7 @@ class DraggableChatWindow extends StatelessWidget {
                 resizeToAvoidBottomInset: false,
                 appBar: CustomAppBar(
                   onPanUpdate: onPanUpdate,
-                  appBar: (isDesktop || isWebDesktop)
-                      ? _buildDesktopAppBar(context)
+                  appBar: isDesktop ? _buildDesktopAppBar(context)
                       : _buildMobileAppBar(context),
                 ),
                 body: ChatPage(chatModel: chatModel),
