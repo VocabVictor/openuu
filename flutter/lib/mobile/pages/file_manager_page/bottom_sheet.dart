@@ -92,7 +92,10 @@ extension _FileManagerBottomSheet on _FileManagerPageState {
                 if (isAndroid &&
                     selectedItems?.isLocal == true &&
                     selectedItems?.items.isNotEmpty == true) ...[
-                  if (selectedItems.items.length == 1 &&
+                  // Load-bearing: this assertion is what promotes
+                  // selectedItems for the three uses below, which is why the
+                  // analyser called those three unnecessary and never this one.
+                  if (selectedItems!.items.length == 1 &&
                       selectedItems.items.single.isFile)
                     IconButton(
                       tooltip: translate("Save as"),
