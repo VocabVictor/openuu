@@ -781,5 +781,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Relayed", "中继"),
         ("Packet loss", "丢包"),
         ("packet-loss-unavailable-tip", "当前连接方式统计不到丢包：TCP 与中继会自行重传，KCP 暂未上报重传次数。"),
+        ("ctrl-alt-del-unavailable-tip", "被控端需要以服务方式运行才能接收 Ctrl + Alt + Del。请在被控端安装为服务，或先请求提权。"),
     ].iter().cloned().collect();
 }
