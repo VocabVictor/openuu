@@ -56,7 +56,7 @@ async fn a_blocked_write_does_not_stop_the_reader() {
     let (mut reader, mut writer) = halves(framed_over(io));
 
     let write = tokio::spawn(async move {
-        let _ = writer.send_bytes(Bytes::from(vec![0u8; 64])).await;
+        let _ = writer.send_raw(vec![0u8; 64]).await;
     });
 
     let got = tokio::time::timeout(SECOND, reader.next())
