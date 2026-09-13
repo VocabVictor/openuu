@@ -66,8 +66,7 @@ class _MainMonitorSwitchButton extends StatelessWidget {
               SvgPicture.asset(
                 'assets/display_switcher.svg',
                 colorFilter: ColorFilter.mode(
-                    _ToolbarTheme.iconColor(
-                        context, _ToolbarTheme.blueColor),
+                    _ToolbarTheme.iconColor(context, _ButtonState.idle),
                     BlendMode.srcIn),
                 width: _ToolbarTheme.buttonSize,
                 height: _ToolbarTheme.buttonSize,
@@ -214,8 +213,7 @@ class _MinimizedMonitorSwitchButton extends StatelessWidget {
               SvgPicture.asset(
                 'assets/display_switcher.svg',
                 colorFilter: ColorFilter.mode(
-                    _ToolbarTheme.iconColor(
-                        context, _ToolbarTheme.blueColor),
+                    _ToolbarTheme.iconColor(context, _ButtonState.idle),
                     BlendMode.srcIn),
                 width: iconSize,
                 height: iconSize,
