@@ -1,65 +1,16 @@
-part of 'desktop_home_page.dart';
+part of 'desktop_tab_page.dart';
 
-class _DesktopHomePageState extends State<DesktopHomePage>
-    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  @override
-  bool get wantKeepAlive => true;
-  StreamSubscription? _uniLinksSubscription;
-  var svcStopped = false.obs;
-  Timer? _updateTimer;
-
-  final RxBool _block = false.obs;
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return _buildBlock(child: AnimatedBuilder(animation: gFFI.serverModel,
-      builder: (context, _) {
-        final model = gFFI.serverModel;
-        return DesktopAssistancePage(
-          deviceId: model.serverId.text, password: model.serverPasswd.text,
-          deviceName: Platform.localHostname, online: model.connectStatus > 0,
-          verification: model.approveMode == 'click' ? translate('Accept sessions via click') : translate(_verificationLabel(model.verificationMethod)),
-          verificationMethod: model.verificationMethod.isEmpty ? kUseBothPasswords : model.verificationMethod,
-          onVerificationChanged: (method) => model.setVerificationMethod(method),
-          temporaryPassword: model.approveMode != 'click' && model.verificationMethod != kUsePermanentPassword,
-          enabled: !svcStopped.value, onEnable: (value) => start_service(value),
-          onConnect: (id) => connect(context, id),
-          recentPeers: gFFI.recentPeersModel.peers,
-          onOpenRecent: (peer) => connect(context, peer.id),
-          onRefresh: () => bind.mainUpdateTemporaryPassword(),
-          onSecurity: () => DesktopSettingPage.switch2page(SettingsTabKey.safety),
-          onDevices: () => DesktopTabPage.showHome(),
-          onFavorites: () => DesktopTabPage.showHome(favorites: true),
-          onSettings: DesktopTabPage.onAddSetting, onAccount: () => loginDialog());
-      }));
-  }
-
-  static String _verificationLabel(String method) {
-    switch (method) {
-      case kUseTemporaryPassword:
-        return 'Use one-time password';
-      case kUsePermanentPassword:
-        return 'Use permanent password';
-      default:
-        return 'Use both passwords';
-    }
-  }
-
-  Widget _buildBlock({required Widget child}) {
-    return buildRemoteBlock(
-        block: _block, mask: true, use: canBeBlocked, child: child);
-  }
-
-  @override
-  void initState() {
-    super.initState();
+/// Main-window duties that used to live in the legacy home page: the
+/// service-state poll, the multi-window method handler, active-window
+/// tracking and uni links.
+extension _WindowHandlers on _DesktopTabPageState {
+  void _initWindowHandlers() {
     _updateTimer = periodic_immediate(const Duration(seconds: 1), () async {
       await gFFI.serverModel.fetchID();
       final v = await mainGetBoolOption(kOptionStopService);
       if (v != svcStopped.value) {
         svcStopped.value = v;
-        setState(() {});
+        if (mounted) _setState(() {});
       }
     });
     Get.put<RxBool>(svcStopped, tag: 'stop-service');
@@ -162,23 +113,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       }
     });
     _uniLinksSubscription = listenUniLinks();
-    WidgetsBinding.instance.addObserver(this);
   }
 
-  @override
-  void dispose() {
+  void _disposeWindowHandlers() {
     _uniLinksSubscription?.cancel();
     Get.delete<RxBool>(tag: 'stop-service');
     _updateTimer?.cancel();
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      shouldBeBlocked(_block, canBeBlocked);
-    }
   }
 }
