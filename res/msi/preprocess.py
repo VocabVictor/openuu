@@ -113,6 +113,7 @@ PER_CUSTOMER_DISK_ID = 2
 PER_CUSTOMER_FILES = {
     # relative path -> property gating installation, or None if always installed
     "custom.txt": None,
+    "openuu-config.json": None,
     "data/flutter_assets/assets/icon.ico": "CC_HAS_ICON_ICO",
     "data/flutter_assets/assets/icon.png": "CC_HAS_ICON_PNG",
     "data/flutter_assets/assets/logo.png": "CC_HAS_LOGO",
