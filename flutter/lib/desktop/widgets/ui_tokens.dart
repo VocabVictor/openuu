@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'ui_palette.dart';
+
 /// Spacing and typography tokens of the desktop home shell, in logical
 /// pixels on an 8pt grid (docs: openuu-smoke/design-review.md). Pages use
 /// these instead of bare numbers.
@@ -125,6 +127,13 @@ class UiSpace {
 }
 
 class UiColor {
+  /// The palette of the appearance in force. A file migrates by taking this
+  /// once at the top of `build` and reading the same names from it; the
+  /// constants below stay as the light values for anything not migrated and
+  /// for a caller with no context (docs/dark-token-decision.md).
+  static UiPalette of(BuildContext context) =>
+      Theme.of(context).extension<UiPalette>() ?? UiPalette.light;
+
   static const Color text = Color(0xff1f2329);
   static const Color textSecondary = Color(0xff4e5969);
   static const Color muted = Color(0xff8a8f99);
@@ -148,9 +157,14 @@ class UiColor {
   static const Color dangerBorder = Color(0xfffbaca3);
   static const Color warning = Color(0xffff7d00);
   static const Color success = Color(0xff00b42a);
+  static const Color surface = Color(0xffffffff);
+  static const Color onPrimary = Color(0xffffffff);
 }
 
 class UiType {
+  /// The type tokens with the palette's colours; the pair of [UiColor.of].
+  static UiTypeset of(BuildContext context) => UiTypeset(UiColor.of(context));
+
   static const List<String> fallback = [
     'PingFang SC',
     'Microsoft YaHei UI',

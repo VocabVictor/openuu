@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../desktop/widgets/ui_palette.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
@@ -228,6 +229,7 @@ class MyTheme {
     extensions: <ThemeExtension<dynamic>>[
       ColorThemeExtension.light,
       TabbarTheme.light,
+      UiPalette.light,
     ],
   );
   static ThemeData darkTheme = ThemeData(
@@ -332,6 +334,7 @@ class MyTheme {
   ).copyWith(
     extensions: <ThemeExtension<dynamic>>[
       ColorThemeExtension.dark,
+      UiPalette.dark,
       TabbarTheme.dark,
     ],
   );
