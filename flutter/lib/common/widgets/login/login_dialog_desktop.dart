@@ -70,8 +70,8 @@ CustomAlertDialog _desktopLoginDialog({
                       child: Text(server.toString(),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: UiType.caption
-                              .copyWith(color: UiColor.textSecondary))),
+                          style: typeset.caption
+                              .copyWith(color: pal.textSecondary))),
                 ]))),
         uiDialogField(pal, typeset,
             translate(DialogTextField.kUsernameTitle), username,

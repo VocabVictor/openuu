@@ -68,7 +68,7 @@ class _ActionIconState extends State<ActionIcon> {
                             ? pal.danger
                             : pal.textSecondary)
                         : hover.value && widget.isClose
-                            ? Colors.white
+                            ? pal.onPrimary
                             : MyTheme.tabbar(context).unSelectedIconColor,
                     size: iconSize,
                   ),
