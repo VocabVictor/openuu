@@ -51,7 +51,7 @@ extension _GeneralTheme on _GeneralState {
           initialKey: current,
           enabled: !isOptFixed,
           onChanged: onChanged,
-        ).marginOnly(left: 15),
+        ),
       ]);
     }
     return _Card(title: 'Theme', children: [
@@ -176,7 +176,7 @@ extension _GeneralMedia on _GeneralState {
           setDevice(key);
           _setState(() {});
         },
-      ).marginOnly(left: _kContentHMargin);
+      );
       return _Card(title: 'Audio Input Device', children: [child]);
     }
 

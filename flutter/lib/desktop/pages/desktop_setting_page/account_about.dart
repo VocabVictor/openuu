@@ -87,9 +87,7 @@ class _AboutState extends State<_About> {
             _settingRow(context, label, const SizedBox.shrink(),
                 description: value);
         return ListView(controller: scrollController, children: [
-          Card(
-              margin: const EdgeInsets.only(left: _kCardLeftMargin, top: 8),
-              child: Column(children: [
+          _group(null, [
                 _settingRow(
                     context,
                     'OpenUU',
@@ -136,7 +134,7 @@ class _AboutState extends State<_About> {
                             fontSize: 12,
                             height: 1.5,
                             color: Color(0xff858b95)))),
-              ])),
+          ]),
         ]);
       }
       return SingleChildScrollView(

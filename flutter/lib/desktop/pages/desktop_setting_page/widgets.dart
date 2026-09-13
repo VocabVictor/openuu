@@ -152,65 +152,59 @@ Widget _Card(
     {required String title,
     required List<Widget> children,
     List<Widget>? title_suffix}) {
-  if (isWindows &&
-      !bind.isIncomingOnly() &&
-      children.length == 1 &&
-      title_suffix == null &&
-      ['Service', 'Theme', 'Language', 'Audio Input Device'].contains(title)) {
-    return Card(
-        margin: const EdgeInsets.only(left: _kCardLeftMargin, top: 8),
-        child: Builder(
+  if (isWindows && !bind.isIncomingOnly()) {
+    if (children.length == 1 &&
+        title_suffix == null &&
+        ['Service', 'Theme', 'Language', 'Audio Input Device'].contains(title)) {
+      return _group(null, [
+        Builder(
             builder: (context) => LayoutBuilder(
                 builder: (context, bounds) => _settingRow(
                     context,
                     title,
                     SizedBox(
                         width: bounds.maxWidth < 600 ? 160 : 220,
-                        child: children.single)))));
+                        child: children.single))))
+      ]);
+    }
+    return _group(translate(title), children,
+        trailing: title_suffix == null
+            ? null
+            : Row(mainAxisSize: MainAxisSize.min, children: title_suffix));
   }
   return Row(
     children: [
       Flexible(
         child: SizedBox(
-          width: isWindows && !bind.isIncomingOnly()
-              ? double.infinity
-              : _kCardFixedWidth,
+          width: _kCardFixedWidth,
           child: Card(
             child: Column(
               children: [
-                if (isWindows && !bind.isIncomingOnly())
-                  Builder(
-                      builder: (context) => _settingRow(
-                          context,
-                          title,
-                          Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [...?title_suffix])))
-                else
-                  Row(
-                    children: [
-                      Expanded(
-                          child: Text(
-                        translate(title),
-                        textAlign: TextAlign.start,
-                        style: TextStyle(
-                          fontSize: isWindows && !bind.isIncomingOnly()
-                              ? 16
-                              : _kTitleFontSize,
-                        ),
-                      )),
-                      ...?title_suffix
-                    ],
-                  ).marginOnly(left: _kContentHMargin, top: 10, bottom: 10),
+                Row(
+                  children: [
+                    Expanded(
+                        child: Text(
+                      translate(title),
+                      textAlign: TextAlign.start,
+                      style: TextStyle(fontSize: _kTitleFontSize),
+                    )),
+                    ...?title_suffix
+                  ],
+                ).marginOnly(left: _kContentHMargin, top: 10, bottom: 10),
                 ...children
                     .map((e) => e.marginOnly(top: 4, right: _kContentHMargin)),
               ],
             ).marginOnly(bottom: 10),
-          ).marginOnly(
-              left: _kCardLeftMargin,
-              top: isWindows && !bind.isIncomingOnly() ? 8 : 15),
+          ).marginOnly(left: _kCardLeftMargin, top: 15),
         ),
       ),
     ],
   );
 }
+
+/// A settings group with the group gap above it.
+Widget _group(String? title, List<Widget> children, {Widget? trailing}) =>
+    Padding(
+        padding: const EdgeInsets.only(top: UiSpace.settingsGroupGap),
+        child: SettingsGroup(
+            title: title, titleTrailing: trailing, children: children));

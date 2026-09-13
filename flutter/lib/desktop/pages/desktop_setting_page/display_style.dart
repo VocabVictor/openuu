@@ -4,22 +4,27 @@ extension _DisplayStyle on _DisplayState {
   Widget _choiceCard(BuildContext context, String title, String current,
       Map<String, String> options, void Function(String) onChanged,
       {bool enabled = true, Widget? detail}) {
-    return Card(
-      margin: const EdgeInsets.only(left: _kCardLeftMargin, top: 8),
-      child: Column(children: [
-        LayoutBuilder(builder: (context, bounds) => _settingRow(context, title,
-          SizedBox(width: bounds.maxWidth < 600 ? 160 : 220,
-            child: ComboBox(
-              keys: options.keys.toList(),
-              values: options.values.map(translate).toList(),
-              initialKey: current,
-              enabled: enabled,
-              onChanged: onChanged,
-            ).marginOnly(left: 15)), enabled: enabled)),
-        if (detail != null)
-          Padding(padding: const EdgeInsets.fromLTRB(20, 8, 20, 16), child: detail),
-      ]),
-    );
+    return _group(null, [
+      LayoutBuilder(
+          builder: (context, bounds) => _settingRow(
+              context,
+              title,
+              SizedBox(
+                  width: bounds.maxWidth < 600 ? 160 : 220,
+                  child: ComboBox(
+                    keys: options.keys.toList(),
+                    values: options.values.map(translate).toList(),
+                    initialKey: current,
+                    enabled: enabled,
+                    onChanged: onChanged,
+                  )),
+              enabled: enabled)),
+      if (detail != null)
+        Padding(
+            padding: const EdgeInsets.fromLTRB(
+                UiSpace.settingsRowPaddingX, UiSpace.s2, UiSpace.settingsRowPaddingX, UiSpace.s4),
+            child: detail),
+    ]);
   }
 
   Widget viewStyle(BuildContext context) {

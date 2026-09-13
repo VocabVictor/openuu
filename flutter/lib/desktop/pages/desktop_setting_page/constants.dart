@@ -16,7 +16,7 @@ const double _kCheckBoxLeftMargin = 10;
 
 const double _kRadioLeftMargin = 10;
 
-const double _kListViewBottomMargin = 15;
+const double _kListViewBottomMargin = UiSpace.settingsScrollPaddingY;
 
 const double _kTitleFontSize = 20;
 
