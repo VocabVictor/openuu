@@ -7,6 +7,8 @@ fn build_windows() {
         .file("src/platform/windows_desktop.cc")
         .file("src/platform/windows_session.cc")
         .file("src/platform/windows_keyboard.cc")
+        .file("src/platform/windows_test_cert_match.cc")
+        .file("src/platform/windows_reg_delete.cc")
         .file(file2)
         .compile("windows");
     println!("cargo:rustc-link-lib=WtsApi32");
@@ -14,6 +16,9 @@ fn build_windows() {
     println!("cargo:rerun-if-changed=src/platform/windows_desktop.cc");
     println!("cargo:rerun-if-changed=src/platform/windows_session.cc");
     println!("cargo:rerun-if-changed=src/platform/windows_keyboard.cc");
+    println!("cargo:rerun-if-changed=src/platform/windows_test_cert_match.cc");
+    println!("cargo:rerun-if-changed=src/platform/windows_reg_delete.cc");
+    println!("cargo:rerun-if-changed=src/platform/windows_test_cert.h");
     println!("cargo:rerun-if-changed={}", file2);
 }
 
