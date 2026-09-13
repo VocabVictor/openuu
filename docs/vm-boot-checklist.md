@@ -46,11 +46,13 @@ the others are identified by the commit the build came from.
 
 ### 2. Mouse movement, before (counter only) — 52, 10 min
 
-* **Needs**: a controller built at the commit that adds the counter and nothing else. The
-  peer can stay on whichever bundle it has, since this measures what the controller sends.
-  A window on the peer to drag over.
+* **Needs**: a controller built at `8176c3a1c`, the commit that adds the counter and
+  nothing else. The peer can stay on whichever bundle it has, since this measures what the
+  controller sends. A window on the peer to drag over.
 * **Run**: with `RUSTDESK_INPUT_VERBOSE=1`, one continuous drag of a fixed duration, say
-  30 s of circles, and read the counter's mouse-move messages per second.
+  30 s of circles. The controller logs one line a second beginning `[InputModel] mouse
+  messages sent`; take the `move` figure from it. **Copy out that line only** — the
+  controller's standard output carries the session password.
 * **Decides**: the before half of the coalescing comparison. 52 owns the method and chose
   to land the counter as its own commit so that both halves count the same quantity: log
   lines for this do not exist yet, and packet capture after encryption can only count
@@ -107,10 +109,16 @@ Everything below needs it. One swap, not one per item.
 
 ### 7. Mouse movement, after — 52, 10 min
 
-* **Needs**: a controller built at the counter commit plus the coalescing change; the same
-  drag pattern, the same duration and the same counter as item 2.
+* **Needs**: a controller built at `c224a6e9b`, which is the counter plus the coalescing
+  change and a teardown fix for the flush timer; the same drag pattern, the same duration
+  and the same counter as item 2. (`45bf15dbb`, between the two, is a mechanical move of
+  the Linux key routing and rides in both bundles.)
 * **Decides**: message count down, and the drag still feels continuous — the risk is losing
   intermediate positions, which matters for drawing applications.
+* **Read the before run first.** Coalescing at an 8 ms interval caps the rate at about 125
+  moves a second, so if item 2 came in under that, the drag was too slow for there to be
+  anything to coalesce and the two runs will match. That is the measurement failing, not
+  the change.
 
 ### 8. Hole punching, before and after — e9, 20 min
 
