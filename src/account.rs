@@ -1,4 +1,4 @@
-use hbb_common::{bail, config::Config, tokio, ResultType};
+use hbb_common::{anyhow, bail, config::Config, log, tls::TlsType, tokio, ResultType};
 use std::time::{Duration, Instant};
 
 pub fn session_token() -> String {
@@ -25,14 +25,14 @@ pub async fn require_login() -> ResultType<()> {
         return Ok(());
     }
     *cache = None;
-    let response = reqwest::Client::builder()
+    let endpoint = format!("{}/api/currentUser", url.trim_end_matches('/'));
+    let response = account_client(&url)
+        .post(&endpoint)
         .timeout(Duration::from_secs(5))
-        .redirect(reqwest::redirect::Policy::none())
-        .build()?
-        .post(format!("{}/api/currentUser", url.trim_end_matches('/')))
         .bearer_auth(&token)
         .send()
-        .await?;
+        .await
+        .map_err(|e| unreachable_error(&url, e))?;
     if !response.status().is_success() {
         bail!("OpenUU login expired or unavailable; sign in again");
     }
@@ -54,18 +54,16 @@ pub async fn require_login() -> ResultType<()> {
 
 pub async fn relay_ticket(relay_id: &str) -> ResultType<String> {
     require_login().await?;
-    let response = reqwest::Client::builder()
+    let url = Config::get_option("api-server");
+    let endpoint = format!("{}/api/relay-ticket", url.trim_end_matches('/'));
+    let response = account_client(&url)
+        .post(&endpoint)
         .timeout(Duration::from_secs(5))
-        .redirect(reqwest::redirect::Policy::none())
-        .build()?
-        .post(format!(
-            "{}/api/relay-ticket",
-            Config::get_option("api-server").trim_end_matches('/')
-        ))
         .bearer_auth(session_token())
         .json(&serde_json::json!({"uuid":relay_id}))
         .send()
-        .await?;
+        .await
+        .map_err(|e| unreachable_error(&url, e))?;
     if !response.status().is_success() {
         bail!("OpenUU relay authorization failed");
     }
@@ -73,5 +71,81 @@ pub async fn relay_ticket(relay_id: &str) -> ResultType<String> {
     match body.get("ticket").and_then(|v| v.as_str()) {
         Some(ticket) if ticket.len() == 64 => Ok(ticket.to_owned()),
         _ => bail!("Invalid relay authorization response"),
+    }
+}
+
+/// The account server is reached like every other HTTP endpoint of the app:
+/// through the proxy configured in the network settings when there is one,
+/// otherwise directly. A bare reqwest client would also honour HTTP_PROXY /
+/// ALL_PROXY from the environment, which sent these requests through a local
+/// proxy that cannot reach the server.
+fn account_client(url: &str) -> reqwest::Client {
+    let tls = if hbb_common::tls::is_plain(url) {
+        TlsType::Plain
+    } else {
+        TlsType::Rustls
+    };
+    crate::hbbs_http::create_http_client_async(tls, false)
+}
+
+fn unreachable_error(url: &str, err: impl std::fmt::Display) -> anyhow::Error {
+    log::error!("event=account_request_error url={url} err={err}");
+    let parsed = reqwest::Url::parse(url).ok();
+    let host = parsed
+        .as_ref()
+        .and_then(|u| u.host_str().map(|h| h.to_owned()))
+        .unwrap_or_else(|| url.to_owned());
+    let port = parsed
+        .as_ref()
+        .and_then(|u| u.port_or_known_default())
+        .unwrap_or(0);
+    anyhow::anyhow!("无法连接账号服务器 {host}:{port}，请检查网络或代理设置")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hbb_common::tokio::{
+        io::{AsyncReadExt, AsyncWriteExt},
+        net::TcpListener,
+    };
+
+    #[hbb_common::tokio::test]
+    async fn environment_proxy_is_ignored_without_an_app_proxy() {
+        // A proxy nobody listens on: a client that honoured it could not reach the server.
+        std::env::set_var("HTTP_PROXY", "http://127.0.0.1:9");
+        std::env::set_var("ALL_PROXY", "http://127.0.0.1:9");
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            let (mut s, _) = listener.accept().await.unwrap();
+            let mut buf = [0u8; 1024];
+            let _ = s.read(&mut buf).await;
+            s.write_all(b"HTTP/1.1 200 OK
+Content-Length: 2
+
+ok")
+                .await
+                .unwrap();
+        });
+        let url = format!("http://{addr}");
+        let res = account_client(&url)
+            .post(format!("{url}/api/currentUser"))
+            .timeout(Duration::from_secs(5))
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(res.status(), 200);
+        std::env::remove_var("HTTP_PROXY");
+        std::env::remove_var("ALL_PROXY");
+    }
+
+    #[test]
+    fn unreachable_error_names_host_and_port() {
+        let err = unreachable_error("http://rs.example.com:21114", "connection refused");
+        assert!(err.to_string().contains("rs.example.com:21114"), "{err}");
+        assert!(!err.to_string().contains("refused"), "the raw error only goes to the log");
+        let err = unreachable_error("https://rs.example", "timeout");
+        assert!(err.to_string().contains("rs.example:443"), "{err}");
     }
 }
