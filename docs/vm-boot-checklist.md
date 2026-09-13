@@ -15,10 +15,11 @@ workload -- another session, a build, an ssh that compiles something -- changes 
 number on this page, including the ones that look robust. That includes running two items
 of this list at once.
 
-**If the machine goes away again before the list is done**, the three that are otherwise
-permanently blocked are 3, 5 and 6: the DXGI verification (no other machine reproduces the
-condition), and the standby and teardown "after" numbers (the "before" ones can be taken
-any time from a bundle that is kept). Everything else has another way to be believed.
+**If the machine goes away again before the list is done**, take 3 then 4, 5 and 6: the
+swap and the three measurements that nothing else can give. No other machine reproduces
+the DXGI condition, and the standby and teardown "after" numbers need this peer on the new
+build, where the "before" halves can be taken any time from a bundle that is kept.
+Everything else has another way to be believed.
 
 ## Before anything
 
