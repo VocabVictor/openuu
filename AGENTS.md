@@ -76,6 +76,29 @@ This covers at least the connection manager on the controlled side
 (`flutter/lib/desktop/pages/server_page/`), the elevation and permission
 prompts, and any future confirmation of an irreversible action.
 
+### A default must not reach a third party the user never chose (mandatory)
+
+Turning a capability on by default is a decision about whose servers the
+user's traffic touches, not only about convenience.
+
+* A capability whose path, **or whose fallback path**, contacts a service the
+  deployment did not choose defaults to **off**. It is enabled only by the
+  user configuring that service or switching the capability on explicitly.
+* A capability that only ever contacts this deployment's own server is not
+  restricted by this, and should default to on wherever it helps.
+* Judge the capability by what it does when nothing is configured, which is
+  the case a default governs. A feature that looks self-contained may have a
+  fallback that is not.
+
+The worked example is WebRTC. With no `ice-servers` configured it falls back
+to a built-in list of public STUN servers (`DEFAULT_ICE_SERVERS` in
+`libs/hbb_common/src/webrtc.rs`), so defaulting it on would have sent a
+self-hosted deployment's addresses to third parties it never chose, and
+people run a private server precisely to avoid that. It therefore defaults
+off while the deployment has no ICE servers of its own, while UDP and IPv6
+hole punching, which only ever talk to this deployment's own rendezvous
+server, default on.
+
 ## File Size Rule (mandatory)
 
 OpenUU is an independent product; upstream RustDesk is never merged back, so
