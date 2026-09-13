@@ -89,6 +89,12 @@ user's traffic touches, not only about convenience.
 * Judge the capability by what it does when nothing is configured, which is
   the case a default governs. A feature that looks self-contained may have a
   fallback that is not.
+* **The gate belongs at the capability's single entry point, not at its call
+  sites.** Call sites multiply and the next one will forget; the entry point
+  does not. The IPv6 probe had three call sites and two of them had no gate,
+  so a peer queried public STUN servers because the *other* end had the
+  feature on. One guard inside the probe covers every path, present and
+  future.
 
 The worked example is the three connection switches. With no `ice-servers`
 configured, both WebRTC and IPv6 hole punching fall back to a built-in list
