@@ -590,7 +590,7 @@ session, all withdrawn by that session an hour later:
 
 * "`flutter test` cannot run on the build machine" -- it had run five times
   that day. A hand-written runner had left out a step, and listing
-  `C:uild\*.ps1` would have shown the runner that already existed.
+  `Get-ChildItem C:\build\*.ps1` would have shown the runner that already existed.
 * "clear the six proxy variables" -- copied from another machine's notes. This
   one has three, all uppercase. **A number carried in from another context is
   a claim about this one and has to be measured here.**
