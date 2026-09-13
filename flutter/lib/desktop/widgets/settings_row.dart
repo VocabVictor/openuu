@@ -72,26 +72,54 @@ class SettingsChildRow extends StatelessWidget {
 }
 
 /// A titled group: the title sits above a bordered card that stacks its rows
-/// with inset dividers between them.
-class SettingsGroup extends StatelessWidget {
+/// with inset dividers between them. A collapsible group (an "Advanced"
+/// section) shows a chevron before its title and starts collapsed.
+class SettingsGroup extends StatefulWidget {
   final String? title;
   final Widget? titleTrailing;
   final List<Widget> children;
+  final bool collapsible;
   const SettingsGroup(
-      {super.key, this.title, this.titleTrailing, required this.children});
+      {super.key,
+      this.title,
+      this.titleTrailing,
+      required this.children,
+      this.collapsible = false});
 
   @override
-  Widget build(BuildContext context) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        if (title != null) ...[
-          SizedBox(
-              height: UiSpace.settingsGroupTitleHeight,
-              child: Row(children: [
-                Expanded(child: Text(title!, style: UiType.groupTitle)),
-                if (titleTrailing != null) titleTrailing!,
-              ])),
-          const SizedBox(height: UiSpace.settingsGroupTitleGap),
-        ],
+  State<SettingsGroup> createState() => _SettingsGroupState();
+}
+
+class _SettingsGroupState extends State<SettingsGroup> {
+  late bool _open = !widget.collapsible;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = widget.title;
+    final titleRow = Row(children: [
+      if (widget.collapsible) ...[
+        AnimatedRotation(
+            turns: _open ? 0 : -.25,
+            duration: UiSpace.panelDuration,
+            child: const Icon(Icons.expand_more,
+                size: UiSpace.groupChevronSize, color: UiColor.muted)),
+        const SizedBox(width: UiSpace.groupChevronGap),
+      ],
+      Expanded(child: Text(title ?? '', style: UiType.groupTitle)),
+      if (widget.titleTrailing != null) widget.titleTrailing!,
+    ]);
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (title != null) ...[
+        SizedBox(
+            height: UiSpace.settingsGroupTitleHeight,
+            child: widget.collapsible
+                ? InkWell(
+                    onTap: () => setState(() => _open = !_open),
+                    child: titleRow)
+                : titleRow),
+        const SizedBox(height: UiSpace.settingsGroupTitleGap),
+      ],
+      if (_open)
         Container(
             decoration: BoxDecoration(
                 color: Colors.white,
@@ -100,17 +128,18 @@ class SettingsGroup extends StatelessWidget {
                 border: Border.all(color: UiColor.border)),
             clipBehavior: Clip.antiAlias,
             child: Column(children: [
-              for (var i = 0; i < children.length; i++) ...[
+              for (var i = 0; i < widget.children.length; i++) ...[
                 if (i > 0)
                   const Divider(
                       height: 1,
                       indent: UiSpace.settingsRowPaddingX,
                       endIndent: UiSpace.settingsRowPaddingX,
                       color: UiColor.settingsDivider),
-                children[i],
+                widget.children[i],
               ],
             ])),
-      ]);
+    ]);
+  }
 }
 
 /// The settings switch: a 36×20 track, no label text, 36×28 hit area.

@@ -196,8 +196,12 @@ Widget _Card(
 }
 
 /// A settings group with the group gap above it.
-Widget _group(String? title, List<Widget> children, {Widget? trailing}) =>
+Widget _group(String? title, List<Widget> children,
+        {Widget? trailing, bool collapsible = false}) =>
     Padding(
         padding: const EdgeInsets.only(top: UiSpace.settingsGroupGap),
         child: SettingsGroup(
-            title: title, titleTrailing: trailing, children: children));
+            title: title,
+            titleTrailing: trailing,
+            collapsible: collapsible,
+            children: children));
