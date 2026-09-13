@@ -113,7 +113,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                       onPressed: !widget.enabled
                           ? null
                           : () => _shareQrDialog(context, temporary),
-                      icon: const Icon(Icons.qr_code_2_outlined,
+                      icon: Icon(Icons.qr_code_2_outlined,
                           color: UiColor.of(context).textSecondary)))),
         ]));
   }
@@ -254,7 +254,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                                   style: UiType.of(context).rowTitle
                                       .copyWith(fontWeight: FontWeight.w400))),
                           if (e.$1 == widget.verificationMethod)
-                            const Icon(Icons.check,
+                            Icon(Icons.check,
                                 size: 14, color: UiColor.of(context).primary),
                         ])),
                 ],

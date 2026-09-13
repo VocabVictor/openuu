@@ -48,7 +48,7 @@ extension _PartnerCard on _DesktopAssistancePageState {
                 height: UiSpace.controlHeight,
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: ui.primary,
+                        backgroundColor: ui.primaryFill,
                         foregroundColor: ui.onPrimary,
                         elevation: 0,
                         minimumSize: const Size(72, UiSpace.controlHeight),
