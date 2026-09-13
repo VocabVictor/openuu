@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../models/peer_model.dart';
 import '../../widgets/device_row.dart';
+import '../../widgets/ui_tokens.dart';
 import '../desktop_welcome_page.dart';
 
 part 'this_device_card.dart';
@@ -47,26 +48,39 @@ class DesktopAssistancePage extends StatefulWidget {
   State<DesktopAssistancePage> createState() => _DesktopAssistancePageState();
 }
 
-const _muted = Color(0xff7b8492);
-
 // Values of the verification-method option, as the settings page writes them.
 const _useTemporaryPassword = 'use-temporary-password';
 const _usePermanentPassword = 'use-permanent-password';
 const _useBothPasswords = 'use-both-passwords';
 
-Widget _caption(String text) =>
-    Text(text, style: const TextStyle(fontSize: 13, color: _muted));
+Widget _caption(String text) => Text(text, style: UiType.caption);
 
-Widget _card(Widget heading, Widget content) => Container(
-    decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: const Color(0xffdce2e7))),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Padding(padding: const EdgeInsets.all(18), child: heading),
-      const Divider(height: 1, color: Color(0xffe3e7eb)),
-      Padding(padding: const EdgeInsets.all(18), child: content),
-    ]));
+/// A section card: a 48-high header row, a divider, then the content on the
+/// section padding. `divider: false` keeps title and content in one block.
+Widget _card(Widget heading, Widget content, {bool divider = true}) =>
+    Container(
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(UiSpace.sectionCardRadius),
+            border: Border.all(color: UiColor.border)),
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Container(
+              constraints: const BoxConstraints(
+                  minHeight: UiSpace.sectionCardHeaderHeight),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: UiSpace.sectionCardPadding),
+              alignment: Alignment.centerLeft,
+              child: heading),
+          if (divider) const Divider(height: 1, color: UiColor.border),
+          Padding(
+              padding: EdgeInsets.fromLTRB(
+                  UiSpace.sectionCardPadding,
+                  divider ? UiSpace.sectionCardPadding : 0,
+                  UiSpace.sectionCardPadding,
+                  UiSpace.sectionCardPadding),
+              child: content),
+        ]));
 
 class _DesktopAssistancePageState extends State<DesktopAssistancePage> {
   final _remoteId = TextEditingController();
@@ -91,21 +105,18 @@ class _DesktopAssistancePageState extends State<DesktopAssistancePage> {
         onAssistance: () {},
         onFavorites: widget.onFavorites,
         onSettings: widget.onSettings,
-        header: Text(t('开始协助', 'Start assistance'),
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600)),
-        content: LayoutBuilder(builder: (context, bounds) {
-          final inset = (bounds.maxWidth * .055).clamp(20.0, 48.0);
-          return SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(inset, 20, inset, 32),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _thisDeviceCard(t),
-                    const SizedBox(height: 20),
-                    _partnerCard(t),
-                    const SizedBox(height: 20),
-                    _recentCard(t),
-                  ]));
-        }));
+        header: Text(t('开始协助', 'Start assistance'), style: UiType.pageTitle),
+        content: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(UiSpace.pagePaddingX, 0,
+                UiSpace.pagePaddingX, UiSpace.pagePaddingBottom),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _thisDeviceCard(t),
+                  const SizedBox(height: UiSpace.sectionCardGap),
+                  _partnerCard(t),
+                  const SizedBox(height: UiSpace.sectionCardGap),
+                  _recentCard(t),
+                ])));
   }
 }

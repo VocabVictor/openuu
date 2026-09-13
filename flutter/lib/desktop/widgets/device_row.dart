@@ -59,13 +59,16 @@ class DeviceRow extends StatelessWidget {
   /// Whether the peer is in the favourites; null hides the star.
   final bool? favorite;
   final ValueChanged<Peer>? onToggleFavorite;
+  /// Rows nested in a section card draw no border of their own.
+  final bool bordered;
   const DeviceRow(
       {super.key,
       required this.peer,
       required this.local,
       required this.onOpen,
       this.favorite,
-      this.onToggleFavorite});
+      this.onToggleFavorite,
+      this.bordered = true});
 
   static bool mobile(Peer p) =>
       ['android', 'ios', 'ipados'].contains(p.platform.toLowerCase());
@@ -78,7 +81,9 @@ class DeviceRow extends StatelessWidget {
         color: Colors.white,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(UiSpace.rowCardRadius),
-            side: const BorderSide(color: UiColor.border)),
+            side: bordered
+                ? const BorderSide(color: UiColor.border)
+                : BorderSide.none),
         child: InkWell(
             onTap: local ? null : () => onOpen(peer),
             borderRadius: BorderRadius.circular(UiSpace.rowCardRadius),

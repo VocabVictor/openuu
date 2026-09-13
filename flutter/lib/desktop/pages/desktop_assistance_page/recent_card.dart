@@ -2,19 +2,24 @@ part of 'desktop_assistance_page.dart';
 
 extension _RecentCard on _DesktopAssistancePageState {
   Widget _recentCard(String Function(String, String) t) => _card(
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(t('最近连接', 'Recent connections'),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
-        _caption(t('点击设备卡片可再次连接', 'Tap a device to connect again')),
-      ]),
+      Padding(
+          padding: const EdgeInsets.symmetric(vertical: UiSpace.s3),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(t('最近连接', 'Recent connections'), style: UiType.sectionTitle),
+            const SizedBox(height: UiSpace.s1),
+            _caption(t('点击设备可再次连接', 'Tap a device to connect again')),
+          ])),
       widget.recentPeers.isEmpty
-          ? Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: _caption(t('暂无最近连接', 'No recent connections')))
+          ? EmptyRow(text: t('暂无最近连接', 'No recent connections'))
           : Column(children: [
-              for (final peer in widget.recentPeers)
+              for (var i = 0; i < widget.recentPeers.length; i++) ...[
+                if (i > 0) const Divider(height: 1, color: UiColor.border),
                 DeviceRow(
-                    peer: peer, local: false, onOpen: widget.onOpenRecent),
-            ]));
+                    peer: widget.recentPeers[i],
+                    local: false,
+                    bordered: false,
+                    onOpen: widget.onOpenRecent),
+              ],
+            ]),
+      divider: false);
 }
