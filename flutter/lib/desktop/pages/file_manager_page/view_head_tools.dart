@@ -2,7 +2,8 @@ part of 'file_manager_page.dart';
 
 /// A head-tool glyph: a 28 hit box around a 16px icon in the secondary text
 /// colour, muted when the action is unavailable.
-Widget _headToolIcon(String asset, {bool enabled = true}) => SizedBox(
+Widget _headToolIcon(UiPalette pal, String asset, {bool enabled = true}) =>
+    SizedBox(
     width: UiSpace.rowActionHitSize,
     height: UiSpace.rowActionHitSize,
     child: Center(
@@ -10,10 +11,11 @@ Widget _headToolIcon(String asset, {bool enabled = true}) => SizedBox(
             width: UiSpace.rowActionIconSize,
             height: UiSpace.rowActionIconSize,
             colorFilter: svgColor(
-                enabled ? UiColor.textSecondary : UiColor.faint))));
+                enabled ? pal.textSecondary : pal.faint))));
 
 extension _FileManagerViewHeadTools on _FileManagerViewState {
   Widget headTools() {
+    final pal = UiColor.of(context);
     return Container(
       child: Column(
         children: [
@@ -30,10 +32,10 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                     ),
                     child: RotatedBox(
                       quarterTurns: 2,
-                      child: _headToolIcon("assets/arrow.svg"),
+                      child: _headToolIcon(pal, "assets/arrow.svg"),
                     ),
                     color: Colors.transparent,
-                    hoverColor: UiColor.settingsRowHover,
+                    hoverColor: pal.settingsRowHover,
                     onPressed: () {
                       selectedItems.clear();
                       controller.goBack();
@@ -43,10 +45,10 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                     tooltip: translate('Parent directory'),
                     child: RotatedBox(
                       quarterTurns: 3,
-                      child: _headToolIcon("assets/arrow.svg"),
+                      child: _headToolIcon(pal, "assets/arrow.svg"),
                     ),
                     color: Colors.transparent,
-                    hoverColor: UiColor.settingsRowHover,
+                    hoverColor: pal.settingsRowHover,
                     onPressed: () {
                       selectedItems.clear();
                       controller.goToParentDirectory();
@@ -60,8 +62,8 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                   child: Container(
                     height: UiSpace.controlHeight,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: UiColor.inputBorder),
+                      color: pal.surface,
+                      border: Border.all(color: pal.inputBorder),
                       borderRadius: BorderRadius.all(
                         Radius.circular(UiSpace.inputRadius),
                       ),
@@ -110,16 +112,16 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                         Future.delayed(
                             Duration.zero, () => _locationNode.requestFocus());
                       },
-                      child: _headToolIcon("assets/search.svg"),
+                      child: _headToolIcon(pal, "assets/search.svg"),
                       color: Colors.transparent,
-                      hoverColor: UiColor.settingsRowHover,
+                      hoverColor: pal.settingsRowHover,
                     );
                   case LocationStatus.pathLocation:
                     return MenuButton(
                       onPressed: null,
-                      child: _headToolIcon("assets/close.svg"),
+                      child: _headToolIcon(pal, "assets/close.svg"),
                       color: Colors.transparent,
-                      hoverColor: UiColor.settingsRowHover,
+                      hoverColor: pal.settingsRowHover,
                     );
                   case LocationStatus.fileSearchBar:
                     return MenuButton(
@@ -128,9 +130,9 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                         onSearchText("", isLocal);
                         _locationStatus.value = LocationStatus.bread;
                       },
-                      child: _headToolIcon("assets/close.svg"),
+                      child: _headToolIcon(pal, "assets/close.svg"),
                       color: Colors.transparent,
-                      hoverColor: UiColor.settingsRowHover,
+                      hoverColor: pal.settingsRowHover,
                     );
                 }
               }),
@@ -142,9 +144,9 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                 onPressed: () {
                   controller.refresh();
                 },
-                child: _headToolIcon("assets/refresh.svg"),
+                child: _headToolIcon(pal, "assets/refresh.svg"),
                 color: Colors.transparent,
-                hoverColor: UiColor.settingsRowHover,
+                hoverColor: pal.settingsRowHover,
               ),
             ],
           ),
@@ -164,9 +166,9 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                       onPressed: () {
                         controller.goToHomeDirectory();
                       },
-                      child: _headToolIcon("assets/home.svg"),
+                      child: _headToolIcon(pal, "assets/home.svg"),
                       color: Colors.transparent,
-                      hoverColor: UiColor.settingsRowHover,
+                      hoverColor: pal.settingsRowHover,
                     ),
                     MenuButton(
                       tooltip: translate('Create Folder'),
@@ -218,9 +220,9 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                           ).alert(context);
                         });
                       },
-                      child: _headToolIcon("assets/folder_new.svg"),
+                      child: _headToolIcon(pal, "assets/folder_new.svg"),
                       color: Colors.transparent,
-                      hoverColor: UiColor.settingsRowHover,
+                      hoverColor: pal.settingsRowHover,
                     ),
                     Obx(() => MenuButton(
                           tooltip: translate('Delete'),
@@ -231,9 +233,9 @@ extension _FileManagerViewHeadTools on _FileManagerViewState {
                                   selectedItems.clear();
                                 }
                               : null,
-                          child: _headToolIcon("assets/trash.svg"),
+                          child: _headToolIcon(pal, "assets/trash.svg"),
                           color: Colors.transparent,
-                          hoverColor: UiColor.settingsRowHover,
+                          hoverColor: pal.settingsRowHover,
                         )),
                     menu(isLocal: isLocal),
                   ],
