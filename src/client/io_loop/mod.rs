@@ -127,6 +127,7 @@ mod peer_capabilities;
 mod peer_msg;
 mod peer_session;
 mod peer_clipboard;
+mod peer_file;
 mod peer_misc;
 #[cfg(test)]
 mod test_support;
