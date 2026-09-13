@@ -70,6 +70,16 @@ grep -rn "UiColor\.[a-z]" flutter/lib | grep -v "UiColor\.of(" | grep -v "ui_pal
 grep -rln "UiColor\.of(" flutter/lib | xargs grep -n "Color(0x" | grep -v ui_palette.dart
 ```
 
+**Read the second command carefully: it is what separates the two rounds.**
+The token round replaced scattered literals with `UiColor.<name>` **constants**,
+which are the light values by design; the palette round replaced those constants
+with `UiColor.of(context).<name>`. A file finished by the first round is full of
+`UiColor` and reads as migrated, so grepping for `UiColor` alone says everything
+is done. `UiColor\.[a-z]` *without* `UiColor\.of(` is the grep that tells one
+round from the other -- and the commit subjects do not, because the first round's
+say `... on the design tokens`. Nine files were misread exactly this way on
+2026-09-13 (backlog: the files that are on the tokens but not on the palette).
+
 Known and accepted exceptions, which those commands will print:
 
 * `DesktopWelcomePage.blue` is a public `static const`, used by callers inside
