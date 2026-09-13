@@ -16,6 +16,7 @@ pub(super) struct UserDelay {
     pub(super) samples_since_restore: Option<u8>,  // set by a restore, cleared once it proved stable
     pub(super) stall_reference_fps: Option<u32>,   // fps when the outstanding probe passed two seconds
     pub(super) startup_good_samples: u8,           // u8::MAX permanently ends startup acceleration
+    draining: bool, // the queue is deep enough that the bitrate has to go under the link
 }
 
 impl UserDelay {
@@ -155,6 +156,28 @@ impl UserDelay {
         self.consecutive_bad_samples >= 2 || self.stall_ticks >= 2
     }
 
+    // A probe still outstanding two ticks past two seconds means the queue in front of
+    // the video is already seconds deep.  Stepping the bitrate down by a fifth cannot
+    // drain that: the stream has to go under what the link carries until it has.
+    fn backlogged(&self) -> bool {
+        self.stall_ticks >= 2 || self.avg_delay() >= DRAIN_DELAY_MS
+    }
+
+    // Enter the drain on evidence of a deep queue and stay in it until the queue is
+    // actually gone.  A single reply arriving is not evidence of that: on a link that
+    // cannot carry the stream, replies keep arriving, just late.
+    pub(super) fn note_backlog(&mut self) {
+        if self.backlogged() {
+            self.draining = true;
+        } else if self.avg_delay() < DELAY_THRESHOLD_150MS {
+            self.draining = false;
+        }
+    }
+
+    pub(super) fn draining(&self) -> bool {
+        self.draining
+    }
+
     // The bitrate step this viewer's own evidence calls for, None when it calls for
     // none.  Severity and confirmation come from the same viewer; the controller
     // never pairs one viewer's spike with another viewer's confirmation.
@@ -162,8 +185,13 @@ impl UserDelay {
         if !self.needs_bitrate_reduction() {
             return None;
         }
+        // Draining: one step to under what the link carries, repeated for as long as
+        // the queue is there, rather than a fifth at a time it can never catch up with.
+        if self.draining {
+            return Some(DRAIN_STEP);
+        }
         let excess = self.avg_delay();
-        let confirmed = self.consecutive_bad_samples >= 3;
+        let confirmed = self.consecutive_bad_samples >= 3 || self.stall_ticks >= 3;
         Some(if excess < 200 {
             0.95
         } else if excess < 300 {

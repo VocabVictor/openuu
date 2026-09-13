@@ -89,6 +89,13 @@ impl VideoQoS {
         self.in_vbr_state() && !self.displays.is_empty() && self.ratio > self.min_ratio() * 1.02
     }
 
+    // A viewer whose queue has to be drained is not on the cooldown: the sooner the
+    // bitrate goes under what the link carries, the less backlog there is to drain.
+    pub(super) fn ratio_adjust_allowed(&self) -> bool {
+        self.users.values().any(|u| u.delay.draining())
+            || self.since(self.adjust_ratio_instant).as_secs() >= ADJUST_RATIO_INTERVAL as u64
+    }
+
     // Every ratio adjustment starts a new window for the dynamic screen counters.
     pub(super) fn reset_send_counters(&mut self) {
         self.displays.values_mut().for_each(|d| d.send_counter = 0);
@@ -120,8 +127,16 @@ impl VideoQoS {
 
         let target_ratio = self.latest_quality().ratio();
         let current_ratio = self.ratio;
+        // A backlog is drained, not stepped away from: go under the link and stay there
+        // until the queue has gone.  The clamp lifts the ratio back to the ordinary floor
+        // on the first adjustment after that.
+        let draining = self.users.values().any(|u| u.delay.draining());
 
-        let min = self.min_ratio();
+        let min = if draining {
+            BR_MIN_DRAIN
+        } else {
+            self.min_ratio()
+        };
         let max = target_ratio * MAX_BR_MULTIPLE;
 
         let mut v = current_ratio;
@@ -160,7 +175,12 @@ impl VideoQoS {
                 }
             }
         }
-        self.ratio = v.clamp(min, max);
+        // Bad evidence never raises the bitrate: the floor may be above where a drain
+        // left it, and lifting it back there is for the first good reply, not this one.
+        self.ratio = match reduction {
+            Some(_) => v.clamp(min, max).min(current_ratio),
+            None => v.clamp(min, max),
+        };
         self.reset_send_counters();
         self.adjust_ratio_instant = self.now();
     }

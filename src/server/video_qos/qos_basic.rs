@@ -57,7 +57,7 @@ impl VideoQoS {
 
     // Get current bitrate ratio with bounds checking
     pub fn ratio(&mut self) -> f32 {
-        if self.ratio < BR_MIN_HIGH_RESOLUTION || self.ratio > BR_MAX {
+        if self.ratio < BR_MIN_DRAIN || self.ratio > BR_MAX {
             self.ratio = BR_BALANCED;
         }
         self.ratio

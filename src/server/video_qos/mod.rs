@@ -60,6 +60,9 @@ const MIN_AUTO_FPS: u32 = 5;
 const BR_MAX: f32 = 40.0; // 2000 * 2 / 100
 const BR_MIN: f32 = 0.2;
 const BR_MIN_HIGH_RESOLUTION: f32 = 0.1; // For high resolution, BR_MIN is still too high, so we set a lower limit
+// Only while a backlog is being drained: a deliberately poor picture for a few seconds
+// buys back the seconds of lag a thin link built, which no steady-state rate can.
+const BR_MIN_DRAIN: f32 = 0.04;
 const MAX_BR_MULTIPLE: f32 = 1.0;
 
 const HISTORY_DELAY_LEN: usize = 2;
@@ -67,6 +70,10 @@ const ADJUST_RATIO_INTERVAL: usize = 3; // Adjust quality ratio every 3 seconds
 const DYNAMIC_SCREEN_THRESHOLD: usize = 2; // Allow increase quality ratio if encode more than 2 times in one second
 const DELAY_THRESHOLD_150MS: u32 = 150; // 150ms is the threshold for good network condition
 const RESTORE_GUARD_SAMPLES: u8 = 5; // A restored level that congests this soon is lowered
+// Queue delay that is a backlog to drain rather than congestion to step away from.
+const DRAIN_DELAY_MS: u32 = 1_000;
+// The step that takes a preset straight to the drain floor; the clamp stops it there.
+const DRAIN_STEP: f32 = 0.15;
 
 mod user_delay;
 use user_delay::*;

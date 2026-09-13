@@ -94,6 +94,7 @@ impl VideoQoS {
             let delay = delay.max(10);
             // The reply closes the outstanding probe, braked or not.
             user.delay.stall_ticks = 0;
+            user.delay.note_backlog();
             let braked = user.delay.stall_reference_fps.take().is_some();
             let old_avg_delay = user.delay.avg_delay();
             if !braked {
@@ -200,9 +201,7 @@ impl VideoQoS {
         {
             self.adjust_ratio(false);
         }
-        if reduce_bitrate
-            && self.since(self.adjust_ratio_instant).as_secs() >= ADJUST_RATIO_INTERVAL as u64
-        {
+        if reduce_bitrate && self.ratio_adjust_allowed() {
             self.adjust_ratio(false);
         }
     }
@@ -216,6 +215,7 @@ impl VideoQoS {
         }
         user.delay.stall_ticks = user.delay.stall_ticks.saturating_add(1);
         user.delay.add_delay(elapsed as u32);
+        user.delay.note_backlog();
         // Halve for every second the probe stays out beyond the first: two seconds
         // halve, three quarter, and so on down to the floor.
         let reference = match user.delay.stall_reference_fps {
@@ -240,5 +240,11 @@ impl VideoQoS {
             hbb_common::get_time()
         );
         self.adjust_fps();
+        // Replies are what usually drives the bitrate, and a deep queue is exactly when
+        // they stop arriving: without this the controller would hold its bitrate for as
+        // long as the backlog keeps the probes from coming back.
+        if self.ratio_adjust_allowed() {
+            self.adjust_ratio(false);
+        }
     }
 }
