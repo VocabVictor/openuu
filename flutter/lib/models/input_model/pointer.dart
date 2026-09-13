@@ -174,7 +174,24 @@ extension InputModelPointer on InputModel {
     if (evtToPeer != null) {
       bind.sessionSendMouse(
           sessionId: sessionId, msg: json.encode(modify(evtToPeer)));
+      _countSent(evtToPeer['type']);
     }
     return evtToPeer;
+  }
+}
+
+extension InputModelSendCount on InputModel {
+  /// A move carries no type of its own, which is what makes it a move.
+  void _countSent(Object? type) {
+    final counter = _sendCounter;
+    if (counter == null) {
+      return;
+    }
+    final name = (type is String && type.isNotEmpty) ? type : 'move';
+    final report =
+        counter.record(name, DateTime.now().microsecondsSinceEpoch);
+    if (report != null) {
+      debugPrint('[InputModel] $report');
+    }
   }
 }

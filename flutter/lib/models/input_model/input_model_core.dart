@@ -85,6 +85,13 @@ class InputModel {
   var command = false;
 
   final ToReleaseRawKeys toReleaseRawKeys = ToReleaseRawKeys();
+
+  // How many mouse messages this session puts on the wire, for measuring the
+  // effect of coalescing pointer moves. Off unless asked for.
+  static final bool _mouseSendVerbose =
+      Platform.environment['RUSTDESK_INPUT_VERBOSE'] == '1';
+  final MouseSendCounter? _sendCounter =
+      _mouseSendVerbose ? MouseSendCounter() : null;
   final ToReleaseKeys toReleaseKeys = ToReleaseKeys();
 
   // trackpad

@@ -20,6 +20,7 @@ import '../input_modifier_utils.dart';
 import '../relative_mouse_model.dart';
 import '../../common.dart';
 import '../../consts.dart';
+import 'send_counter.dart';
 part 'coords.dart';
 part 'pointer_event.dart';
 part 'key_events.dart';
