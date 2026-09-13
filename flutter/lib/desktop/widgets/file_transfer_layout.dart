@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hbb/common.dart' show translate;
 import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
 
 class FileTransferLayout extends StatelessWidget {
@@ -18,7 +19,6 @@ class FileTransferLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final pal = UiColor.of(context);
     final type = UiType.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
@@ -47,7 +47,7 @@ class FileTransferLayout extends StatelessWidget {
                       borderRadius:
                           BorderRadius.circular(UiSpace.tagRadius)),
                   child: Text(
-                      local ? (zh ? '本机' : 'Local') : (zh ? '远端' : 'Remote'),
+                      local ? (translate('Local')) : (translate('Remote')),
                       style: type.tag.copyWith(
                           color: local
                               ? pal.textSecondary
@@ -95,12 +95,12 @@ class FileTransferLayout extends StatelessWidget {
                           FilledButton.icon(
                               onPressed: onSend,
                               icon: const Icon(Icons.arrow_forward, size: 16),
-                              label: Text(zh ? '发送' : 'Send')),
+                              label: Text(translate('Send'))),
                           const SizedBox(width: UiSpace.s3),
                           FilledButton.icon(
                               onPressed: onReceive,
                               icon: const Icon(Icons.arrow_back, size: 16),
-                              label: Text(zh ? '接收' : 'Receive')),
+                              label: Text(translate('Receive'))),
                           const SizedBox(width: 12),
                           identity(remoteName, false),
                         ])),
