@@ -118,3 +118,48 @@ fn dropping_the_tunnel_ends_the_peer_connection() {
         );
     });
 }
+
+/// The behaviour the account requirement exists for, which nothing could observe while
+/// the check was reached for rather than handed in.
+///
+/// The first check says yes, so the tunnel comes up; the next one says no, and the tunnel
+/// must end the peer connection and reset its own state rather than carry on.
+#[test]
+fn an_account_that_stops_being_signed_in_ends_the_tunnel() {
+    rt().block_on(async {
+        let (ours, mut peer) = stream_pair().await;
+        let t = Tunnel::new();
+        assert!(matches!(t.claim(), Claim::Claimed));
+        let asked = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let check = {
+            let asked = asked.clone();
+            let c: crate::port_forward_mux::LoginCheck = std::sync::Arc::new(move || {
+                let n = asked.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                Box::pin(async move {
+                    if n == 0 {
+                        Ok(())
+                    } else {
+                        hbb_common::bail!("signed out")
+                    }
+                })
+            });
+            c
+        };
+        let _h = t.set_muxed_checking(ours, NoUi::default(), check);
+
+        let end = hbb_common::timeout(5000, peer.next()).await;
+        assert!(
+            matches!(end, Ok(None) | Ok(Some(Err(_)))),
+            "the tunnel kept the peer after the account went away: {:?}",
+            end
+        );
+        assert!(
+            asked.load(std::sync::atomic::Ordering::SeqCst) >= 2,
+            "the tunnel stopped asking"
+        );
+        assert!(
+            matches!(t.claim(), Claim::Claimed),
+            "a tunnel that ended must be claimable again, or the listener can never              re-establish"
+        );
+    });
+}
