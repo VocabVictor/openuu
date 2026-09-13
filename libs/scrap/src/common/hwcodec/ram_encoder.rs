@@ -180,14 +180,19 @@ impl EncoderApi for HwRamEncoder {
     }
 
     fn disable(&self) {
-        HwCodecConfig::clear(false, true);
+        HwCodecConfig::note_failed(config::ram_encoder_id(&self.config.name));
     }
 }
 
 impl HwRamEncoder {
     pub fn try_get(format: CodecFormat) -> Option<CodecInfo> {
         let mut info = None;
-        let best = CodecInfo::prioritized(HwCodecConfig::get().ram_encode);
+        let usable = HwCodecConfig::get()
+            .ram_encode
+            .into_iter()
+            .filter(|info| !HwCodecConfig::recently_failed(&config::ram_encoder_id(&info.name)))
+            .collect();
+        let best = CodecInfo::prioritized(usable);
         match format {
             CodecFormat::H264 => {
                 if let Some(v) = best.h264 {

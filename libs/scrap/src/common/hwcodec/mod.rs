@@ -40,7 +40,7 @@ mod ram_encoder;
 pub use ram_encoder::*;
 mod ram_decoder;
 pub use ram_decoder::*;
-mod config;
+pub mod config;
 pub use config::*;
 mod check;
 pub use check::*;

@@ -180,7 +180,7 @@ impl EncoderApi for VRamEncoder {
     }
 
     fn disable(&self) {
-        HwCodecConfig::clear(true, true);
+        HwCodecConfig::note_failed(crate::hwcodec::config::vram_encoder_id(&self.ctx.f));
     }
 }
 
@@ -221,6 +221,11 @@ impl VRamEncoder {
             .vram_encode
             .drain(..)
             .filter(|c| c.data_format == data_format)
+            .filter(|c| {
+                !crate::hwcodec::HwCodecConfig::recently_failed(
+                    &crate::hwcodec::config::vram_encoder_id(c),
+                )
+            })
             .collect();
         if crate::hwcodec::HwRamEncoder::try_get(format).is_some() {
             // has fallback, no need to require all adapters support

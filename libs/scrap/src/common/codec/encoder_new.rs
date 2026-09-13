@@ -12,25 +12,25 @@ impl Encoder {
             }),
 
             #[cfg(feature = "hwcodec")]
-            EncoderCfg::HWRAM(_) => match HwRamEncoder::new(config, i444) {
+            EncoderCfg::HWRAM(ref hw) => match HwRamEncoder::new(config.clone(), i444) {
                 Ok(hw) => Ok(Encoder {
                     codec: Box::new(hw),
                 }),
                 Err(e) => {
-                    log::error!("new hw encoder failed: {e:?}, clear config");
-                    HwCodecConfig::clear(false, true);
+                    log::error!("new hw encoder failed: {e:?}");
+                    HwCodecConfig::note_failed(crate::hwcodec::config::ram_encoder_id(&hw.name));
                     *ENCODE_CODEC_FORMAT.lock().unwrap() = CodecFormat::VP9;
                     Err(e)
                 }
             },
             #[cfg(feature = "vram")]
-            EncoderCfg::VRAM(_) => match VRamEncoder::new(config, i444) {
+            EncoderCfg::VRAM(ref v) => match VRamEncoder::new(config.clone(), i444) {
                 Ok(tex) => Ok(Encoder {
                     codec: Box::new(tex),
                 }),
                 Err(e) => {
-                    log::error!("new vram encoder failed: {e:?}, clear config");
-                    HwCodecConfig::clear(true, true);
+                    log::error!("new vram encoder failed: {e:?}");
+                    HwCodecConfig::note_failed(crate::hwcodec::config::vram_encoder_id(&v.feature));
                     *ENCODE_CODEC_FORMAT.lock().unwrap() = CodecFormat::VP9;
                     Err(e)
                 }

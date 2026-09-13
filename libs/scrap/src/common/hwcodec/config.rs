@@ -30,6 +30,36 @@ pub(super) struct HwCodecConfig2 {
     pub config: String,
 }
 
+lazy_static::lazy_static! {
+    /// Hardware encoders that failed while running, and when. Failing is not the same as
+    /// being absent: a driver reset, an encode session another program took, a mode
+    /// change mid-frame. What the machine can do is in the config and stays there; this
+    /// says what not to ask for at the moment, and forgetting it after a while is what
+    /// keeps a bad minute from costing hardware encoding until the process is restarted.
+    static ref FAILED: std::sync::Mutex<
+        std::collections::HashMap<String, std::time::Instant>,
+    > = Default::default();
+}
+
+/// How long a failure is held against an encoder.
+const FORGET_FAILURE_AFTER: std::time::Duration = std::time::Duration::from_secs(600);
+
+/// Whether a failure recorded this long ago is still held against the encoder.
+fn failure_holds(since: std::time::Duration) -> bool {
+    since < FORGET_FAILURE_AFTER
+}
+
+/// Names a RAM encoder for the failure registry.
+pub fn ram_encoder_id(name: &str) -> String {
+    format!("ram:{name}")
+}
+
+/// Names a VRAM encoder for the failure registry: a format on one driver on one adapter.
+#[cfg(feature = "vram")]
+pub fn vram_encoder_id(f: &hwcodec::vram::FeatureContext) -> String {
+    format!("vram:{:?}:{:?}:{}", f.data_format, f.driver, f.luid)
+}
+
 // ipc server process start check process once, other process get from ipc server once
 // install: --server start check process, check process send to --server,  ui get from --server
 // portable: ui start check process, check process send to ui
@@ -169,6 +199,23 @@ impl HwCodecConfig {
         CONFIG_SET_BY_IPC.lock().unwrap().clone()
     }
 
+    /// One encoder has just failed to do its job. Only that one is put aside.
+    pub fn note_failed(id: String) {
+        log::info!("hwcodec: {id} failed, not asking it again for a while");
+        FAILED
+            .lock()
+            .unwrap()
+            .insert(id, std::time::Instant::now());
+        crate::codec::Encoder::update(crate::codec::EncodingUpdate::Check);
+    }
+
+    /// Whether an encoder failed recently enough to still be skipped.
+    pub fn recently_failed(id: &str) -> bool {
+        let mut failed = FAILED.lock().unwrap();
+        failed.retain(|_, at| failure_holds(at.elapsed()));
+        failed.contains_key(id)
+    }
+
     pub fn clear(vram: bool, encode: bool) {
         log::info!("clear hwcodec config, vram: {vram}, encode: {encode}");
         #[cfg(target_os = "android")]
@@ -230,5 +277,43 @@ mod boot_stamp_tests {
         if cfg!(windows) {
             assert!(a > 1_600_000_000, "{a}");
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn an_encoder_that_failed_is_the_only_one_put_aside() {
+        let failed = ram_encoder_id("h264_test_vendor");
+        let other = ram_encoder_id("hevc_test_vendor");
+        HwCodecConfig::note_failed(failed.clone());
+        assert!(HwCodecConfig::recently_failed(&failed));
+        assert!(
+            !HwCodecConfig::recently_failed(&other),
+            "one encoder failing said nothing about the other"
+        );
+    }
+
+    #[test]
+    fn an_encoder_nothing_is_known_about_is_not_skipped() {
+        assert!(!HwCodecConfig::recently_failed(&ram_encoder_id("never_seen")));
+    }
+
+    /// The failure is held for a while and then forgotten, so a machine that had a bad
+    /// minute is not left on software encoding until it is restarted.
+    #[test]
+    fn a_failure_is_held_for_a_while_and_then_forgotten() {
+        assert!(failure_holds(std::time::Duration::ZERO));
+        assert!(failure_holds(FORGET_FAILURE_AFTER - std::time::Duration::from_secs(1)));
+        assert!(!failure_holds(FORGET_FAILURE_AFTER));
+        assert!(!failure_holds(FORGET_FAILURE_AFTER * 2));
+    }
+
+    #[test]
+    fn each_codec_and_adapter_is_named_apart() {
+        assert_ne!(ram_encoder_id("h264_nvenc"), ram_encoder_id("hevc_nvenc"));
+        assert!(ram_encoder_id("h264_nvenc").starts_with("ram:"));
     }
 }
