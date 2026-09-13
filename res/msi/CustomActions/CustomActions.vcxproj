@@ -107,6 +107,8 @@
     </ClCompile>
     <ClCompile Include="ReadConfig.cpp" />
     <ClCompile Include="RuntimeFiles.cpp" />
+    <ClCompile Include="ServiceActions.cpp" />
+    <ClCompile Include="ServiceShell.cpp" />
     <ClCompile Include="ServiceUtils.cpp" />
   </ItemGroup>
   <ItemGroup>

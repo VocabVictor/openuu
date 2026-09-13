@@ -14,6 +14,10 @@ bool MyStopServiceW(LPCWSTR serviceName);
 
 std::wstring ReadConfig(const std::wstring& filename, const std::wstring& key);
 
+// ServiceShell.cpp
+void TryCreateStartServiceByShell(LPWSTR svcName, LPWSTR svcBinary, LPWSTR szSvcDisplayName);
+void TryStopDeleteServiceByShell(LPWSTR svcName);
+
 // Processes.cpp
 bool TerminateProcessesByNameW(LPCWSTR processName, LPCWSTR excludeParam);
 
