@@ -21,11 +21,6 @@ void main() {
       expect(opened, isNull);
       await tester.tap(find.text('Remote PC'));
       expect(opened, '2');
-      await tester.tap(find.byTooltip('Device information').first);
-      await tester.pumpAndSettle();
-      expect(find.text('ID: 1\nWindows'), findsOneWidget);
-      await tester.tap(find.text('Close'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Computers 2'));
       await tester.pumpAndSettle();
       expect(find.text('Remote PC'), findsNothing);

@@ -214,11 +214,6 @@ class DeviceCard extends StatelessWidget {
               icon: Icon(favorite! ? Icons.star : Icons.star_border, size: 20,
                 color: favorite! ? const Color(0xfff5a623) : const Color(0xff9aa3ad)),
               onPressed: onToggleFavorite == null ? null : () => onToggleFavorite!(peer)),
-          IconButton(tooltip: zh ? '设备信息' : 'Device information', icon: const Icon(Icons.info_outline, size: 20),
-            onPressed: () => showDialog<void>(context: context, builder: (context) => AlertDialog(
-              title: Text(deviceName(peer)), content: SelectableText('ID: ${peer.id}\n${peer.platform}'),
-              actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(zh ? '关闭' : 'Close'))],
-            ))),
           SizedBox(width: 24, child: local ? null : const Icon(Icons.chevron_right, size: 20)),
         ]),
         onTap: local ? null : () => onOpen(peer),
