@@ -65,6 +65,17 @@ impl Connection {
         true
     }
 
+    /// One video frame has gone to the socket. A send that blocked was waiting for the
+    /// link rather than for frames, so the bits that got out over a second of blocking
+    /// are what the link carries.
+    pub(super) fn note_video_sent(&mut self, bits: u64, blocked_ms: u32) {
+        self.video_send_bits = self.video_send_bits.saturating_add(bits);
+        self.video_blocked_ms = self.video_blocked_ms.saturating_add(blocked_ms);
+        self.video_send_max_ms = self.video_send_max_ms.max(blocked_ms);
+        self.video_send_sum_ms = self.video_send_sum_ms.saturating_add(blocked_ms);
+        self.video_send_count += 1;
+    }
+
     /// Once-a-second housekeeping; `false` ends the loop.
     pub(super) async fn on_second_tick(&mut self, queued_video: usize) -> bool {
         let id = self.inner.id();
@@ -93,6 +104,14 @@ impl Connection {
             self.video_send_sum_ms = 0;
             self.video_send_count = 0;
         }
+        if self.video_blocked_ms >= video_qos::BLOCKED_MS_FOR_CAPACITY {
+            video_service::VIDEO_QOS
+                .lock()
+                .unwrap()
+                .note_link_capacity((self.video_send_bits / 1000) as u32);
+        }
+        self.video_send_bits = 0;
+        self.video_blocked_ms = 0;
         self.file_remove_log_control.on_timer().drain(..).map(|x| self.send_to_cm(x)).count();
         #[cfg(feature = "hwcodec")]
         self.update_supported_encoding();

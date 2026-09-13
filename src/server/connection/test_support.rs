@@ -128,6 +128,8 @@ impl Connection {
             video_send_max_ms: 0,
             video_send_sum_ms: 0,
             video_send_count: 0,
+            video_send_bits: 0,
+            video_blocked_ms: 0,
             server_audit_conn: "".to_owned(),
             server_audit_file: "".to_owned(),
             controlled_context: None,

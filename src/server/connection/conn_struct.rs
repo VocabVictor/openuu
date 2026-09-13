@@ -58,6 +58,10 @@ pub struct Connection {
     pub(super) video_send_max_ms: u32,
     pub(super) video_send_sum_ms: u32,
     pub(super) video_send_count: u32,
+    // Bits handed to the socket in the current second, and how much of that second the
+    // send call spent blocked: together they measure the link while it is the limit.
+    pub(super) video_send_bits: u64,
+    pub(super) video_blocked_ms: u32,
     pub(super) server_audit_conn: String,
     pub(super) server_audit_file: String,
     pub(super) controlled_context: Option<ControlledContext>,

@@ -134,17 +134,13 @@ impl Connection {
                             video_service::notify_video_frame_fetched(vf.display as usize, id, Some(instant.into()));
                         }
                     }
-                    let send_begin = video_service::qos_diag_verbose().then(Instant::now);
+                    let bits = 8 * value.compute_size();
+                    let send_begin = Instant::now();
                     if let Err(err) = conn.stream.send(&value as &Message).await {
                         conn.on_close(&err.to_string(), false).await;
                         break;
                     }
-                    if let Some(begin) = send_begin {
-                        let blocked = begin.elapsed().as_millis() as u32;
-                        conn.video_send_max_ms = conn.video_send_max_ms.max(blocked);
-                        conn.video_send_sum_ms = conn.video_send_sum_ms.saturating_add(blocked);
-                        conn.video_send_count += 1;
-                    }
+                    conn.note_video_sent(bits, send_begin.elapsed().as_millis() as u32);
                 },
                 Some((instant, value)) = ch.rx.recv() => {
                     if !conn.send_queued(instant, value).await {
