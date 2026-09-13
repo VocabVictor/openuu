@@ -1,4 +1,4 @@
-"""Find control characters that a shell heredoc left in tracked text files.
+"""Find control characters that a shell heredoc left in the repository's text.
 
 A Windows path carried through a heredoc loses its escape: the two characters
 that spell a backslash followed by b become one byte, 0x08. Nothing shows it.
@@ -11,7 +11,7 @@ Only a byte-level look finds it, which is what this script is for.
     python tools/scan_control_chars.py new-check.ps1   # one file, tracked or not
 
 A named file is read directly, so a build-machine script can be checked before
-it is copied over. A directory that matches no tracked file is an error, not a
+it is copied over. A directory that matches nothing is an error, not a
 pass: a scan that silently reports "clean" for input it never opened is worse
 than no scan.
 
@@ -34,12 +34,16 @@ SUFFIXES = (
     ".gradle", ".kt", ".java", ".xml", ".cfg", ".ini",
 )
 
-NAMES = {"control character", "delete"}
 
+def listed_files(root, prefix):
+    """Ask git, so the submodule, build outputs and ignored trees stay out.
 
-def tracked_files(root, prefix):
-    """Ask git, so the submodule, build outputs and ignored trees stay out."""
-    cmd = ["git", "-C", root, "ls-files", "-z"]
+    Untracked files count. A document written minutes ago and not yet added is
+    exactly the one being checked, and skipping it would report a clean scan of
+    everything except the file in question. Ignored paths still stay out.
+    """
+    cmd = ["git", "-C", root, "ls-files", "-z",
+           "--cached", "--others", "--exclude-standard"]
     if prefix:
         cmd.append(prefix)
     out = subprocess.run(cmd, capture_output=True, check=True).stdout
@@ -55,10 +59,10 @@ def paths_to_read(root, prefix):
     """A named file wins over the git listing; anything else must match."""
     if prefix and os.path.isfile(prefix):
         return [prefix]
-    found = list(tracked_files(root, prefix))
+    found = list(listed_files(root, prefix))
     if prefix and not found:
         raise SystemExit(
-            "nothing to scan: '%s' is neither a file nor a tracked path with a "
+            "nothing to scan: '%s' is neither a file nor a listed path with a "
             "text suffix. Refusing to report a clean scan of nothing." % prefix)
     return found
 
