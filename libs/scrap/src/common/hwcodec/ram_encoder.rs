@@ -16,6 +16,8 @@ pub struct HwRamEncoder {
     pub pixfmt: AVPixelFormat,
     pub(super) bitrate: u32, //kbs
     pub(super) config: HwRamEncoderConfig,
+    /// What QoS paces the capture at; the encoder itself keeps assuming DEFAULT_FPS.
+    pub(super) fps: u32,
 }
 
 impl EncoderApi for HwRamEncoder {
@@ -61,6 +63,7 @@ impl EncoderApi for HwRamEncoder {
                         pixfmt: ctx.pixfmt,
                         bitrate,
                         config,
+                        fps: DEFAULT_FPS as u32,
                     }),
                     Err(_) => Err(anyhow!(format!("Failed to create encoder"))),
                 }
@@ -140,10 +143,21 @@ impl EncoderApi for HwRamEncoder {
         );
         if bitrate > 0 {
             bitrate = Self::check_bitrate_range(&self.config, bitrate);
-            self.encoder.set_bitrate(bitrate as _).ok();
             self.bitrate = bitrate;
+            self.apply_bitrate();
         }
         self.config.quality = ratio;
+        Ok(())
+    }
+
+    /// ffmpeg's rate control has no frame-rate setter, so the target is scaled for the
+    /// fps the capture loop really runs at; `bitrate()` still reports the target QoS asked for.
+    fn set_fps(&mut self, fps: u32) -> ResultType<()> {
+        if fps == 0 || fps == self.fps {
+            return Ok(());
+        }
+        self.fps = fps;
+        self.apply_bitrate();
         Ok(())
     }
 
@@ -262,5 +276,13 @@ impl HwRamEncoder {
             }
         }
         bitrate
+    }
+}
+
+impl HwRamEncoder {
+    fn apply_bitrate(&mut self) {
+        let kbs = fps_compensated_kbs(self.bitrate, DEFAULT_FPS as u32, self.fps);
+        let kbs = Self::check_bitrate_range(&self.config, kbs);
+        self.encoder.set_bitrate(kbs as _).ok();
     }
 }

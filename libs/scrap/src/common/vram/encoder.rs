@@ -151,6 +151,18 @@ impl EncoderApi for VRamEncoder {
         Ok(())
     }
 
+    fn set_fps(&mut self, fps: u32) -> ResultType<()> {
+        let fps = fps as i32;
+        if fps <= 0 || fps == self.ctx.d.framerate {
+            return Ok(());
+        }
+        self.encoder
+            .set_framerate(fps)
+            .map_err(|err| anyhow!("set_framerate({fps}) failed: {err}"))?;
+        self.ctx.d.framerate = fps;
+        Ok(())
+    }
+
     fn bitrate(&self) -> u32 {
         self.bitrate
     }
