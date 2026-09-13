@@ -11,8 +11,10 @@ Widget _switchRow(BuildContext context, String label, bool value,
         enabled: enabled, description: description);
 
 /// The secondary button of the settings page: white, 1px border, 28 high.
-Widget _secondaryButton(String label, VoidCallback? onPressed) => SizedBox(
-    height: UiSpace.settingsControlHeight,
+Widget _secondaryButton(String label, VoidCallback? onPressed,
+        {double height = UiSpace.settingsControlHeight}) =>
+    SizedBox(
+    height: height,
     child: OutlinedButton(
         style: OutlinedButton.styleFrom(
             foregroundColor: UiColor.text,
@@ -26,8 +28,10 @@ Widget _secondaryButton(String label, VoidCallback? onPressed) => SizedBox(
         child: Text(translate(label))));
 
 /// The primary button, 28 high, for a panel's Save.
-Widget _primaryButton(String label, VoidCallback? onPressed) => SizedBox(
-    height: UiSpace.settingsControlHeight,
+Widget _primaryButton(String label, VoidCallback? onPressed,
+        {double height = UiSpace.settingsControlHeight}) =>
+    SizedBox(
+    height: height,
     child: ElevatedButton(
         style: ElevatedButton.styleFrom(
             backgroundColor: UiColor.primary,
@@ -41,6 +45,24 @@ Widget _primaryButton(String label, VoidCallback? onPressed) => SizedBox(
             textStyle: UiType.button),
         onPressed: onPressed,
         child: Text(translate(label))));
+
+/// The danger button: white, red border and text; confirmation lives in
+/// the dialog that opens it.
+Widget _dangerButton(String label, VoidCallback? onPressed,
+        {double height = UiSpace.settingsControlHeight}) =>
+    SizedBox(
+        height: height,
+        child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+                foregroundColor: UiColor.danger,
+                backgroundColor: Colors.white,
+                side: const BorderSide(color: UiColor.dangerBorder),
+                padding: const EdgeInsets.symmetric(horizontal: UiSpace.s3),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(UiSpace.buttonRadius)),
+                textStyle: UiType.button),
+            onPressed: onPressed,
+            child: Text(translate(label))));
 
 /// A secret shown as "set" / "not set" with a Set / Change button; the value
 /// itself never appears on the page.

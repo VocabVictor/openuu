@@ -25,6 +25,15 @@ void setPasswordDialog({VoidCallback? notEmptyCallback}) async {
       : (presetPassword ? translate('preset-password-in-use-tip') : '');
   final showStatusTipOnMobile =
       statusTip.isNotEmpty && !isDesktop;
+  if (isWindows && !bind.isIncomingOnly()) {
+    _setPasswordDialogDesktop(
+        notEmptyCallback: notEmptyCallback,
+        localPasswordSet: localPasswordSet,
+        statusTip: statusTip,
+        maxLength: maxLength,
+        rules: rules);
+    return;
+  }
 
   gFFI.dialogManager.show((setState, close, context) {
     updateCanSubmit() {

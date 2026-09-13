@@ -118,6 +118,10 @@ class UiSpace {
   static const double panelTextAreaHeight = 64;
   static const Duration panelDuration = Duration(milliseconds: 180);
   static const Duration panelFadeDuration = Duration(milliseconds: 120);
+
+  // Dialogs (design-review-settings.md §2.6): 400 wide with 24 padding.
+  static const double dialogContentWidth = 352;
+  static const double dialogTitleHeight = 48;
 }
 
 class UiColor {
@@ -141,6 +145,9 @@ class UiColor {
   static const Color panelBg = Color(0xfffafbfc);
   static const Color danger = Color(0xfff53f3f);
   static const Color primaryDisabled = Color(0xffb8d0ff);
+  static const Color dangerBorder = Color(0xfffbaca3);
+  static const Color warning = Color(0xffff7d00);
+  static const Color success = Color(0xff00b42a);
 }
 
 class UiType {
