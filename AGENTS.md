@@ -454,6 +454,12 @@ the same failure as reporting a file migrated because you remember migrating
 it. Name the commit that introduced the lines you are claiming or disclaiming;
 an attribution with no sha behind it is a guess, and says so.
 
+**Ask whoever assigned the work first; fall back to "unclaimed" only when
+there is nobody to ask.** Assignment is the stronger source and the one most
+easily skipped, because **it does not live in the repository**: three sessions
+can each search the whole history and come back empty while one question
+settles it. This is the one piece of evidence here that no `grep` can reach.
+
 When nobody claims a commit, record that it is unclaimed rather than crediting
 or retiring anything on its behalf. On 2026-09-13 a toolbar refactor appeared
 that did exactly what a backlog entry asked for, and no session would claim it;
