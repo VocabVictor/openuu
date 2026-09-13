@@ -56,6 +56,7 @@ extension _NetworkDesktop on _NetworkState {
                     enabled: !locked,
                     panel: (context, close) => _ProxyPanel(
                         close: close, onSaved: () => _setState(() {})))),
+          if (!hideServer) ..._provisionRows(context, zh),
         ]),
       futureBuilder(
           future: bind.mainIsUsingPublicServer(),

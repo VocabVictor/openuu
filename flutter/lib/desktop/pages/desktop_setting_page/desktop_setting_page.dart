@@ -27,6 +27,7 @@ import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:password_strength/password_strength.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -47,6 +48,7 @@ part 'general_other.dart';
 part 'general_record.dart';
 part 'network.dart';
 part 'network_desktop.dart';
+part 'network_provision.dart';
 part 'network_proxy_panel.dart';
 part 'network_server_panel.dart';
 part 'page_tabs.dart';
