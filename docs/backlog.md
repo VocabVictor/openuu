@@ -86,3 +86,30 @@ doing and what it can break.
   administrator account automatically on boot and the stored password is
   readable by anyone who can read that registry key, so clear this before the
   VM is used for anything else.
+
+## Mobile follow-ups (2026-09 stocktake)
+
+From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
+
+* **Visual confirmation of three dialog regressions.** `98b6185bf` (the 2FA OK
+  button never enabling), `ae9482116` (a fixed 352 minimum width overflowing a
+  phone) and `741ca0d9b` (the action row not stacking when it does not fit)
+  were each verified only by `flutter analyze`. They need one look on a real
+  screen. Precondition: the Android build works again
+  (`docs/android-build-restore-plan.md`).
+* **Dark-mode tokens** — see the entry above; mobile ships a live dark theme,
+  so the light-only `UiColor` hurts there first.
+* **Mobile has no design tokens at all.** Zero files under `flutter/lib/mobile/`
+  reference `UiColor`/`UiSpace`/`UiType` (the connection manager's trust
+  controls, `8ae053ef2`, are the first and only exception). Bringing mobile
+  onto the shared language is comparable in size to the three desktop rounds.
+  Precondition: mobile builds, otherwise the work cannot be seen.
+* **Three tidy-ups with no precondition**: `AGENTS.md` still records
+  `mobile/pages/settings_page/settings_state.dart` as "~770 lines" where it is
+  now 1020; fourteen files under `flutter/lib/common/` import
+  `'../../consts.dart'` with one `..` too many (it resolves — a package URI
+  absorbs the extra segment — so this is style, not breakage); and the config
+  preview/confirm flow is implemented twice, in
+  `common/config_import.dart` for mobile and in
+  `desktop_setting_page/network_provision.dart` for the desktop, over the same
+  pair of FFI calls.
