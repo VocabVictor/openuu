@@ -151,8 +151,10 @@ fn sequential_connections_far_beyond_max_channels_all_succeed() {
             let (mut app, sock) = local_pair().await;
             h.open("127.0.0.1", port as i32, sock, vec![i as u8]).unwrap();
             let mut b = [0u8; 1];
-            app.read_exact(&mut b).await.unwrap();
-            assert_eq!(b[0], i as u8);
+            app.read_exact(&mut b)
+                .await
+                .unwrap_or_else(|e| panic!("round {i} of {}: {e}", MAX_CHANNELS * 3));
+            assert_eq!(b[0], i as u8, "round {i}");
             drop(app);
             // The controller's entry goes when its coordinator task exits,
             // which takes a cancel and a join; wait for it rather than
