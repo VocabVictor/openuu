@@ -12,6 +12,8 @@ class _TabState extends State<_Tab> with RestorationMixin {
   final RestorableBool restoreHover = RestorableBool(false);
 
   Widget _buildTabContent() {
+    final pal = UiColor.of(context);
+    final type = UiType.of(context);
     bool showIcon =
         widget.selectedIcon != null && widget.unselectedIcon != null;
     bool isSelected = widget.index == widget.selected;
@@ -24,7 +26,7 @@ class _TabState extends State<_Tab> with RestorationMixin {
           isSelected ? widget.selectedIcon : widget.unselectedIcon,
           size: iconSize,
           color: session
-              ? (isSelected ? UiColor.text : UiColor.muted)
+              ? (isSelected ? pal.text : pal.muted)
               : isSelected
                   ? MyTheme.tabbar(context).selectedTabIconColor
                   : MyTheme.tabbar(context).unSelectedTabIconColor,
@@ -41,10 +43,10 @@ class _TabState extends State<_Tab> with RestorationMixin {
                   : widget.label.value,
               textAlign: TextAlign.center,
               style: session
-                  ? UiType.sidebarItem.copyWith(
+                  ? type.sidebarItem.copyWith(
                       fontWeight:
                           isSelected ? FontWeight.w500 : FontWeight.w400,
-                      color: isSelected ? UiColor.text : UiColor.muted)
+                      color: isSelected ? pal.text : pal.muted)
                   : TextStyle(
                       color: isSelected
                           ? MyTheme.tabbar(context).selectedTextColor
@@ -95,6 +97,7 @@ class _TabState extends State<_Tab> with RestorationMixin {
 
   @override
   Widget build(BuildContext context) {
+    final pal = UiColor.of(context);
     bool isSelected = widget.index == widget.selected;
     bool showDivider =
         widget.index != widget.selected - 1 && widget.index != widget.selected;
@@ -113,7 +116,7 @@ class _TabState extends State<_Tab> with RestorationMixin {
                     border: Border(
                       bottom: BorderSide(
                         color: session
-                            ? UiColor.primary
+                            ? pal.primary
                             : widget.selectedBorderColor!,
                         width: session ? UiSession.tabIndicator : 1,
                       ),
@@ -187,6 +190,7 @@ class _CloseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = UiColor.of(context);
     if (session) {
       return SizedBox(
           width: UiSession.tabCloseHitSize,
@@ -199,7 +203,7 @@ class _CloseButton extends StatelessWidget {
                   child: Icon(Icons.close,
                       size: UiSession.tabCloseSize,
                       color:
-                          tabSelected ? UiColor.textSecondary : UiColor.muted),
+                          tabSelected ? pal.textSecondary : pal.muted),
                 )
               : null).paddingOnly(left: UiSpace.s1);
     }

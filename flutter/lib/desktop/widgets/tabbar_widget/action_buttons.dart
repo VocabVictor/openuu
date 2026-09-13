@@ -34,6 +34,7 @@ class _ActionIconState extends State<ActionIcon> {
 
   @override
   Widget build(BuildContext context) {
+    final pal = UiColor.of(context);
     final session = widget.session;
     final iconSize = session ? UiSession.tabActionIconSize : widget.iconSize;
     return Tooltip(
@@ -42,8 +43,8 @@ class _ActionIconState extends State<ActionIcon> {
       child: InkWell(
         hoverColor: session
             ? (widget.isClose
-                ? UiColor.danger.withOpacity(.12)
-                : UiColor.settingsRowHover)
+                ? pal.danger.withOpacity(.12)
+                : pal.settingsRowHover)
             : widget.isClose
                 ? const Color.fromARGB(255, 196, 43, 28)
                 : MyTheme.tabbar(context).hoverColor,
@@ -56,7 +57,7 @@ class _ActionIconState extends State<ActionIcon> {
           child: widget.onTap == null
               ? Icon(
                   widget.icon,
-                  color: session ? UiColor.faint : Colors.grey,
+                  color: session ? pal.faint : Colors.grey,
                   size: iconSize,
                 )
               : Obx(
@@ -64,8 +65,8 @@ class _ActionIconState extends State<ActionIcon> {
                     widget.icon,
                     color: session
                         ? (hover.value && widget.isClose
-                            ? UiColor.danger
-                            : UiColor.textSecondary)
+                            ? pal.danger
+                            : pal.textSecondary)
                         : hover.value && widget.isClose
                             ? Colors.white
                             : MyTheme.tabbar(context).unSelectedIconColor,
