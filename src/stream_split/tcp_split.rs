@@ -6,7 +6,7 @@ use hbb_common::{
     futures::{SinkExt, StreamExt},
     protobuf,
     tcp::{DynTcpStream, Encrypt, FramedStream},
-    tokio::io::{AsyncRead, AsyncReadExt, ReadHalf, WriteHalf},
+    tokio::io::{AsyncRead, AsyncReadExt, WriteHalf},
     tokio_util::codec::{Framed, FramedRead, FramedWrite},
     ResultType,
 };
