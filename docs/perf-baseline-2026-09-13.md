@@ -19,6 +19,14 @@ restarted; the `qos_video` / `qos_send` lines are aggregated per second.
 Controller diagnostics: the same variable plus the `qos_e2e` line
 (`src/client/e2e_lag.rs`).
 
+To put the link under pressure, cap the peer from the Hyper-V host rather
+than inside the guest: `Set-VMNetworkAdapter -VMName <vm> -MaximumBandwidth
+2000000` (bits per second, `0` lifts it). A per-application
+`New-NetQosPolicy` throttle inside the guest does not attach on a
+non-domain machine, and reads back with an empty throttle rate. The host cap
+covers the guest's SSH as well, so start the session from the controller and
+collect the logs after lifting the cap.
+
 ## 1. Direct versus relay (the result that matters most)
 
 | Path | Time to establish | Samples |
@@ -106,11 +114,26 @@ not routable from the physical LAN (ping and TCP probe both fail), so the
 firewall entirely did not change this. A direct session to peer B is
 impossible until it shares an L2 segment with the controller.
 
-## 8. Open
+## 8. A moving-screen run is only valid when the peer actually captures
 
-* `codec-preference=vp9` written to the user defaults file did not reach the
-  peer (`used preference: Auto`); find the path that sends it, then measure
-  P0-4 (VP8/VP9 on peer B).
+The per-second `captured` count is the fixture's own check. In a 2 Mbps
+capped run intended to load the wait path, 54 of 56 seconds reported
+`captured=0`: the scrolling console was not on the captured desktop, so the
+session measured a static screen and the capture-side wait was never
+exercised. Numbers from such a run say nothing about the code under test.
+Before timing anything, confirm `qos_video` shows `captured` at the target
+frame rate; only then apply the bandwidth cap and start the clock. The
+P0-a/b capture-pacing change therefore rests on its unit tests, not on a
+real-machine comparison.
+
+## 9. Open
+
+* Setting `codec-preference` for a measurement means editing that peer's own
+  file, `config/peers/<id>.toml` under `[options]`. `Decoder::preference`
+  reads `PeerConfig::load(id).options`, and `PeerConfig::load` returns the
+  per-peer file or `Default::default()`; the `options` map is never merged
+  with the user defaults. Writing the key into the global defaults file, as a
+  first attempt here did, leaves the session on `used preference: Auto`.
 * Hardware-encoder numbers on a real machine are deferred. P0-e (framerate
   lock) and P0-d (recovery step) rest on the `video_qos` simulation (73 tests)
   and the `set_fps` unit tests for correctness; a real before/after under a

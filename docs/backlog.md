@@ -25,3 +25,11 @@ with its own tests.
   (`common/widgets/login/login_dialog.dart`) is the only sign-in path and
   is reached from the welcome page, the title-bar account menu, the devices
   page and settings; restyle rather than replace.
+* **Bundle-swap helper scripts must verify the restore.** A throw-away swap
+  script derived its backup directory name from `%time%`, which parsed to an
+  empty string, so every swap reused one directory and two rollbacks silently
+  restored nothing; the backups were then deleted and the peer's original
+  bundle was lost. Any such script names the backup with
+  `Get-Date -Format yyyyMMdd-HHmmss` and asserts the restore with `Test-Path`
+  (and a file-hash or timestamp check) before deleting a backup.
+
