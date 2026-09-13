@@ -31,6 +31,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
     required this.borderHover,
     required this.surface,
     required this.surfaceHover,
+    required this.overlayHover,
     required this.panelBg,
     required this.inverseSurface,
     required this.onInverseSurface,
@@ -70,6 +71,12 @@ class UiPalette extends ThemeExtension<UiPalette> {
   final Color borderHover;
   final Color surface;
   final Color surfaceHover;
+
+  /// A translucent veil for a hover or a selection drawn over something the
+  /// palette does not own — a gradient, an image, a tab strip. It lifts or
+  /// lowers what is beneath instead of replacing it, so it is the one member
+  /// that is deliberately not opaque.
+  final Color overlayHover;
   final Color panelBg;
 
   /// A surface deliberately opposite to the page: dark in the light
@@ -116,6 +123,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
     borderHover: Color(0xffc9d4f0),
     surface: Color(0xffffffff),
     surfaceHover: Color(0xfff5f8ff),
+    overlayHover: Color(0x8affffff),
     panelBg: Color(0xfffafbfc),
     inverseSurface: Color(0xff20262d),
     onInverseSurface: Color(0xffffffff),
@@ -152,6 +160,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
     borderHover: Color(0xff3d4a66),
     surface: Color(0xff23262e),
     surfaceHover: Color(0xff2a2e38),
+    overlayHover: Color(0x42000000),
     panelBg: Color(0xff1c1f24),
     inverseSurface: Color(0xffe5e6eb),
     onInverseSurface: Color(0xff1c1f24),
@@ -189,6 +198,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
     Color? borderHover,
     Color? surface,
     Color? surfaceHover,
+    Color? overlayHover,
     Color? panelBg,
     Color? inverseSurface,
     Color? onInverseSurface,
@@ -224,6 +234,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
         borderHover: borderHover ?? this.borderHover,
         surface: surface ?? this.surface,
         surfaceHover: surfaceHover ?? this.surfaceHover,
+        overlayHover: overlayHover ?? this.overlayHover,
         panelBg: panelBg ?? this.panelBg,
         inverseSurface: inverseSurface ?? this.inverseSurface,
         onInverseSurface: onInverseSurface ?? this.onInverseSurface,
@@ -263,6 +274,7 @@ class UiPalette extends ThemeExtension<UiPalette> {
       borderHover: Color.lerp(borderHover, other.borderHover, t) ?? borderHover,
       surface: Color.lerp(surface, other.surface, t) ?? surface,
       surfaceHover: Color.lerp(surfaceHover, other.surfaceHover, t) ?? surfaceHover,
+      overlayHover: Color.lerp(overlayHover, other.overlayHover, t) ?? overlayHover,
       panelBg: Color.lerp(panelBg, other.panelBg, t) ?? panelBg,
       inverseSurface: Color.lerp(inverseSurface, other.inverseSurface, t) ?? inverseSurface,
       onInverseSurface: Color.lerp(onInverseSurface, other.onInverseSurface, t) ?? onInverseSurface,

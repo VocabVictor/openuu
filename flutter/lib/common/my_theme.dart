@@ -228,7 +228,6 @@ class MyTheme {
   ).copyWith(
     extensions: <ThemeExtension<dynamic>>[
       ColorThemeExtension.light,
-      TabbarTheme.light,
       UiPalette.light,
     ],
   );
@@ -335,7 +334,6 @@ class MyTheme {
     extensions: <ThemeExtension<dynamic>>[
       ColorThemeExtension.dark,
       UiPalette.dark,
-      TabbarTheme.dark,
     ],
   );
 
@@ -377,9 +375,8 @@ class MyTheme {
     return Theme.of(context).extension<ColorThemeExtension>()!;
   }
 
-  static TabbarTheme tabbar(BuildContext context) {
-    return Theme.of(context).extension<TabbarTheme>()!;
-  }
+  static TabbarTheme tabbar(BuildContext context) =>
+      TabbarTheme.of(context);
 
   static ThemeMode themeModeFromString(String v) {
     switch (v) {

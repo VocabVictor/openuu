@@ -24,29 +24,26 @@ class TabbarTheme extends ThemeExtension<TabbarTheme> {
       required this.closeHoverColor,
       required this.selectedTabBackgroundColor});
 
-  static const light = TabbarTheme(
-      selectedTabIconColor: MyTheme.accent,
-      unSelectedTabIconColor: Color.fromARGB(255, 162, 203, 241),
-      selectedTextColor: Colors.black,
-      unSelectedTextColor: Color.fromARGB(255, 112, 112, 112),
-      selectedIconColor: Color.fromARGB(255, 26, 26, 26),
-      unSelectedIconColor: Color.fromARGB(255, 96, 96, 96),
-      dividerColor: Color.fromARGB(255, 238, 238, 238),
-      hoverColor: Colors.white54,
-      closeHoverColor: Colors.white,
-      selectedTabBackgroundColor: Colors.white54);
-
-  static const dark = TabbarTheme(
-      selectedTabIconColor: MyTheme.accent,
-      unSelectedTabIconColor: Color.fromARGB(255, 30, 65, 98),
-      selectedTextColor: Colors.white,
-      unSelectedTextColor: Color.fromARGB(255, 192, 192, 192),
-      selectedIconColor: Color.fromARGB(255, 192, 192, 192),
-      unSelectedIconColor: Color.fromARGB(255, 255, 255, 255),
-      dividerColor: Color.fromARGB(255, 64, 64, 64),
-      hoverColor: Colors.black26,
-      closeHoverColor: Colors.black,
-      selectedTabBackgroundColor: Colors.black26);
+  /// Built from the palette rather than from two hand-kept constant sets:
+  /// one appearance's values had to be remembered whenever the other
+  /// changed, and nothing announced the omission.
+  static TabbarTheme of(BuildContext context) {
+    final ui = UiColor.of(context);
+    return TabbarTheme(
+        selectedTabIconColor: ui.primary,
+        // Unselected is dimmer, not a different hue — the hue is what marks
+        // selected. The pale blue it replaces measured 1.70:1 on a light bar
+        // and 1.43:1 on a dark one, against the 3:1 an icon needs.
+        unSelectedTabIconColor: ui.textSecondary,
+        selectedTextColor: ui.text,
+        unSelectedTextColor: ui.textSecondary,
+        selectedIconColor: ui.text,
+        unSelectedIconColor: ui.textSecondary,
+        dividerColor: ui.border,
+        hoverColor: ui.overlayHover,
+        closeHoverColor: ui.surface,
+        selectedTabBackgroundColor: ui.overlayHover);
+  }
 
   @override
   ThemeExtension<TabbarTheme> copyWith({
