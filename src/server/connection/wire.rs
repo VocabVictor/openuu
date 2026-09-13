@@ -12,6 +12,9 @@
 //!
 //! This commit adds only the whole form; splitting comes next.
 
+// The split form is constructed in the next commit, which is also where this goes.
+#![allow(dead_code)]
+
 use super::*;
 use crate::stream_split::ConnReader;
 use base::message_proto::Message;
