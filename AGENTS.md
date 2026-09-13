@@ -336,6 +336,14 @@ produce a visibly different answer, and include something that must come back ne
 A query with no negative case cannot tell a working server from one that answers yes to
 everything.
 
+The same care applies at the other edge. **Pin the property the code must keep, not the
+shape it happens to have**, and write the permitted cases into the test as well, or it
+becomes a false obstacle to the next correct change. The writer task is the example: one
+message type must never overtake the video, so the test that pins it deliberately queues
+an ordinary control message alongside and lets it overtake. A test that simply demanded
+"nothing overtakes" would pass today and block a legitimate fast path tomorrow, and
+whoever hit it would have no way to tell which half of it was the real rule.
+
 ### Confirm the artefact carries the change
 
 Before measuring a build, prove the build is the one you mean. A timestamp says
