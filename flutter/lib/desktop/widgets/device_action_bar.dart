@@ -95,7 +95,7 @@ class _DeviceActionBarState extends State<DeviceActionBar> {
                 border: Border(top: BorderSide(color: ui.border))),
               child: Align(alignment: Alignment.centerRight, child: SizedBox(width: 248,
                 child: OutlinedButton(onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(translate('Close'))))),
+                  child: Text(translate('Close')))))),
           ]),
         )),
       )));
