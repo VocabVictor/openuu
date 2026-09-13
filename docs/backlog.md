@@ -84,9 +84,12 @@ with its own tests.
     uses ws, and
   * taking the video write out of the connection loop (the item above it),
     which is the fix for input freezing behind a stalled picture and needs
-    `Stream` split into a reading and a writing half. That one has no
-    workaround at all: the send path carries the encryption sequence, so only
-    one writer may own it.
+    `Stream` split into a reading and a writing half. **This entry said that
+    one had no workaround at all. That was wrong**; see
+    `docs/submodule-decision.md` section 2. The send and receive counters are
+    independent fields of one struct, WebRTC already clones, and the TCP
+    fields are public, so the split is buildable here for both. Only
+    WebSocket is closed, and nothing uses WebSocket by default.
 
   What forking would cost, as far as it can be estimated from this side: the
   pointer has moved 19 times in the last 90 days, about twice a week, and the
@@ -101,9 +104,10 @@ with its own tests.
   socket split much less so, since it changes a type every one of their
   transports goes through.
 
-  The decision is not "fork or not" in the abstract: it is whether the video
-  write coupling is worth carrying a fork for, since that is the first change
-  we cannot route around. Nothing to do until that is answered.
+  Answered on 2026-09-13 in `docs/submodule-decision.md`: do not fork, build
+  the writer split here for TCP and WebRTC, and revisit if WebSocket becomes a
+  transport people use, if the protocol floor itself has to change, or if
+  upstream breaks the wrapper more than about twice.
 
 ## Session-window restyle follow-ups
 
