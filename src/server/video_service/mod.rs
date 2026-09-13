@@ -75,6 +75,8 @@ lazy_static::lazy_static! {
 }
 
 mod frame_control;
+#[cfg(windows)]
+mod gdi_fallback;
 #[cfg(test)]
 mod frame_control_tests;
 pub use frame_control::*;

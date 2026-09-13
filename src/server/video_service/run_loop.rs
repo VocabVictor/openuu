@@ -110,6 +110,8 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
     #[cfg(windows)]
     let mut try_gdi = 1;
     #[cfg(windows)]
+    let capture_started = Instant::now();
+    #[cfg(windows)]
     log::info!("gdi: {}", c.is_gdi());
     #[cfg(windows)]
     start_uac_elevation_check();
@@ -298,12 +300,14 @@ pub(super) fn run(vs: VideoService) -> ResultType<()> {
             Err(ref e) if e.kind() == WouldBlock => {
                 #[cfg(windows)]
                 if try_gdi > 0 && !c.is_gdi() {
-                    if try_gdi > 3 {
+                    let waited = capture_started.elapsed();
+                    if gdi_fallback::give_up_on_duplication(try_gdi, waited) {
                         c.set_gdi();
                         try_gdi = 0;
-                        log::info!("No image, fall back to gdi");
+                        log::info!("No image in {:?}, fall back to gdi", waited);
+                    } else {
+                        try_gdi += 1;
                     }
-                    try_gdi += 1;
                 }
                 #[cfg(target_os = "linux")]
                 {
