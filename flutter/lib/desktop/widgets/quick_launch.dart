@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../models/platform_model.dart';
 import '../../models/model.dart';
 import '../../models/quick_launch_model.dart';
+import '../../common.dart';
+import 'ui_tokens.dart';
 
 const _shortcutKey = 'quick-launch-items';
 Future<List<Map<String, dynamic>>> _load(String peer) async {
@@ -30,12 +32,41 @@ class _QuickLaunchPanelState extends State<QuickLaunchPanel> {
     final loaded = await _load(widget.peer);
     if (mounted) setState(() => apps = loaded);
   }
+  Widget _header() => SizedBox(
+        height: UiSpace.sectionCardHeaderHeight,
+        child: Row(children: [
+          Expanded(child: Text(translate('Quick launch'), style: UiType.sectionTitle)),
+          IconButton(
+              onPressed: _reload,
+              tooltip: translate('Refresh shortcuts'),
+              iconSize: UiSpace.rowActionIconSize,
+              constraints: const BoxConstraints.tightFor(
+                  width: UiSpace.rowActionHitSize,
+                  height: UiSpace.rowActionHitSize),
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.refresh, color: UiColor.muted)),
+        ]),
+      );
+
+  /// An empty panel is one button and no explanation of what it adds, so it
+  /// says what a shortcut is for before offering to make one.
+  Widget _empty() => Padding(
+        padding: const EdgeInsets.only(bottom: UiSpace.s3),
+        child: Text(translate('quick-launch-empty-tip'), style: UiType.caption),
+      );
+
   @override
   Widget build(BuildContext context) {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
-    return Container(width: double.infinity, padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(border: Border.all(color: const Color(0xffdce2e7)), borderRadius: BorderRadius.circular(6)),
-      child: Wrap(spacing: 12, runSpacing: 12, children: [
+    return Container(width: double.infinity,
+      padding: const EdgeInsets.all(UiSpace.sectionCardPadding),
+      decoration: BoxDecoration(
+        border: Border.all(color: UiColor.border),
+        borderRadius: BorderRadius.circular(UiSpace.sectionCardRadius)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _header(),
+        if (apps.isEmpty) _empty(),
+        Wrap(spacing: 12, runSpacing: 12, children: [
         for (var i = 0; i < apps.length; i++) SizedBox(width: 132, child: Column(children: [
           TextButton(onPressed: () { final app = Map<String, dynamic>.from(apps[i])..remove('icon'); widget.onOpen(jsonEncode(app)); }, child: Column(children: [
             _appIcon(apps[i]), const SizedBox(height: 8),
@@ -60,9 +91,8 @@ class _QuickLaunchPanelState extends State<QuickLaunchPanel> {
             ])])),
         SizedBox(width: 112, height: 110, child: TextButton(
           onPressed: () => widget.onOpen(''), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Icon(Icons.add_circle_outline, size: 34), const SizedBox(height: 8), Text(zh ? '添加' : 'Add')]))),
-        IconButton(onPressed: _reload, tooltip: zh ? '刷新快捷方式' : 'Refresh shortcuts', icon: const Icon(Icons.refresh, size: 18)),
-      ]));
+            const Icon(Icons.add_circle_outline, size: 34), const SizedBox(height: 8), Text(translate('Add'))]))),
+      ])]));
   }
 }
 
