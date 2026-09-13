@@ -61,6 +61,10 @@ Two things to read out of that table rather than past it:
   dark than in light. `faint` on the light surface is 1.99 and `ready` on it is
   2.28 — both below 3:1, both pre-existing, neither introduced by this work.
   They belong in the light-appearance backlog, not in this acceptance.
+  **Dark is never to be pulled down to light's level for the sake of
+  consistency.** Where the two differ and dark scores higher, light is the one
+  with the defect; reading the difference as a dark-appearance fault and
+  "fixing" it makes the better side worse.
 * **`primary` and `primaryFill` are two members for one hue on purpose.** White
   on the dark `primary` measures 3.47:1, under the 4.5 a 13px button label
   needs; a blue light enough to read as text on the dark surface is too light
@@ -91,8 +95,8 @@ greyscale filter): each state must still be readable.
 **A disabled control must not look like a negative one.** In dark,
 `primaryDisabled` (a dimmed blue) and `settingsSwitchOff` (a grey) separate at
 1.80:1; in light they separate at 1.03:1, which is to say they are nearly the
-same colour there. Dark is the better of the two and must not be "fixed"
-towards light. Named check: on the settings page in dark, a switch that is off
+same colour there. **Dark is the better of the two and must not be "fixed"
+towards light.** Named check: on the settings page in dark, a switch that is off
 and a button that is locked must not read as the same treatment.
 
 ## 4. Where it most likely breaks

@@ -93,6 +93,24 @@ example to copy: the palette taken once at the top of each `build`, the same
 names read from it, two literal `Colors.white` replaced by `surface` (a card
 face) and `onPrimary` (a label on the primary fill).
 
+## When one token is asked for two opposite things
+
+A token that two usages want to pull in opposite directions is not a value
+that was chosen badly; it is two responsibilities in one name. Split it, and
+leave the existing name to whichever usage already reads correctly.
+
+The worked example is the primary blue. On the dark surface it is read as
+text and an icon, which wants it light; underneath white content it is a fill,
+which wants it dark. Meeting in the middle fails both — white on it measures
+3.47:1 against the 4.5 a 13px label needs, while the same value read as text
+drifts down towards the surface. So `primaryFill` is its own member, dark
+where it has to be, and `primary` keeps the value it had. In the light
+appearance both are the same colour and not a line changes.
+
+The tell is an argument about what a value "should" be where both sides have a
+real reason. That argument has no answer as long as the two usages share a
+name.
+
 ## What the palette must satisfy
 
 The dark values are not the light ones inverted. Two rules from AGENTS.md bind
