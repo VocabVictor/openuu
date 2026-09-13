@@ -87,7 +87,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Modified", "修改时间"),
         ("Size", "大小"),
         ("Show Hidden Files", "显示隐藏文件"),
-        ("Receive", "接受"),
+        ("Receive", "接收"),
         ("Send", "发送"),
         ("Refresh File", "刷新文件"),
         ("Local", "本地"),
