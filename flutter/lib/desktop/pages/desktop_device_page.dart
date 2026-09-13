@@ -4,6 +4,7 @@ import '../../models/online_poller.dart';
 import '../../models/online_presence.dart';
 import 'desktop_welcome_page.dart';
 import '../widgets/desktop_preview.dart';
+import '../widgets/ui_tokens.dart';
 import '../widgets/quick_launch.dart';
 import '../widgets/device_action_bar.dart';
 
@@ -69,6 +70,7 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
 
   @override
   Widget build(BuildContext context) {
+    final ui = UiColor.of(context);
     final name = widget.name;
     final id = widget.id;
     final onQuickLaunch = widget.onQuickLaunch;
@@ -84,6 +86,8 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
     return DesktopWelcomePage(
       onLogin: widget.onLogin, onSettings: widget.onSettings, onDevices: widget.onBack,
       onAssistance: widget.onAssistance, onFavorites: widget.onFavorites,
+      // Literal until the shell moves: this is the selected item in the same
+      // rail, and it has to match the nav item's selected colour there.
       deviceItem: Container(
         margin: const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(color: const Color(0xffe2e8ec), borderRadius: BorderRadius.circular(5)),
@@ -93,10 +97,13 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
           subtitle: Text(status, style: const TextStyle(fontSize: 11)),
           selected: true, onTap: () {})),
       header: Row(children: [
+        // Literal until there is a token for it: a near-black pill would
+        // disappear into a dark window, and no palette pair means "a chip that
+        // inverts the surface".
         Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(color: const Color(0xff20262d), borderRadius: BorderRadius.circular(20)),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.circle, size: 8, color: online ? const Color(0xff18dfa0) : Colors.grey),
+            Icon(Icons.circle, size: 8, color: online ? ui.ready : ui.muted),
             const SizedBox(width: 5), Text(status, style: const TextStyle(color: Colors.white, fontSize: 12))])),
         const SizedBox(width: 12),
         Expanded(child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,
@@ -108,7 +115,7 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
         return SingleChildScrollView(padding: EdgeInsets.fromLTRB(inset, 20, inset, 28),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xffdce2e7)), borderRadius: BorderRadius.circular(6)),
+              decoration: BoxDecoration(color: ui.surface, border: Border.all(color: ui.border), borderRadius: BorderRadius.circular(6)),
               child: Column(children: [
                 DesktopPreviewPanel(peer: id, onConnect: widget.onConnect),
                 DeviceActionBar(id: id, onFiles: widget.onFiles, onWatch: widget.onWatch,
