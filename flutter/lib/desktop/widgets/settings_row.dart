@@ -125,7 +125,7 @@ class _SettingsGroupState extends State<SettingsGroup> {
       if (_open)
         Container(
             decoration: BoxDecoration(
-                color: Colors.white,
+                color: UiColor.of(context).surface,
                 borderRadius:
                     BorderRadius.circular(UiSpace.settingsGroupRadius),
                 border: Border.all(color: UiColor.of(context).border)),
@@ -159,9 +159,9 @@ class SettingsSwitch extends StatelessWidget {
           fit: BoxFit.contain,
           child: Switch(
               value: value,
-              activeColor: Colors.white,
+              activeColor: UiColor.of(context).onPrimary,
               activeTrackColor: UiColor.of(context).primary,
-              inactiveThumbColor: Colors.white,
+              inactiveThumbColor: UiColor.of(context).surface,
               inactiveTrackColor: UiColor.of(context).settingsSwitchOff,
               trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

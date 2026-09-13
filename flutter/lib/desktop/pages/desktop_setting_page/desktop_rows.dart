@@ -18,7 +18,7 @@ Widget _secondaryButton(BuildContext context, String label, VoidCallback? onPres
     child: OutlinedButton(
         style: OutlinedButton.styleFrom(
             foregroundColor: UiColor.of(context).text,
-            backgroundColor: Colors.white,
+            backgroundColor: UiColor.of(context).surface,
             side: BorderSide(color: UiColor.of(context).inputBorder),
             padding: const EdgeInsets.symmetric(horizontal: UiSpace.s3),
             shape: RoundedRectangleBorder(
@@ -35,9 +35,9 @@ Widget _primaryButton(BuildContext context, String label, VoidCallback? onPresse
     child: ElevatedButton(
         style: ElevatedButton.styleFrom(
             backgroundColor: UiColor.of(context).primaryFill,
-            foregroundColor: Colors.white,
+            foregroundColor: UiColor.of(context).onPrimary,
             disabledBackgroundColor: UiColor.of(context).primaryDisabled,
-            disabledForegroundColor: Colors.white,
+            disabledForegroundColor: UiColor.of(context).onPrimary,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: UiSpace.s4),
             shape: RoundedRectangleBorder(
@@ -55,7 +55,7 @@ Widget _dangerButton(BuildContext context, String label, VoidCallback? onPressed
         child: OutlinedButton(
             style: OutlinedButton.styleFrom(
                 foregroundColor: UiColor.of(context).danger,
-                backgroundColor: Colors.white,
+                backgroundColor: UiColor.of(context).surface,
                 side: BorderSide(color: UiColor.of(context).dangerBorder),
                 padding: const EdgeInsets.symmetric(horizontal: UiSpace.s3),
                 shape: RoundedRectangleBorder(

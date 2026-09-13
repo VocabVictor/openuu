@@ -43,7 +43,7 @@ class SettingsDropdown extends StatelessWidget {
                 borderRadius: BorderRadius.circular(UiSpace.menuRadius),
                 side: BorderSide(color: UiColor.of(context).border)),
             elevation: 4,
-            color: Colors.white,
+            color: UiColor.of(context).surface,
             onSelected: onChanged,
             itemBuilder: (_) => [
                   for (var i = 0; i < keys.length; i++)
@@ -69,7 +69,7 @@ class SettingsDropdown extends StatelessWidget {
                     left: UiSpace.settingsDropdownPaddingLeft,
                     right: UiSpace.settingsDropdownPaddingRight),
                 decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: UiColor.of(context).surface,
                     borderRadius: BorderRadius.circular(UiSpace.inputRadius),
                     border: Border.all(color: UiColor.of(context).inputBorder)),
                 child: Row(children: [

@@ -140,15 +140,16 @@ class DesktopWelcomePage extends StatelessWidget {
                     key: const ValueKey('welcome-login'),
                     onPressed: onLogin,
                     style: FilledButton.styleFrom(
-                        backgroundColor: blue,
-                        foregroundColor: Colors.white,
+                        backgroundColor: UiColor.of(context).primaryFill,
+                        foregroundColor: UiColor.of(context).onPrimary,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 26, vertical: 11),
                         shape: RoundedRectangleBorder(
                             borderRadius:
                                 BorderRadius.circular(UiSpace.buttonRadius))),
                     child: Text(zh ? '立即登录' : 'Sign in',
-                        style: textStyle.copyWith(color: Colors.white))),
+                        style: textStyle.copyWith(
+                            color: UiColor.of(context).onPrimary))),
                 SizedBox(height: gap),
               ])),
         ));

@@ -141,7 +141,7 @@ extension _CompactTrackpadSpeed on TrackpadSpeedWidgetState {
                   trackHeight: 4,
                   activeTrackColor: UiColor.of(context).primary,
                   inactiveTrackColor: UiColor.of(context).border,
-                  thumbColor: Colors.white,
+                  thumbColor: UiColor.of(context).onPrimary,
                   thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 7, elevation: 1),
                   overlayShape: SliderComponentShape.noOverlay),

@@ -115,7 +115,7 @@ class SettingsPanelField extends StatelessWidget {
                   hintText: hint,
                   hintStyle: UiType.of(context).caption.copyWith(color: UiColor.of(context).faint),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: UiColor.of(context).surface,
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: UiSpace.inputPaddingX, vertical: 8),
