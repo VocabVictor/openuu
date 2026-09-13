@@ -33,6 +33,11 @@
 # backup and its verified restore, the server log fetch and whether its event filter still
 # matches what the server logs, the report). Use it to check the script itself; it is the
 # only part of this file that has ever been run on one network.
+#
+# STATUS: T1, T2 and T3 have still never been run. Running the script for the first time
+# moved it from "would not even start" to "needs the environment"; it did not make it
+# verified. Do not read this file as a passed test until someone has run those three
+# cases across two networks and said so here.
 param(
   [Parameter(Mandatory = $true)][string]$Peer,
   [ValidateSet('T1', 'T2', 'T3', 'all')][string]$Case = 'all',
