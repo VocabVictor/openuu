@@ -101,6 +101,14 @@ a84c5c4d1 (bundle EC16A4976D69) is installed on the three test machines.
 * **Sciter UI removed**: `src/ui`, its cfg branches and packaging paths;
   `flutter` is the default feature. `9260a8fc2`, `b9e720639`, `1d908c2ef`,
   `16a5f882a`, `7d677c70f`.
+* **Web build target removed** (mobile stays): lib/web, models/web_model
+  and the 13 `dart.library.html` conditional imports (`2060f7d7d`, one
+  commit by necessity), the web home/settings widgets (`fb54b803f`), then
+  the isWeb/isWebDesktop branches folded directory by directory —
+  models/utils `66d1227c5`, common `12cb4f4b5`, desktop `2e722e7fd`,
+  common/widgets `7230d0536`, mobile `e03356dab` — and finally the
+  platform constants and stubs (this commit's parent). 3 000+ lines
+  deleted; flutter analyze 233 issues against the 238 baseline.
 * Pre-existing rustc warnings cleared without behaviour change
   (`12a4f1fc8`; lib 0 warnings); `cb3d15f77`; Dart splitter tool
   `a62b92fa4`; test file `input_modifier_utils_test.dart` split

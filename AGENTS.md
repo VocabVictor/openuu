@@ -110,7 +110,6 @@ broken up.
 | `flutter/lib/mobile/pages/settings_page/settings_state.dart` | single `_SettingsState.build` override (~770 lines) |
 | `flutter/lib/common/widgets/toolbar/controls.dart` | single `toolbarControls` function (~310 lines) |
 | `flutter/lib/common/widgets/login/login_dialog.dart` | single `_openLoginDialog` function (~350 lines) |
-| `flutter/lib/web/bridge.dart` | single `RustdeskImpl` class (~1930 lines) mirroring the generated bridge API one-to-one; callers reach it through the conditional import in `models/platform_model.dart`, which does not re-export the library, so extension members would be invisible on the web target and `flutter analyze` (native branch) cannot catch that |
 | `src/ipc/handle.rs` | single `async fn handle` IPC request dispatcher (~430 lines) |
 | `src/server/connection/start.rs` | single `Connection::start` function (~720 lines) |
 | `src/server/connection/logon_response.rs` | single `Connection::send_logon_response_and_keep_alive` function (~360 lines) |
