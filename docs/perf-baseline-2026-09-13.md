@@ -111,6 +111,11 @@ impossible until it shares an L2 segment with the controller.
 * `codec-preference=vp9` written to the user defaults file did not reach the
   peer (`used preference: Auto`); find the path that sends it, then measure
   P0-4 (VP8/VP9 on peer B).
-* Peer A given a console session (GPU + a moving screen) for the hardware
-  encoder measurements: fps, target versus actual bitrate, QoS trace, e2e,
-  and the P0-e framerate-lock before/after under a bandwidth cap.
+* Hardware-encoder numbers on a real machine are deferred. P0-e (framerate
+  lock) and P0-d (recovery step) rest on the `video_qos` simulation (73 tests)
+  and the `set_fps` unit tests for correctness; a real before/after under a
+  bandwidth cap needs a GPU peer that composites a moving screen, which
+  neither available peer provides: the build machine has the GPU but is
+  headless (no viewer, no DXGI frames), the VM composites but has no hardware
+  encoder. A cheap fix is an HDMI dummy plug on the build machine so DXGI
+  composites headlessly; this group of numbers is to be filled in then.
