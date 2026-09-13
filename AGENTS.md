@@ -525,6 +525,15 @@ steps, all of them:
   `looked in ...\wt-e9srv and True` and the cause was in the message.
   Writing this very sentence lost its backslash-b to a shell heredoc
   twice, which is the rule above it.
+* **Scan the file for control characters before you copy it over**:
+  `python tools/scan_control_chars.py <file>`. It takes a path outside the
+  repository, so the local copy can be checked before it is installed, and it
+  exits non-zero if the path matches nothing rather than reporting a clean
+  scan of nothing. Run it over the repository (no argument) after editing a
+  document that quotes a Windows path. **Eye review does not work on this
+  damage**: Markdown renders 0x08 as nothing, `git diff` prints it as nothing,
+  and the page simply shows a path with a letter missing. Its first run found
+  a byte a whole-repository `grep` had missed.
 * **Say in the group which script you changed**, so the next person to hit an
   oddity knows where to look.
 
