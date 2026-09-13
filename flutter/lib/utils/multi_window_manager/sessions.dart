@@ -91,7 +91,9 @@ extension MultiWindowManagerSessions on RustDeskMultiWindowManager {
     Rect work = const Rect.fromLTWH(0, 0, 1280, 720);
     try {
       final screen = await window_size.getCurrentScreen();
-      if (screen != null) work = screen.visibleFrame;
+      if (screen != null) {
+        work = logicalWorkArea(screen.visibleFrame, screen.scaleFactor);
+      }
     } catch (_) {}
     final frame = fitRemoteWindowFrame(const Size(1280, 720), work);
     return frame.shift(Offset(windowId * 20.0, windowId * 20.0));

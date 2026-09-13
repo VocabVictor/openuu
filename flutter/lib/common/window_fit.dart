@@ -29,3 +29,27 @@ Rect fitRemoteWindowFrame(Size remote, Rect workArea,
       w.roundToDouble(),
       h.roundToDouble());
 }
+
+/// window_size reports screen frames in physical pixels on Windows while
+/// window frames are set in logical pixels; divide by the screen's scale.
+Rect logicalWorkArea(Rect physicalVisibleFrame, double scaleFactor) {
+  final scale = scaleFactor > 0 ? scaleFactor : 1.0;
+  return Rect.fromLTWH(
+      physicalVisibleFrame.left / scale,
+      physicalVisibleFrame.top / scale,
+      physicalVisibleFrame.width / scale,
+      physicalVisibleFrame.height / scale);
+}
+
+/// A session window's frame is remembered for its peer only after the user
+/// resized or moved the window, at least 3 s after the first-open fit;
+/// otherwise every peer would remember the default frame forever.
+bool sessionWindowUserSized = false;
+DateTime? sessionWindowFittedAt;
+
+void noteSessionWindowFrameEvent() {
+  final at = sessionWindowFittedAt;
+  if (at != null && DateTime.now().difference(at) > const Duration(seconds: 3)) {
+    sessionWindowUserSized = true;
+  }
+}

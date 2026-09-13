@@ -53,4 +53,12 @@ void main() {
     expect(r.left, greaterThanOrEqualTo(1920));
     expect(r.right, lessThanOrEqualTo(3840));
   });
+
+  test('a physical work area is converted with the scale factor', () {
+    final w = logicalWorkArea(const Rect.fromLTWH(0, 0, 2560, 1600), 1.5);
+    expect(w.width, closeTo(1706.67, .01));
+    expect(w.height, closeTo(1066.67, .01));
+    expect(logicalWorkArea(const Rect.fromLTWH(0, 0, 1920, 1040), 0).width,
+        1920);
+  });
 }
