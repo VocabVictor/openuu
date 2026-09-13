@@ -10,7 +10,7 @@ import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../../consts.dart';
+import '../consts.dart';
 import '../models/platform_model.dart';
 
 import 'globals.dart';

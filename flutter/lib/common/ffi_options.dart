@@ -7,7 +7,7 @@ import 'package:flutter_hbb/models/state_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../consts.dart';
+import '../consts.dart';
 import '../models/model.dart';
 import '../models/platform_model.dart';
 

@@ -8,7 +8,7 @@ import 'package:flutter_hbb/models/state_model.dart';
 import 'package:flutter_hbb/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 
-import '../../consts.dart';
+import '../consts.dart';
 import '../common/widgets/login.dart';
 import '../mobile/pages/file_manager_page.dart';
 import '../mobile/pages/remote_page.dart';

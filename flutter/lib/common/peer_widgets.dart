@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hbb/models/peer_tab_model.dart';
 import 'package:get/get.dart';
 
-import '../../consts.dart';
+import '../consts.dart';
 import '../models/model.dart';
 import '../models/platform_model.dart';
 

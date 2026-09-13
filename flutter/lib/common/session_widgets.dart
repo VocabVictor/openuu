@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../consts.dart';
+import '../consts.dart';
 import '../models/platform_model.dart';
 
 import 'ffi_options.dart';

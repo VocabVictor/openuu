@@ -7,7 +7,7 @@ import 'package:flutter_hbb/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../../consts.dart';
+import '../consts.dart';
 
 import 'globals.dart';
 import 'windows_misc.dart';

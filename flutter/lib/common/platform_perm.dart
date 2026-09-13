@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../../consts.dart';
+import '../consts.dart';
 import '../models/platform_model.dart';
 
 import 'ffi_options.dart';

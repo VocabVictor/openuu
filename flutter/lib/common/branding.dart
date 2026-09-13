@@ -6,7 +6,7 @@ import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../consts.dart';
+import '../consts.dart';
 import '../models/platform_model.dart';
 
 import 'ffi_options.dart';

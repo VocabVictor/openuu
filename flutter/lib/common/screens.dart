@@ -10,7 +10,7 @@ import 'package:flutter_hbb/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 import 'package:window_size/window_size.dart' as window_size;
 
-import '../../consts.dart';
+import '../consts.dart';
 import '../models/model.dart';
 import '../models/platform_model.dart';
 
