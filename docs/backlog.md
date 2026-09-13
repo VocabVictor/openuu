@@ -288,3 +288,15 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   CI capacity is needed; it was left out of the palette commit because
   changing what a call site says is a different kind of change from changing
   what a colour resolves to.
+
+* **One literal colour is waiting for the shell, not for a token.** The device
+  page paints the current device's row in the left rail with `0xffe2e8ec`,
+  which exists to match the selected navigation item next to it
+  (`0xffe1e8ec`, in `desktop_welcome_page.dart`). Moving one without the other
+  is worse than leaving both: in a dark window the selected device would go
+  dark while the selected nav item beside it stayed pale, and the two are read
+  as one list. **What is missing: the shell's own palette migration**; this
+  row then follows in the same commit, or immediately after it. The literal
+  carries a comment saying so, and it is the only literal left in that file --
+  the status pill's near-black was retired when `695ced93d` added
+  `inverseSurface`.
