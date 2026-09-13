@@ -126,9 +126,12 @@ doing and what it can break.
   so the parts of the session window that have to look right in dark mode
   still carry literal values: `_ToolbarTheme` keeps five (the active hover
   tint, the two danger tints, the dark icon colour and the dark bar
-  background). Precondition: a decision on whether dark mode is a supported
-  appearance at all — if it is, the fix is one `UiColorDark` group plus a
-  resolver, not scattered `Theme.of(context).brightness` checks. Impact: every
+  background). **The decision has been taken: dark is a supported appearance,
+  and the mechanism is settled** (`docs/dark-token-decision.md` —
+  `UiPalette extends ThemeExtension`, `UiColor.of(context)`), so this is no
+  longer waiting on a ruling. **What is missing: the `UiPalette`
+  implementation**, which another session owns; until it exists no file can be
+  hooked up. The route map for the files this entry covers is further down. Impact: every
   file that already uses `UiColor`, because the resolver changes how a colour
   is read; do it in one commit per surface, not repo-wide.
 * **The insecure-connection dialog is the last one not on `UiDialog`.** It
@@ -216,7 +219,11 @@ From `docs/mobile-status-2026-09.md`, in the order the coordinator ranked them.
   reference `UiColor`/`UiSpace`/`UiType` (the connection manager's trust
   controls, `8ae053ef2`, are the first and only exception). Bringing mobile
   onto the shared language is comparable in size to the three desktop rounds.
-  Precondition: mobile builds, otherwise the work cannot be seen.
+  **What is missing: a device.** Mobile builds again as of 2026-09-13
+  (`android-build.yml`), so the work is no longer impossible — but nobody has
+  run the app on a phone, so there is no way to judge the result. Same
+  dependency as the dialog-regression item above: one Android device, not more
+  CI.
 * **Two tidy-ups with no precondition**: fourteen files under
   `flutter/lib/common/` import
   `'../../consts.dart'` with one `..` too many (it resolves — a package URI
