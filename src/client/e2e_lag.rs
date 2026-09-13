@@ -27,13 +27,11 @@ pub(super) fn frame_pts(vf: &VideoFrame) -> Option<i64> {
 #[derive(Default)]
 pub(super) struct E2eLag {
     origin: Option<(Instant, i64)>,
+    last_pts: i64,
     samples: Vec<i64>,
     window_start: Option<Instant>,
 }
 
-/// A sender restart (display switch, reconnect) resets its `pts` to zero;
-/// a lag this far negative can only mean that, so calibrate again.
-const RECALIBRATE_BELOW_MS: i64 = -500;
 const WINDOW: Duration = Duration::from_secs(1);
 
 impl E2eLag {
@@ -46,19 +44,19 @@ impl E2eLag {
     }
 
     fn observe_at(&mut self, display: usize, pts: i64, now: Instant) {
+        // A sender restart (display switch, reconnect) starts its pts from
+        // zero again; the sender's clock never runs backwards otherwise.
+        let restarted = pts < self.last_pts;
+        self.last_pts = pts;
         let lag = match self.origin {
-            Some((t0, p0)) => (now - t0).as_millis() as i64 - (pts - p0),
-            None => {
+            Some((t0, p0)) if !restarted => (now - t0).as_millis() as i64 - (pts - p0),
+            _ => {
                 self.origin = Some((now, pts));
+                self.samples.clear();
+                self.window_start = Some(now);
                 0
             }
         };
-        if lag < RECALIBRATE_BELOW_MS {
-            self.origin = Some((now, pts));
-            self.samples.clear();
-            self.window_start = Some(now);
-            return;
-        }
         self.samples.push(lag);
         let start = *self.window_start.get_or_insert(now);
         if now - start >= WINDOW {
@@ -76,7 +74,8 @@ fn summary(display: usize, samples: &mut [i64]) -> Option<String> {
         return None;
     }
     samples.sort_unstable();
-    let at = |q: f64| samples[((samples.len() - 1) as f64 * q).round() as usize];
+    // nearest-rank percentile: the smallest value at least q of the samples fall under
+    let at = |q: f64| samples[((samples.len() as f64 * q).ceil() as usize).max(1) - 1];
     Some(format!(
         "qos_e2e t={} display={display} n={} p50={} p95={} max={}",
         hbb_common::get_time(),
@@ -108,9 +107,9 @@ mod tests {
         lag.observe_at(0, 5000, t0);
         lag.observe_at(0, 12, t0 + Duration::from_millis(33));
         assert_eq!(lag.origin.map(|(_, p)| p), Some(12));
-        assert!(lag.samples.is_empty());
+        assert_eq!(lag.samples, vec![0]);
         lag.observe_at(0, 45, t0 + Duration::from_millis(70));
-        assert_eq!(lag.samples, vec![4]);
+        assert_eq!(lag.samples, vec![0, 4]);
     }
 
     #[test]
