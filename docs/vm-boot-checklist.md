@@ -132,6 +132,22 @@ Everything below needs it. One swap, not one per item.
 * **Decides**: whether the restyled surfaces look right against a real session rather than
   a mock. Last, because it is interactive and holds the machine.
 
+### 10. Clear the test residue — whoever has the machine last, 10 min
+
+* **Needs**: everything above to be finished, and this is the reason it is last rather
+  than first. The residue includes the automatic logon that gives this peer its
+  interactive desktop, which items 1 and 4 through 9 all depend on. Removing it early
+  costs a reboot and invalidates whatever was measured after it.
+* **Run**: remove the local administrator account `openuutest`; remove `AutoAdminLogon`,
+  `DefaultUserName` and `DefaultPassword` under the Winlogon key; remove the inbound
+  firewall rule `OpenUU-perf`; remove the machine variable `RUSTDESK_QOS_VERBOSE`; delete
+  the helper scripts from the shared Public folder.
+* **Decides**: nothing, and it is still not optional. The machine logs into that
+  administrator account automatically and its password is stored in clear text where
+  anyone who can read that registry key can read it. It has been in that state since the
+  machine was shut down on 2026-09-13 with the fixture still installed. If the list runs
+  out of time, this item still happens.
+
 ## Running order, and why
 
 1 and 2 first because they are the only two that want the old bundle. Then one swap (3),
@@ -139,5 +155,8 @@ then everything else. Within the new-bundle group, the measurements that need **
 session (4) come before the ones that need one (5, 6, 7, 9), so that a session left open
 by mistake cannot contaminate a standby number. Item 8 sits where its build lands.
 
-About 1 hour 40 minutes of machine time in total, including the swap and the settling
+Item 10 is last because it dismantles the automatic logon the rest of the list needs,
+and it happens even if nothing else does.
+
+About 1 hour 50 minutes of machine time in total, including the swap and the settling
 between runs, with nothing else on the machine while any of it runs.
