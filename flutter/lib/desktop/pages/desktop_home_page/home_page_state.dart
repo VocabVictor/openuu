@@ -33,7 +33,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             deviceId: model.serverId.text, password: model.serverPasswd.text,
             deviceName: Platform.localHostname, online: model.connectStatus > 0,
             verification: model.approveMode == 'click' ? translate('Accept sessions via click') : translate(_verificationLabel(model.verificationMethod)),
-            verificationMethod: model.verificationMethod,
+            verificationMethod: model.verificationMethod.isEmpty ? kUseBothPasswords : model.verificationMethod,
             onVerificationChanged: (method) => model.setVerificationMethod(method),
             temporaryPassword: model.approveMode != 'click' && model.verificationMethod != kUsePermanentPassword,
             enabled: !svcStopped.value, onEnable: (value) => start_service(value),
