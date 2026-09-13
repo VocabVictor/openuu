@@ -38,6 +38,8 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             temporaryPassword: model.approveMode != 'click' && model.verificationMethod != kUsePermanentPassword,
             enabled: !svcStopped.value, onEnable: (value) => start_service(value),
             onConnect: (id) => connect(context, id),
+            recentPeers: gFFI.recentPeersModel.peers,
+            onOpenRecent: (peer) => connect(context, peer.id),
             onRefresh: () => bind.mainUpdateTemporaryPassword(),
             onSecurity: () => DesktopSettingPage.switch2page(SettingsTabKey.safety),
             onDevices: () => DesktopTabPage.showHome(),

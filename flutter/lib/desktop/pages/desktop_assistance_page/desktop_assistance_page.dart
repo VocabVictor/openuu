@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../models/peer_model.dart';
+import '../desktop_devices_page.dart';
 import '../desktop_welcome_page.dart';
 
 part 'this_device_card.dart';
 part 'partner_card.dart';
+part 'recent_card.dart';
 
 class DesktopAssistancePage extends StatefulWidget {
   final String deviceId, deviceName, password, verification, verificationMethod;
   final bool enabled, temporaryPassword, online;
   final Future<void> Function(bool) onEnable;
   final ValueChanged<String> onConnect, onVerificationChanged;
+  /// Most recent sessions, newest first; tapping a card connects to it.
+  final List<Peer> recentPeers;
+  final ValueChanged<Peer> onOpenRecent;
   final VoidCallback onRefresh,
       onSecurity,
       onDevices,
@@ -29,6 +35,8 @@ class DesktopAssistancePage extends StatefulWidget {
       required this.temporaryPassword,
       required this.onEnable,
       required this.onConnect,
+      required this.recentPeers,
+      required this.onOpenRecent,
       required this.onRefresh,
       required this.onSecurity,
       required this.onDevices,
@@ -95,6 +103,8 @@ class _DesktopAssistancePageState extends State<DesktopAssistancePage> {
                     _thisDeviceCard(t),
                     const SizedBox(height: 20),
                     _partnerCard(t),
+                    const SizedBox(height: 20),
+                    _recentCard(t),
                   ]));
         }));
   }

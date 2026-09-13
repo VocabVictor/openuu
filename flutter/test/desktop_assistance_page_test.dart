@@ -28,6 +28,8 @@ void main() {
               temporaryPassword: true,
               onEnable: (_) async {},
               onConnect: (id) => connected = id,
+              recentPeers: const [],
+              onOpenRecent: (_) {},
               onRefresh: () {},
               onSecurity: () {},
               onDevices: () {},
