@@ -9,11 +9,7 @@ extension InputModelMouseMove on InputModel {
     _lastWheelTsUs = 0;
 
     // Track active model for side button events (Linux).
-    if (enter) {
-      InputModel._activeSideButtonModel = this;
-    } else if (InputModel._activeSideButtonModel == this) {
-      InputModel._activeSideButtonModel = null;
-    }
+    SideButtons.onEnterOrLeave(this, enter);
 
     // Fix status
     if (!enter) {

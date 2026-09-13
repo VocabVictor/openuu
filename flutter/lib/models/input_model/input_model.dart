@@ -32,6 +32,7 @@ part 'trackpad.dart';
 part 'pointer_pos.dart';
 part 'pointer.dart';
 part 'input_model_core.dart';
+part 'side_buttons.dart';
 
 /// Mouse button enum.
 enum MouseButtons { left, right, wheel, back, forward }
