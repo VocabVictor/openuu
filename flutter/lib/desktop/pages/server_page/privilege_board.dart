@@ -20,11 +20,12 @@ class _PrivilegeBoardState extends State<_PrivilegeBoard> {
       child: Container(
         decoration: BoxDecoration(
           color: enabled
-              ? (canModify ? MyTheme.accent : MyTheme.accent.withOpacity(0.6))
-              : Colors.grey[700],
-          borderRadius: BorderRadius.circular(10.0),
+              ? (canModify ? UiColor.primary : UiColor.primaryDisabled)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(UiCm.controlRadius),
+          border: enabled ? null : Border.all(color: UiColor.inputBorder),
         ),
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(UiSpace.s2),
         child: InkWell(
           onTap: canModify
               ? () =>
@@ -36,7 +37,8 @@ class _PrivilegeBoardState extends State<_PrivilegeBoard> {
               Expanded(
                 child: Icon(
                   iconData,
-                  color: Colors.white,
+                  size: UiCm.boardIconSize,
+                  color: enabled ? Colors.white : UiColor.muted,
                 ),
               ),
             ],
@@ -49,35 +51,28 @@ class _PrivilegeBoardState extends State<_PrivilegeBoard> {
   @override
   Widget build(BuildContext context) {
     final crossAxisCount = 4;
-    final spacing = 10.0;
+    final spacing = UiSpace.s2;
     final canModifyPermission =
         bind.mainGetBuildinOption(key: kOptionEnablePermChangeInAcceptWindow) !=
             'N';
     return Container(
       width: double.infinity,
       height: 160.0,
-      margin: EdgeInsets.all(5.0),
-      padding: EdgeInsets.all(5.0),
+      margin: const EdgeInsets.symmetric(horizontal: UiSpace.s1),
+      padding: const EdgeInsets.all(UiCm.boardPadding),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.0),
-        color: Theme.of(context).colorScheme.background,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 1,
-            offset: Offset(0, 1.5),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(UiCm.controlRadius),
+        color: UiColor.panelBg,
+        border: Border.all(color: UiColor.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             translate("Permissions"),
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: UiType.sectionTitle,
             textAlign: TextAlign.center,
-          ).marginOnly(left: 4.0, bottom: 8.0),
+          ).marginOnly(bottom: UiSpace.s2),
           Expanded(
             child: GridView.count(
               crossAxisCount: crossAxisCount,
