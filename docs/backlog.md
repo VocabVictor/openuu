@@ -91,6 +91,13 @@ with its own tests.
     fields are public, so the split is buildable here for both. Only
     WebSocket is closed, and nothing uses WebSocket by default.
 
+    **Where this actually stands as of 2026-09-13 evening:** `src/stream_split/`
+    exists and splits a TCP connection, with five tests. **Nothing calls it.**
+    The connection loop still owns one `Stream`, so the coupling is exactly what
+    it was and none of the benefit has been collected yet. Still to do: give the
+    writer its own task and put control messages ahead of the video (with the
+    ordering test that belongs to it), then the WebRTC half.
+
   What forking would cost, as far as it can be estimated from this side: the
   pointer has moved 19 times in the last 90 days, about twice a week, and the
   moves are whole upstream merges (WebRTC, the base crate split, port forward
