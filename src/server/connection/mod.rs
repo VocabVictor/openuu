@@ -151,6 +151,8 @@ mod password_check;
 mod test_support;
 mod login_scope;
 mod on_message;
+mod login_msg;
+mod delay_switch_msg;
 mod terminal_login;
 mod failures;
 mod display;
