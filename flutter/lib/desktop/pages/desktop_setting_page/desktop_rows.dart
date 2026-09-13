@@ -90,7 +90,7 @@ Widget _secretRow(BuildContext context, String label, bool isSet,
 Widget _childRow(Widget row) => SettingsChildRow(child: row);
 
 /// The Apply button next to a numeric field: secondary on the desktop shell.
-Widget _applyButton(VoidCallback? onPressed) => isWindows &&
+Widget _applyButton(BuildContext context, VoidCallback? onPressed) => isWindows &&
         !bind.isIncomingOnly()
     ? _secondaryButton(context, 'Apply', onPressed)
     : ElevatedButton(onPressed: onPressed, child: Text(translate('Apply')));

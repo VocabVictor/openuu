@@ -141,7 +141,7 @@ Widget _Radio<T>(BuildContext context,
 }
 
 // ignore: non_constant_identifier_names
-Widget _Button(String label, Function() onPressed,
+Widget _Button(BuildContext context, String label, Function() onPressed,
     {bool enabled = true, String? tip, ButtonStyle? style}) {
   if (isWindows && !bind.isIncomingOnly()) {
     final button = _secondaryButton(context, label, enabled ? onPressed : null);

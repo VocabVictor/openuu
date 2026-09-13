@@ -119,7 +119,7 @@ extension _GeneralTheme on _GeneralState {
         return _serviceBar(context, onToggle);
       }
       return _Card(title: 'Service', children: [
-        _Button(serviceStop.value ? 'Start' : 'Stop', () {
+        _Button(context, serviceStop.value ? 'Start' : 'Stop', () {
           () async {
             serviceBtnEnabled.value = false;
             await start_service(serviceStop.value);

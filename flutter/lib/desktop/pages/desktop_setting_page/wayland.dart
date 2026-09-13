@@ -103,7 +103,7 @@ class _WaylandCardState extends State<WaylandCard> {
                   onPressed: () => gFFI.dialogManager.dismissAll())
             ]);
 
-    return _Button(
+    return _Button(context, 
       'Clear Wayland screen selection',
       showConfirmMsgBox,
       tip: 'clear_Wayland_screen_selection_tip',
@@ -146,7 +146,7 @@ class _WaylandCardState extends State<WaylandCard> {
                             .copyWith(color: Colors.red))
                     .marginOnly(bottom: 10.0)),
       ),
-      _Button(
+      _Button(context, 
         'Reset keyboard shortcuts permission',
         showConfirmMsgBox,
         tip: 'clear-shortcuts-inhibitor-permission-tip',
