@@ -95,7 +95,7 @@ extension _NetworkDesktop on _NetworkState {
         subtitle:
             '${on ? '⚠ ' : ''}${translate('allow-insecure-tls-fallback-tip')}',
         subtitleStyle:
-            on ? UiType.caption.copyWith(color: UiColor.warning) : null,
+            on ? UiType.of(context).caption.copyWith(color: UiColor.of(context).warning) : null,
         enabled: !locked && !isOptionFixed(key),
         control: SettingsSwitch(
             value: on,

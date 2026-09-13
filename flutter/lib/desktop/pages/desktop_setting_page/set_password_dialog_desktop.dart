@@ -63,7 +63,7 @@ void _setPasswordDialogDesktop(
       final length = controller.text.length;
       final showCounter = length > maxLength * .8;
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: UiType.caption),
+        Text(label, style: UiType.of(context).caption),
         const SizedBox(height: UiSpace.fieldLabelGap),
         SizedBox(
             height: UiSpace.controlHeight,
@@ -76,7 +76,7 @@ void _setPasswordDialogDesktop(
                       err0 = '';
                       err1 = '';
                     }),
-                style: UiType.rowTitle
+                style: UiType.of(context).rowTitle
                     .copyWith(fontSize: 13, fontWeight: FontWeight.w400),
                 decoration: InputDecoration(
                     counterText: '',
@@ -85,11 +85,11 @@ void _setPasswordDialogDesktop(
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: UiSpace.inputPaddingX, vertical: 8),
-                    border: border(UiColor.inputBorder),
+                    border: border(UiColor.of(context).inputBorder),
                     enabledBorder: border(
-                        error.isEmpty ? UiColor.inputBorder : UiColor.danger),
+                        error.isEmpty ? UiColor.of(context).inputBorder : UiColor.of(context).danger),
                     focusedBorder:
-                        border(error.isEmpty ? UiColor.primary : UiColor.danger),
+                        border(error.isEmpty ? UiColor.of(context).primary : UiColor.of(context).danger),
                     suffixIcon: first
                         ? IconButton(
                             iconSize: 16,
@@ -100,7 +100,7 @@ void _setPasswordDialogDesktop(
                                 visible
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
-                                color: UiColor.muted),
+                                color: UiColor.of(context).muted),
                             onPressed: () =>
                                 setState(() => visible = !visible))
                         : null))),
@@ -111,20 +111,20 @@ void _setPasswordDialogDesktop(
                   child: Text(error,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: UiType.caption.copyWith(color: UiColor.danger))),
+                      style: UiType.of(context).caption.copyWith(color: UiColor.of(context).danger))),
               if (showCounter)
                 Text('$length/$maxLength',
-                    style: UiType.caption.copyWith(color: UiColor.faint)),
+                    style: UiType.of(context).caption.copyWith(color: UiColor.of(context).faint)),
             ])),
       ]);
     }
 
     final strength = pass.isEmpty ? 0.0 : estimatePasswordStrength(pass);
     final strengthColor = strength < .33
-        ? UiColor.danger
+        ? UiColor.of(context).danger
         : strength < .67
-            ? UiColor.warning
-            : UiColor.success;
+            ? UiColor.of(context).warning
+            : UiColor.of(context).success;
     final strengthLabel = pass.isEmpty
         ? ''
         : translate(strength < .33
@@ -148,13 +148,13 @@ void _setPasswordDialogDesktop(
                     Expanded(
                         child: Text(translate('Set Password'),
                             style:
-                                UiType.sectionTitle.copyWith(fontSize: 16))),
+                                UiType.of(context).sectionTitle.copyWith(fontSize: 16))),
                     IconButton(
                         iconSize: 16,
                         padding: EdgeInsets.zero,
                         constraints:
                             const BoxConstraints(minWidth: 28, minHeight: 28),
-                        icon: const Icon(Icons.close, color: UiColor.muted),
+                        icon: Icon(Icons.close, color: UiColor.of(context).muted),
                         onPressed: close),
                   ])),
               const SizedBox(height: UiSpace.s2),
@@ -164,7 +164,7 @@ void _setPasswordDialogDesktop(
                   child: SizedBox(
                       height: 4,
                       child: Stack(children: [
-                        Container(color: UiColor.settingsDivider),
+                        Container(color: UiColor.of(context).settingsDivider),
                         FractionallySizedBox(
                             widthFactor: strength.clamp(0.0, 1.0),
                             child: Container(color: strengthColor)),
@@ -174,7 +174,7 @@ void _setPasswordDialogDesktop(
                   child: Align(
                       alignment: Alignment.centerRight,
                       child: Text(strengthLabel,
-                          style: UiType.caption
+                          style: UiType.of(context).caption
                               .copyWith(color: strengthColor)))),
               field(translate('Confirmation'), p1, err1),
               for (final rule in rules)
@@ -187,15 +187,15 @@ void _setPasswordDialogDesktop(
                               : Icons.radio_button_unchecked,
                           size: 14,
                           color: rule.validate(pass)
-                              ? UiColor.success
-                              : UiColor.faint),
+                              ? UiColor.of(context).success
+                              : UiColor.of(context).faint),
                       const SizedBox(width: 6),
-                      Text(rule.name, style: UiType.caption),
+                      Text(rule.name, style: UiType.of(context).caption),
                     ])),
               if (statusTip.isNotEmpty)
                 Padding(
                     padding: const EdgeInsets.only(top: UiSpace.s2),
-                    child: Text(statusTip, style: UiType.caption)),
+                    child: Text(statusTip, style: UiType.of(context).caption)),
               const SizedBox(height: UiSpace.s6),
               Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                 _secondaryButton('Cancel', close,

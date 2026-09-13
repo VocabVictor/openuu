@@ -66,16 +66,16 @@ extension _DesktopSettingPageTabs on _DesktopSettingPageState {
                   children: [
                     const Spacer(),
                     Text(translate(tab.label),
-                        style: UiType.rowTitle.copyWith(
+                        style: UiType.of(context).rowTitle.copyWith(
                             fontWeight:
                                 active ? FontWeight.w600 : FontWeight.w500,
                             color: active
-                                ? UiColor.primary
-                                : UiColor.textSecondary)),
+                                ? UiColor.of(context).primary
+                                : UiColor.of(context).textSecondary)),
                     const SizedBox(height: UiSpace.s2),
                     Container(
                         height: 2,
-                        color: active ? UiColor.primary : Colors.transparent),
+                        color: active ? UiColor.of(context).primary : Colors.transparent),
                   ]))));
 
   Widget _buildBlock({required List<Widget> children}) {

@@ -11,8 +11,8 @@ extension _NetworkProvision on _NetworkState {
             label: zh ? '分享配置二维码' : 'Share configuration QR code',
             enabled: !locked,
             onTap: () => _shareConfigDialog(context, zh),
-            control: const Icon(Icons.qr_code_2_outlined,
-                size: 16, color: UiColor.muted)),
+            control: Icon(Icons.qr_code_2_outlined,
+                size: 16, color: UiColor.of(context).muted)),
         _settingRow(
             context,
             zh ? '导入配置' : 'Import configuration',
@@ -57,7 +57,7 @@ extension _NetworkProvision on _NetworkState {
               zh
                   ? '用手机 OpenUU 扫码即可导入服务器设置；二维码不含密码等秘密。'
                   : 'Scan with OpenUU on a phone to import the server settings; the code carries no secrets.',
-              style: UiType.caption,
+              style: UiType.of(context).caption,
               textAlign: TextAlign.center),
           const SizedBox(height: UiSpace.s6),
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -106,10 +106,10 @@ extension _NetworkProvision on _NetworkState {
         padding: const EdgeInsets.only(bottom: UiSpace.s1),
         child: Row(children: [
           SizedBox(
-              width: 96, child: Text(label, style: UiType.caption)),
+              width: 96, child: Text(label, style: UiType.of(context).caption)),
           Expanded(
               child: Text(value.isEmpty ? '—' : value,
-                  style: UiType.rowTitle.copyWith(
+                  style: UiType.of(context).rowTitle.copyWith(
                       fontSize: 13, fontWeight: FontWeight.w400))),
         ]));
     gFFI.dialogManager.show((setState, close, context) => CustomAlertDialog(
@@ -136,7 +136,7 @@ extension _NetworkProvision on _NetworkState {
                         zh
                             ? '以下选项将被锁定：${locked.join(', ')}'
                             : 'These options will be locked: ${locked.join(', ')}',
-                        style: UiType.caption)),
+                        style: UiType.of(context).caption)),
               const SizedBox(height: UiSpace.s6),
               Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                 _secondaryButton('Cancel', close,
@@ -179,11 +179,11 @@ Widget _dialogTitle(String title, VoidCallback close) => SizedBox(
     height: UiSpace.dialogTitleHeight,
     child: Row(children: [
       Expanded(
-          child: Text(title, style: UiType.sectionTitle.copyWith(fontSize: 16))),
+          child: Text(title, style: UiType.of(context).sectionTitle.copyWith(fontSize: 16))),
       IconButton(
           iconSize: 16,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-          icon: const Icon(Icons.close, color: UiColor.muted),
+          icon: Icon(Icons.close, color: UiColor.of(context).muted),
           onPressed: close),
     ]));

@@ -13,8 +13,8 @@ extension _GeneralDesktop on _GeneralState {
                 horizontal: UiSpace.settingsRowPaddingX),
             decoration: BoxDecoration(
                 color: stopped
-                    ? UiColor.statusStoppedBg
-                    : UiColor.statusRunningBg,
+                    ? UiColor.of(context).statusStoppedBg
+                    : UiColor.of(context).statusRunningBg,
                 borderRadius:
                     BorderRadius.circular(UiSpace.settingsGroupRadius)),
             child: Row(children: [
@@ -23,14 +23,14 @@ extension _GeneralDesktop on _GeneralState {
                   height: UiSpace.statusDotSize,
                   decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: stopped ? UiColor.favorite : UiColor.ready)),
+                      color: stopped ? UiColor.of(context).favorite : UiColor.of(context).ready)),
               const SizedBox(width: UiSpace.s2),
               Text(
                   stopped
                       ? (zh ? '服务已停止' : 'Service stopped')
                       : (zh ? '服务运行中' : 'Service running'),
                   style:
-                      UiType.rowTitle.copyWith(fontWeight: FontWeight.w400)),
+                      UiType.of(context).rowTitle.copyWith(fontWeight: FontWeight.w400)),
               const Spacer(),
               _secondaryButton(stopped ? 'Start' : 'Stop',
                   serviceBtnEnabled.value ? onToggle : null),

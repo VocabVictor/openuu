@@ -17,13 +17,13 @@ Widget _secondaryButton(String label, VoidCallback? onPressed,
     height: height,
     child: OutlinedButton(
         style: OutlinedButton.styleFrom(
-            foregroundColor: UiColor.text,
+            foregroundColor: UiColor.of(context).text,
             backgroundColor: Colors.white,
-            side: const BorderSide(color: UiColor.inputBorder),
+            side: BorderSide(color: UiColor.of(context).inputBorder),
             padding: const EdgeInsets.symmetric(horizontal: UiSpace.s3),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(UiSpace.buttonRadius)),
-            textStyle: UiType.button),
+            textStyle: UiType.of(context).button),
         onPressed: onPressed,
         child: Text(translate(label))));
 
@@ -34,15 +34,15 @@ Widget _primaryButton(String label, VoidCallback? onPressed,
     height: height,
     child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-            backgroundColor: UiColor.primary,
+            backgroundColor: UiColor.of(context).primary,
             foregroundColor: Colors.white,
-            disabledBackgroundColor: UiColor.primaryDisabled,
+            disabledBackgroundColor: UiColor.of(context).primaryDisabled,
             disabledForegroundColor: Colors.white,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: UiSpace.s4),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(UiSpace.buttonRadius)),
-            textStyle: UiType.button),
+            textStyle: UiType.of(context).button),
         onPressed: onPressed,
         child: Text(translate(label))));
 
@@ -54,13 +54,13 @@ Widget _dangerButton(String label, VoidCallback? onPressed,
         height: height,
         child: OutlinedButton(
             style: OutlinedButton.styleFrom(
-                foregroundColor: UiColor.danger,
+                foregroundColor: UiColor.of(context).danger,
                 backgroundColor: Colors.white,
-                side: const BorderSide(color: UiColor.dangerBorder),
+                side: BorderSide(color: UiColor.of(context).dangerBorder),
                 padding: const EdgeInsets.symmetric(horizontal: UiSpace.s3),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(UiSpace.buttonRadius)),
-                textStyle: UiType.button),
+                textStyle: UiType.of(context).button),
             onPressed: onPressed,
             child: Text(translate(label))));
 
@@ -75,8 +75,8 @@ Widget _secretRow(BuildContext context, String label, bool isSet,
       label,
       Row(mainAxisSize: MainAxisSize.min, children: [
         Text(isSet ? (zh ? '已设置' : 'Set') : (zh ? '未设置' : 'Not set'),
-            style: UiType.caption
-                .copyWith(color: isSet ? UiColor.textSecondary : UiColor.faint)),
+            style: UiType.of(context).caption
+                .copyWith(color: isSet ? UiColor.of(context).textSecondary : UiColor.of(context).faint)),
         const SizedBox(width: UiSpace.settingsControlGap),
         _secondaryButton(
             isSet ? (zh ? '修改' : 'Change') : (zh ? '设置' : 'Set'),
@@ -111,21 +111,21 @@ Widget _numberField(TextEditingController controller,
                 onChanged: onChanged,
                 inputFormatters: inputFormatters,
                 textAlign: TextAlign.right,
-                style: UiType.rowTitle.copyWith(
+                style: UiType.of(context).rowTitle.copyWith(
                     fontSize: 13, fontWeight: FontWeight.w400),
                 decoration: InputDecoration(
                     hintText: hint,
-                    hintStyle: UiType.caption.copyWith(color: UiColor.faint),
+                    hintStyle: UiType.of(context).caption.copyWith(color: UiColor.of(context).faint),
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: UiSpace.s2, vertical: 6),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(UiSpace.inputRadius),
-                        borderSide: const BorderSide(color: UiColor.inputBorder)),
+                        borderSide: BorderSide(color: UiColor.of(context).inputBorder)),
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(UiSpace.inputRadius),
                         borderSide:
-                            const BorderSide(color: UiColor.inputBorder)))))
+                            BorderSide(color: UiColor.of(context).inputBorder)))))
         : SizedBox(
             width: 95,
             child: TextField(

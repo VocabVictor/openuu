@@ -119,7 +119,7 @@ Widget _Radio<T>(BuildContext context,
                 value: value,
                 groupValue: groupValue,
                 onChanged: onChange2,
-                activeColor: UiColor.primary),
+                activeColor: UiColor.of(context).primary),
             enabled: onChange2 != null));
   }
   return GestureDetector(

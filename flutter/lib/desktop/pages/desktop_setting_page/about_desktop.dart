@@ -10,7 +10,7 @@ Widget _aboutDesktop(BuildContext context,
     required String myId,
     required String license}) {
   final zh = Localizations.localeOf(context).languageCode == 'zh';
-  final valueStyle = UiType.caption.copyWith(color: UiColor.textSecondary);
+  final valueStyle = UiType.of(context).caption.copyWith(color: UiColor.of(context).textSecondary);
 
   Widget copyRow(String label, String value) => value.isEmpty
       ? const Offstage()
@@ -27,8 +27,8 @@ Widget _aboutDesktop(BuildContext context,
                     padding: EdgeInsets.zero,
                     iconSize: 14,
                     tooltip: translate('Copy'),
-                    icon: const Icon(Icons.content_copy_outlined,
-                        color: UiColor.muted),
+                    icon: Icon(Icons.content_copy_outlined,
+                        color: UiColor.of(context).muted),
                     onPressed: () async {
                       await Clipboard.setData(ClipboardData(text: value));
                       showToast(zh ? '已复制' : 'Copied');
@@ -43,7 +43,7 @@ Widget _aboutDesktop(BuildContext context,
             ? Text(translate('Up to date'), style: valueStyle)
             : Text(
                 '${translate("new-version-of-{${bind.mainGetAppNameSync()}}-tip")} (${bind.mainGetNewVersion()})',
-                style: valueStyle.copyWith(color: UiColor.primary));
+                style: valueStyle.copyWith(color: UiColor.of(context).primary));
         return _settingRow(
             context,
             'Version',
@@ -77,8 +77,8 @@ Widget _aboutDesktop(BuildContext context,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('OpenUU',
-                          style: UiType.sectionTitle.copyWith(fontSize: 16)),
-                      Text('v$version', style: UiType.caption),
+                          style: UiType.of(context).sectionTitle.copyWith(fontSize: 16)),
+                      Text('v$version', style: UiType.of(context).caption),
                     ]),
               ]))),
       versionRow(),
@@ -87,12 +87,12 @@ Widget _aboutDesktop(BuildContext context,
       SettingsRow(
           label: zh ? '开源许可' : 'Open source licence',
           onTap: () => _licenceDialog(zh),
-          control: const Icon(Icons.chevron_right,
-              size: 16, color: UiColor.muted)),
+          control: Icon(Icons.chevron_right,
+              size: 16, color: UiColor.of(context).muted)),
       SettingsRow(
           label: translate('Website'),
           onTap: () => launchUrlString('https://github.com/VocabVictor/openuu'),
-          control: const Icon(Icons.open_in_new, size: 14, color: UiColor.muted)),
+          control: Icon(Icons.open_in_new, size: 14, color: UiColor.of(context).muted)),
     ]),
     if (fingerprint.isNotEmpty)
       _group(zh ? '高级' : 'Advanced', [copyRow('Fingerprint', fingerprint)],
@@ -100,7 +100,7 @@ Widget _aboutDesktop(BuildContext context,
     const SizedBox(height: UiSpace.s3),
     SelectableText(
         'Copyright © ${DateTime.now().year} Purslane Tech Pte. Ltd.\n$license',
-        style: UiType.caption.copyWith(color: UiColor.faint)),
+        style: UiType.of(context).caption.copyWith(color: UiColor.of(context).faint)),
   ]).marginOnly(bottom: _kListViewBottomMargin);
 }
 
@@ -121,7 +121,7 @@ void _licenceDialog(bool zh) {
             const SizedBox(height: UiSpace.s2),
             Text(
                 zh ? 'OpenUU 基于 RustDesk 开发，遵循 GNU Affero General Public License v3.0 发布。你可以按该许可的条款使用、修改和分发本软件，完整许可文本与源代码见下方链接。' : 'OpenUU is derived from RustDesk and is released under the GNU Affero General Public License v3.0. You may use, modify and redistribute it under that licence; the full text and the source code are behind the link below.',
-                style: UiType.rowTitle
+                style: UiType.of(context).rowTitle
                     .copyWith(fontWeight: FontWeight.w400, height: 1.5)),
             const SizedBox(height: UiSpace.s6),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
