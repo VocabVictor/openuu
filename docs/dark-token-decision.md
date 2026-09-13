@@ -11,6 +11,39 @@ This note fixes the naming and the resolution mechanism, so the files owned by
 different sessions can be hooked up independently and identically. Palette
 values and the migration itself come after.
 
+## Five rules this round produced
+
+Each was paid for by a real mistake, and each is a signal you can see rather
+than a judgement you have to have. The sections below carry the worked
+examples.
+
+1. **An argument about what a value should be, with a real reason on both
+   sides, means two usages share one name.** Split the name; no number
+   settles it while they share. Not particular to colour — a timeout, a
+   config key, a default. (*When one token is asked for two opposite
+   things.*)
+2. **Name a member for its meaning, never for the first thing that used
+   it.** The second user otherwise invents a second name, and one meaning
+   with two names cannot be corrected in one place. (*A token is chosen by
+   meaning…*)
+3. **A token is chosen by what a colour means, not by where it sits.** White
+   on a scrim is not "white on the primary". Forcing a token whose meaning
+   does not fit is worse than leaving the literal, because the literal is
+   honest and a wrong token will be maintained as if it were right. (*same
+   section.*)
+4. **When nothing maps honestly, the answer is a new member, not the nearest
+   one.** `inverseSurface` exists because "a surface opposite to the page" is
+   a meaning no other member had. (*same section.*)
+5. **Where dark and light differ and dark scores higher, light is the side
+   with the defect.** Dark is not pulled down for consistency. Measured:
+   dark wins six of nine contrast pairs, and off-versus-locked separates at
+   1.80:1 in dark against 1.03:1 in light. (*docs/dark-acceptance.md §2–3.*)
+
+A sixth belongs to the migration rather than the design, and is in the
+hooking-up section: after swapping a constant for a lookup, **grep for the
+`const` expressions it now breaks** — the analyzer reports the constructor,
+not the colour, so the error reads as though the whole widget were wrong.
+
 ## The mechanism: a ThemeExtension, the one already in use
 
 The app resolves its legacy colours through `ColorThemeExtension` and
