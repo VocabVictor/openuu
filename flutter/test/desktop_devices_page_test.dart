@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_devices_page.dart';
 import 'package:flutter_hbb/models/peer_model.dart';
+import 'package:flutter_hbb/models/online_poller.dart';
+
+/// No bridge to the Rust side in a widget test: the poller asks these
+/// instead of the server.
+OnlinePoller _stubPoller() => OnlinePoller(
+    name: 'test', query: (_) async {}, usingPublicServer: () async => true);
 
 void main() {
   for (final width in [420.0, 1000.0]) {
@@ -13,7 +19,7 @@ void main() {
         Peer.fromJson({'id': '3', 'hostname': 'Phone', 'platform': 'Android'}),
       ];
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: SizedBox(width: width,
-        child: DeviceGroups(peers: peers, localId: '1', onOpen: (p) => opened = p.id)))));
+        child: DeviceGroups(peers: peers, localId: '1', onOpen: (p) => opened = p.id, poller: _stubPoller())))));
       expect(find.text('Computers'), findsOneWidget);
       expect(find.text('Phones / tablets'), findsOneWidget);
       expect(find.text('This device'), findsOneWidget);
@@ -48,6 +54,7 @@ void main() {
                     localId: '1',
                     favorites: {'2'},
                     onToggleFavorite: (_) {},
+                    poller: _stubPoller(),
                     onOpen: (_) {})))));
     // Every row that has them puts its star and its chevron on one column;
     // identical icons cannot be told apart by widget, so measure the render
