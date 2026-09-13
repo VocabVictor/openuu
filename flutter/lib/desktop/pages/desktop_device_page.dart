@@ -69,8 +69,6 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
 
   @override
   Widget build(BuildContext context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
-    String t(String cn, String en) => zh ? cn : en;
     final name = widget.name;
     final id = widget.id;
     final onQuickLaunch = widget.onQuickLaunch;
@@ -117,7 +115,7 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
                   onTerminal: widget.onTerminal, onTunnel: widget.onTunnel),
               ])),
             const SizedBox(height: 22),
-            Text(t('快速启动', 'Quick launch'), style: const TextStyle(fontSize: 16)),
+            Text(translate('Quick launch'), style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 10),
             if (onQuickLaunch != null) QuickLaunchPanel(peer: id, onOpen: onQuickLaunch),
           ]));
