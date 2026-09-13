@@ -12,8 +12,10 @@ use hbb_common::{config, log};
 use tauri_winrt_notification::{Duration, Sound, Toast};
 
 mod helpers;
+mod import_config;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
-use helpers::{import_config, is_cli_setting_change_disabled, is_root};
+use helpers::{is_cli_setting_change_disabled, is_root};
+use import_config::import_config;
 #[cfg(feature = "flutter")]
 use helpers::core_main_invoke_new_connection;
 #[cfg(windows)]
