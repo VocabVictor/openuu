@@ -35,9 +35,9 @@ static CLIPBOARD_SERVICE_OK: AtomicBool = AtomicBool::new(false);
 mod run;
 use run::*;
 #[cfg(target_os = "linux")]
-mod wayland;
+mod wayland_text;
 #[cfg(target_os = "linux")]
-use wayland::*;
+use wayland_text::*;
 mod handler;
 #[cfg(test)]
 #[cfg(target_os = "linux")]
