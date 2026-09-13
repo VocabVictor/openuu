@@ -128,6 +128,19 @@ on master only after that workflow is green; the workflow also runs on every
 push to master as a backstop. Purely Windows files are not held to it. Quote
 the run URL in the commit body or the landing report.
 
+What the backstop does and does not cover:
+
+* A push verifies that push's **tip**, not each commit in it. Commits in the
+  middle of a push are never compiled on their own, so a `git bisect` landing
+  on one cannot assume it built on Linux; to have a single commit verified,
+  push it to a `ci/**` branch by itself.
+* A failed prerequisite leaves the check job **skipped**, and a skipped job
+  reads as a grey tick rather than a red cross. An account spending stop did
+  exactly that three times on 2026-09-13. Both workflows with a bridge
+  prerequisite therefore carry a `guard` job (`if: always()`) that fails
+  unless every prerequisite's result is success; read `guard`, not the
+  individual job ticks, when judging a run.
+
 ### Deferred: needs macOS CI
 
 Files that only compile on macOS cannot be verified anywhere yet: OpenUU

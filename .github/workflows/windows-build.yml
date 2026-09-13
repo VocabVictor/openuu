@@ -201,3 +201,27 @@ jobs:
             ./SignOutput/openuu-*.msi
             ./SignOutput/openuu-*.zip
             ./SignOutput/openuu-*-SHA256SUMS.txt
+
+  # A prerequisite that never ran must not read as a pass. When the bridge job
+  # cannot start (an account spending stop did exactly that on 2026-09-13), the
+  # job below it is skipped, and a skipped job shows as a grey tick rather than
+  # a failure — the check silently stops guarding. This job turns any
+  # non-success prerequisite, skipped and cancelled included, into a red run.
+  guard:
+    name: prerequisites actually ran
+    needs: [generate-bridge, build-windows-x64]
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Every prerequisite must have succeeded
+        shell: bash
+        env:
+          BRIDGE_RESULT: ${{ needs.generate-bridge.result }}
+          CHECK_RESULT: ${{ needs.build-windows-x64.result }}
+        run: |
+          echo "generate-bridge: $BRIDGE_RESULT"
+          echo "build-windows-x64: $CHECK_RESULT"
+          if [ "$BRIDGE_RESULT" != success ] || [ "$CHECK_RESULT" != success ]; then
+            echo "::error::a prerequisite did not succeed; skipped or cancelled counts as a failure"
+            exit 1
+          fi
