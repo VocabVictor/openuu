@@ -55,3 +55,19 @@ MSI `OpenUU-1.5.0-x86_64.msi`（编译机 build-flutter 8f = master c120a979e，
 
 两轮 MSI 日志都能看到 `CreateStartService` 收到 `…--service|C:\Users\<user>\AppData\Roaming\OpenUU\config\OpenUU.toml` 并执行 `Import user config`。
 验证脚本：会话 scratchpad 的 `vm-msi-verify.ps1`（backup / 1 / 2 / restore 四步）。
+
+## OPENUU_CONFIG 装机验证（2026-09-13，虚机 vm，纯命令行）
+
+MSI 来自 master 头 a323bce1c 的 bundle（含 `1231a3e49` 的 `--import-config` .json 分派与 `9fc8fe651` 的目录创建修复），
+`msiexec /i OpenUU.msi /qn OPENUU_CONFIG=C:\Users\user\openuu-config-test.json`（测试文件：服务器四项 + verification-method + lang + 四项 locked）。
+
+| 检查项 | 结果 |
+| --- | --- |
+| 安装目录 `openuu-config.json` | 存在；MSI 日志 `CopyProvisionConfig: copied … to C:\Program Files\OpenUU\openuu-config.json` |
+| 服务侧 `config\imported-config.json` | 存在，含 server 四项、options、local.lang、locked 四项 |
+| import-config 日志 | `event=config_import source=Cli applied=2 locked=4 secrets=0 ignored=0`，路径为 OPENUU_CONFIG 给的 .json |
+| 服务侧 `OpenUU2.toml` | 只有 local-ip-addr / av1-test，四项不落盘（走 DEFAULT/locked 层） |
+| server 日志 | `start rendezvous mediator of rs.example.com`（json 里 id 不带端口时由 `Config::get_rendezvous_server` 补 :21116），ID 不变 |
+| `imported-config-hash` | 以用户身份跑 `openuu.exe --import-config <json>` 后，同目录出现 `OpenUU_local.toml` 含 `imported-config-hash`；服务侧轮次未单独采集 |
+
+不带属性的一轮走原 toml 导入路径，结果与前一节相同。
