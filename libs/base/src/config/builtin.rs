@@ -42,12 +42,16 @@ pub fn apply() {
 /// default layer a custom client's `default-settings` uses: a stored user value
 /// wins, an empty one falls back to them. On Windows H264/H265 streams decode
 /// into a D3D11 texture instead of a CPU YUV->RGBA copy per frame; upstream keeps
-/// this off because `allow-*` keys are only true when set to "Y".
+/// this off because `allow-*` keys are only true when set to "Y". UDP hole
+/// punching is on: with a private id server upstream forces it off whenever the
+/// user has no value, which sends every session through the relay; the baked-in
+/// hbbs supports punching, and `disable-udp` only concerns the registration
+/// channel, not the peer-to-peer data path.
 pub fn apply_local_defaults() {
     let mut d = config::DEFAULT_LOCAL_SETTINGS.write().unwrap();
     #[cfg(windows)]
     d.insert(crate::config::keys::OPTION_ALLOW_D3D_RENDER.to_owned(), "Y".to_owned());
-    let _ = &mut d;
+    d.insert(crate::config::keys::OPTION_ENABLE_UDP_PUNCH.to_owned(), "Y".to_owned());
 }
 
 /// Product defaults for the remote-control UI, in the same display-settings default
@@ -148,6 +152,14 @@ mod tests {
             .insert(key.to_owned(), "N".to_owned());
         assert_eq!(config::LocalConfig::get_option(key), "N");
         config::OVERWRITE_LOCAL_SETTINGS.write().unwrap().remove(key);
+        config::DEFAULT_LOCAL_SETTINGS.write().unwrap().remove(key);
+    }
+
+    #[test]
+    fn udp_punch_defaults_on() {
+        apply_local_defaults();
+        let key = crate::config::keys::OPTION_ENABLE_UDP_PUNCH;
+        assert_eq!(config::LocalConfig::get_option(key), "Y");
         config::DEFAULT_LOCAL_SETTINGS.write().unwrap().remove(key);
     }
 
