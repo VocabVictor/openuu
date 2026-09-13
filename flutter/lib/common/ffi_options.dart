@@ -36,7 +36,15 @@ String translate(String name) {
   if (name.startsWith('Failed to') && name.contains(': ')) {
     return name.split(': ').map((x) => translate(x)).join(': ');
   }
-  return platformFFI.translate(name, localeName).replaceAll('RustDesk', 'OpenUU');
+  try {
+    return platformFFI.translate(name, localeName).replaceAll('RustDesk', 'OpenUU');
+  } on Error {
+    // The table lives behind the bridge, which a widget test does not have.
+    // A key is its own English text (AGENTS.md), so the key is the answer
+    // rather than a placeholder, and a widget under test renders as it does
+    // in English instead of throwing.
+    return name;
+  }
 }
 
 // This function must be kept the same as the one in rust and sciter code.
