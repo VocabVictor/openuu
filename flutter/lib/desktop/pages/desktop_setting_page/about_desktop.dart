@@ -84,15 +84,54 @@ Widget _aboutDesktop(BuildContext context,
       versionRow(),
       copyRow('Build Date', buildDate),
       copyRow('ID', myId),
-      copyRow('Fingerprint', fingerprint),
+      SettingsRow(
+          label: zh ? '开源许可' : 'Open source licence',
+          onTap: () => _licenceDialog(zh),
+          control: const Icon(Icons.chevron_right,
+              size: 16, color: UiColor.muted)),
       SettingsRow(
           label: translate('Website'),
           onTap: () => launchUrlString('https://github.com/VocabVictor/openuu'),
           control: const Icon(Icons.open_in_new, size: 14, color: UiColor.muted)),
     ]),
+    if (fingerprint.isNotEmpty)
+      _group(zh ? '高级' : 'Advanced', [copyRow('Fingerprint', fingerprint)],
+          collapsible: true),
     const SizedBox(height: UiSpace.s3),
     SelectableText(
         'Copyright © ${DateTime.now().year} Purslane Tech Pte. Ltd.\n$license',
         style: UiType.caption.copyWith(color: UiColor.faint)),
   ]).marginOnly(bottom: _kListViewBottomMargin);
+}
+
+/// OpenUU is a fork of RustDesk and stays under the GNU AGPL v3; the notice
+/// must be reachable from the app.
+void _licenceDialog(bool zh) {
+  const url = 'https://github.com/VocabVictor/openuu/blob/master/LICENCE';
+  gFFI.dialogManager.show((setState, close, context) => CustomAlertDialog(
+      titlePadding: EdgeInsets.zero,
+      contentBoxConstraints: const BoxConstraints(
+          minWidth: UiSpace.dialogContentWidth,
+          maxWidth: UiSpace.dialogContentWidth),
+      content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _dialogTitle(zh ? '开源许可' : 'Open source licence', close),
+            const SizedBox(height: UiSpace.s2),
+            Text(
+                zh ? 'OpenUU 基于 RustDesk 开发，遵循 GNU Affero General Public License v3.0 发布。你可以按该许可的条款使用、修改和分发本软件，完整许可文本与源代码见下方链接。' : 'OpenUU is derived from RustDesk and is released under the GNU Affero General Public License v3.0. You may use, modify and redistribute it under that licence; the full text and the source code are behind the link below.',
+                style: UiType.rowTitle
+                    .copyWith(fontWeight: FontWeight.w400, height: 1.5)),
+            const SizedBox(height: UiSpace.s6),
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              _secondaryButton(zh ? '查看许可全文' : 'View licence',
+                  () => launchUrlString(url),
+                  height: UiSpace.controlHeight),
+              const SizedBox(width: UiSpace.s2),
+              _primaryButton(zh ? '关闭' : 'Close', close,
+                  height: UiSpace.controlHeight),
+            ]),
+          ]),
+      onCancel: close));
 }
