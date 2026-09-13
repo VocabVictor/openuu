@@ -21,7 +21,8 @@ on:
   pull_request:
     paths-ignore:
       - "docs/**"
-      # See ci.yml: the root AGENTS.md and CLAUDE.md are markdown too.
+      # Not only README: the root AGENTS.md and CLAUDE.md are markdown too,
+      # and they were triggering full product builds.
       - "**/*.md"
   push:
     branches:
