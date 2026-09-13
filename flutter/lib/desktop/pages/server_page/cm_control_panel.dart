@@ -20,7 +20,7 @@ class _CmControlPanel extends StatelessWidget {
       children: [
         Expanded(
             child: buildButton(context,
-                color: MyTheme.accent,
+                color: UiColor.primary,
                 onClick: handleClose,
                 text: 'Close',
                 textColor: Colors.white)),
@@ -40,7 +40,7 @@ class _CmControlPanel extends StatelessWidget {
       children: [
         Offstage(
           offstage: !showElevation || !showAccept,
-          child: buildButton(context, color: Colors.green[700], onClick: () {
+          child: buildButton(context, color: UiColor.warning, onClick: () {
             handleAccept(context);
             handleElevate(context);
             windowManager.minimize();
@@ -49,7 +49,7 @@ class _CmControlPanel extends StatelessWidget {
               icon: Icon(
                 Icons.security_rounded,
                 color: Colors.white,
-                size: 14,
+                size: UiCm.controlIconSize,
               ),
               textColor: Colors.white,
               tooltip: 'accept_and_elevate_btn_tooltip'),
@@ -63,7 +63,7 @@ class _CmControlPanel extends StatelessWidget {
                   children: [
                     buildButton(
                       context,
-                      color: MyTheme.accent,
+                      color: UiColor.primary,
                       onClick: () {
                         handleAccept(context);
                         windowManager.minimize();
@@ -77,11 +77,11 @@ class _CmControlPanel extends StatelessWidget {
             Expanded(
               child: buildButton(
                 context,
-                color: Colors.transparent,
-                border: Border.all(color: Colors.grey),
+                color: Colors.white,
+                border: Border.all(color: UiColor.inputBorder),
                 onClick: handleDisconnect,
                 text: 'Cancel',
-                textColor: null,
+                textColor: UiColor.text,
               ),
             ),
           ],
@@ -104,21 +104,21 @@ class _CmControlPanel extends StatelessWidget {
     if (icon != null) {
       textWidget = Text(
         translate(text),
-        style: TextStyle(color: textColor),
+        style: UiType.button.copyWith(color: textColor),
         textAlign: TextAlign.center,
       );
     } else {
       textWidget = Expanded(
         child: Text(
           translate(text),
-          style: TextStyle(color: textColor),
+          style: UiType.button.copyWith(color: textColor),
           textAlign: TextAlign.center,
         ),
       );
     }
-    final borderRadius = BorderRadius.circular(10.0);
+    final borderRadius = BorderRadius.circular(UiCm.controlRadius);
     final btn = Container(
-      height: 28,
+      height: UiCm.controlHeight,
       decoration: BoxDecoration(
           color: color, borderRadius: borderRadius, border: border),
       child: InkWell(
@@ -136,7 +136,8 @@ class _CmControlPanel extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Offstage(offstage: icon == null, child: icon).marginOnly(right: 5),
+            Offstage(offstage: icon == null, child: icon)
+                .marginOnly(right: UiSpace.s1),
             textWidget,
           ],
         ),
@@ -148,7 +149,7 @@ class _CmControlPanel extends StatelessWidget {
                 child: btn,
               )
             : btn)
-        .marginAll(4);
+        .marginAll(UiSpace.s1);
   }
 
   void handleDisconnect() {
@@ -186,7 +187,7 @@ class _CmControlPanel extends StatelessWidget {
   }
 }
 
-const double buttonBottomMargin = 8;
+const double buttonBottomMargin = UiSpace.s2;
 
 void checkClickTime(int id, Function() callback) async {
   if (allowRemoteCMModification()) {

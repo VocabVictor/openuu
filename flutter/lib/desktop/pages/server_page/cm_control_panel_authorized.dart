@@ -16,7 +16,7 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
             children: [
               Expanded(
                 child: buildButton(context,
-                    color: MyTheme.accent,
+                    color: UiColor.primary,
                     onClick: null, onTapDown: (details) async {
                   final devicesInfo =
                       await AudioInput.getDevicesInfo(true, true);
@@ -74,7 +74,7 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
                     icon: Icon(
                       Icons.call_rounded,
                       color: Colors.white,
-                      size: 14,
+                      size: UiCm.controlIconSize,
                     ),
                     text: "Audio input",
                     textColor: Colors.white),
@@ -87,7 +87,7 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
                   icon: Icon(
                     Icons.call_end_rounded,
                     color: Colors.white,
-                    size: 14,
+                    size: UiCm.controlIconSize,
                   ),
                   text: "Stop voice call",
                   textColor: Colors.white,
@@ -102,12 +102,12 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
             children: [
               Expanded(
                 child: buildButton(context,
-                    color: MyTheme.accent,
+                    color: UiColor.primary,
                     onClick: () => handleVoiceCall(true),
                     icon: Icon(
                       Icons.call_rounded,
                       color: Colors.white,
-                      size: 14,
+                      size: UiCm.controlIconSize,
                     ),
                     text: "Accept",
                     textColor: Colors.white),
@@ -120,7 +120,7 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
                   icon: Icon(
                     Icons.phone_disabled_rounded,
                     color: Colors.white,
-                    size: 14,
+                    size: UiCm.controlIconSize,
                   ),
                   text: "Dismiss",
                   textColor: Colors.white,
@@ -142,7 +142,7 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
           offstage: !showElevation,
           child: buildButton(
             context,
-            color: MyTheme.accent,
+            color: UiColor.warning,
             onClick: () {
               handleElevate(context);
               windowManager.minimize();
@@ -150,7 +150,7 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
             icon: Icon(
               Icons.security_rounded,
               color: Colors.white,
-              size: 14,
+              size: UiCm.controlIconSize,
             ),
             text: 'Elevate',
             textColor: Colors.white,
@@ -166,7 +166,7 @@ extension _CmControlPanelAuthorized on _CmControlPanel {
                   icon: Icon(
                     Icons.link_off_rounded,
                     color: Colors.white,
-                    size: 14,
+                    size: UiCm.controlIconSize,
                   ),
                   textColor: Colors.white),
             ),
