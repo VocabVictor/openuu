@@ -444,6 +444,21 @@ framing, not proof: the test is whether the click itself enters the
 conclusion. Say in the report which click was made, which is what keeps it
 out of the conclusion.
 
+### Claiming a change is yours, or is not, needs a sha
+
+Every session in this repository commits under the same author, so `git log`'s
+author field cannot tell one from another. What can is the path and the diff:
+`git log --follow -p -- <path>` for a file, `git log -L <line>,<line>:<path>`
+for a single line. **Attribution by memory is a memory, not a measurement** --
+the same failure as reporting a file migrated because you remember migrating
+it. Name the commit that introduced the lines you are claiming or disclaiming;
+an attribution with no sha behind it is a guess, and says so.
+
+When nobody claims a commit, record that it is unclaimed rather than crediting
+or retiring anything on its behalf. On 2026-09-13 a toolbar refactor appeared
+that did exactly what a backlog entry asked for, and no session would claim it;
+the entry stayed open, which is the correct outcome.
+
 ### Say which step you actually reached
 
 **"It compiles" has to name the step.** `flutter analyze` is not a build,
