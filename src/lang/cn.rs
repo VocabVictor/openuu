@@ -785,5 +785,8 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Online", "在线"),
         ("Offline", "离线"),
         ("Status unknown", "状态未知"),
+        ("Quick launch", "快速启动"),
+        ("quick-launch-empty-tip", "把被控端常用的程序放在这里，以后连接时一次点击就能打开。"),
+        ("Refresh shortcuts", "刷新快捷方式"),
     ].iter().cloned().collect();
 }

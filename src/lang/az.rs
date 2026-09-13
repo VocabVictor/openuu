@@ -777,5 +777,8 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Online", ""),
         ("Offline", ""),
         ("Status unknown", ""),
+        ("Quick launch", ""),
+        ("quick-launch-empty-tip", ""),
+        ("Refresh shortcuts", ""),
     ].iter().cloned().collect();
 }
