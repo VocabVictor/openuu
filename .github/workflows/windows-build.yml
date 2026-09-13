@@ -50,6 +50,12 @@ jobs:
     env:
       TARGET: x86_64-pc-windows-msvc
       VCPKG_TRIPLET: x64-windows-static
+      # Server defaults baked into the binary (docs/server-config-provisioning.md §2);
+      # unset secrets leave the build without defaults, never fail it.
+      OPENUU_DEFAULT_ID_SERVER: ${{ secrets.OPENUU_DEFAULT_ID_SERVER }}
+      OPENUU_DEFAULT_RELAY_SERVER: ${{ secrets.OPENUU_DEFAULT_RELAY_SERVER }}
+      OPENUU_DEFAULT_API_SERVER: ${{ secrets.OPENUU_DEFAULT_API_SERVER }}
+      OPENUU_DEFAULT_KEY: ${{ secrets.OPENUU_DEFAULT_KEY }}
     steps:
       - name: Export GitHub Actions cache environment variables
         uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6

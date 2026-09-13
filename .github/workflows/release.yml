@@ -31,6 +31,7 @@ jobs:
   build:
     needs: [check-version]
     uses: ./.github/workflows/windows-build.yml
+    secrets: inherit
 
   publish:
     needs: [build]
