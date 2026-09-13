@@ -432,6 +432,34 @@ This is not hypothetical: on 2026-09-13 an unlabelled pattern of random
 rectangles on black was reported as severe display corruption, and another
 session was interrupted to rule out a regression in its own work.
 
+## A sha is only comparable within one history
+
+The history was rewritten twice on 2026-09-13, so a hash quoted before those
+rewrites does not name the same commit as a hash quoted after them, and the two
+cannot be related by ancestry. This is wider than the upstream comparison noted
+under the file size rule, because the surprise is not that a hash is missing --
+it is that the hash **resolves**.
+
+On 2026-09-14, a workflow's last two green runs were at `2c240d355`, and the
+question was whether they predated the commit that made the flutter feature a
+default. `git log` printed `2c240d355` happily, and
+`git merge-base --is-ancestor` answered no. Both were right: the object still
+exists, orphaned by the rewrite, and it is on no branch's history, so ancestry
+against current commits is meaningless rather than false.
+
+* **Hashes from CI runs, old reports, and anything written before a rewrite
+  are outside the current history.** Ancestry questions about them cannot be
+  answered with `merge-base`; say what you actually have, which is usually the
+  commit date and the subject.
+* `git cat-file -t` succeeding proves the object exists, **not** that it is
+  reachable. `git merge-base --is-ancestor A B` returning non-zero can mean
+  "A is not an ancestor" or "A is in another history"; only
+  `git branch --contains A` distinguishes them.
+* When the answer matters, state which of the two you have: "the last green
+  run is dated before that change, and the error it fails with is exactly the
+  one that change introduces" is an honest chain. "`2c240d355` predates it" is
+  a claim about ancestry you cannot make.
+
 ## Granting SSH access to the build machine
 
 The machine's account is the built-in Administrator, so a key installed there
