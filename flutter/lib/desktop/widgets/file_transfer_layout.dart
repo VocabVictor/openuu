@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
 
 class FileTransferLayout extends StatelessWidget {
   final String localName, remoteName;
@@ -30,44 +31,56 @@ class FileTransferLayout extends StatelessWidget {
                       child: Text(name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.w600)))),
-              const SizedBox(width: 10),
+                          style: UiType.pageTitle))),
+              const SizedBox(width: UiSpace.s2),
               Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  height: UiSpace.tagHeight,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: UiSpace.tagPaddingX),
                   decoration: BoxDecoration(
                       color: local
-                          ? const Color(0xffdce1e8)
-                          : const Color(0xffb8efdc),
-                      borderRadius: BorderRadius.circular(4)),
+                          ? UiColor.settingsRowHover
+                          : UiColor.primaryTint,
+                      borderRadius:
+                          BorderRadius.circular(UiSpace.tagRadius)),
                   child: Text(
                       local ? (zh ? '本机' : 'Local') : (zh ? '远端' : 'Remote'),
-                      style: const TextStyle(
-                          fontSize: 12, color: Color(0xff365168)))),
+                      style: UiType.tag.copyWith(
+                          color: local
+                              ? UiColor.textSecondary
+                              : UiColor.primary))),
             ]));
     Widget panel(Widget child) => Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-            color: dark ? const Color(0xff22262c) : const Color(0xfff9fbfd),
+            color: dark ? const Color(0xff22262c) : Colors.white,
             border: Border.all(
-                color: dark ? Colors.white24 : const Color(0xffd8dde3)),
-            borderRadius: BorderRadius.circular(6)),
+                color: dark ? Colors.white24 : UiColor.border),
+            borderRadius:
+                BorderRadius.circular(UiSpace.sectionCardRadius)),
         child: child);
     final theme = Theme.of(context);
     return Theme(
         data: theme.copyWith(
           textTheme: theme.textTheme.apply(fontFamily: 'Microsoft YaHei'),
-          colorScheme:
-              theme.colorScheme.copyWith(primary: const Color(0xff3979ff)),
+          colorScheme: theme.colorScheme.copyWith(primary: UiColor.primary),
           filledButtonTheme: FilledButtonThemeData(
               style: FilledButton.styleFrom(
+                  backgroundColor: UiColor.primary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: UiColor.primaryDisabled,
+                  disabledForegroundColor: Colors.white,
+                  elevation: 0,
+                  textStyle: UiType.button,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4)),
-                  minimumSize: const Size(84, 36))),
+                      borderRadius:
+                          BorderRadius.circular(UiSpace.buttonRadius)),
+                  minimumSize:
+                      const Size(84, UiSpace.controlHeight))),
         ),
         child: ColoredBox(
-            color: dark ? const Color(0xff191d23) : const Color(0xfff0f4f8),
+            color: dark ? const Color(0xff191d23) : UiColor.panelBg,
             child: LayoutBuilder(builder: (context, bounds) {
               final inset = bounds.maxWidth < 1000 ? 16.0 : 24.0;
               return Padding(
@@ -80,13 +93,13 @@ class FileTransferLayout extends StatelessWidget {
                           const SizedBox(width: 12),
                           FilledButton.icon(
                               onPressed: onSend,
-                              icon: const Icon(Icons.arrow_forward, size: 17),
+                              icon: const Icon(Icons.arrow_forward, size: 16),
                               label: Text(zh ? '发送' : 'Send')),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: UiSpace.s3),
                           FilledButton.icon(
                               onPressed: onReceive,
-                              icon: const Icon(Icons.arrow_back, size: 17),
-                              label: Text(zh ? '发送' : 'Send')),
+                              icon: const Icon(Icons.arrow_back, size: 16),
+                              label: Text(zh ? '接收' : 'Receive')),
                           const SizedBox(width: 12),
                           identity(remoteName, false),
                         ])),
