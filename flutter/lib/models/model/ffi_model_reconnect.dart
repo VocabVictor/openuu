@@ -54,28 +54,26 @@ extension FfiModelReconnect on FfiModel {
         close();
       }
 
-      final style =
-          ElevatedButton.styleFrom(backgroundColor: Colors.green[700]);
+      relay() => reconnect(dialogManager, sessionId, true);
+      retry() => reconnect(dialogManager, sessionId, false);
 
-      return CustomAlertDialog(
-        title: null,
-        content: msgboxContent(type, title, text2),
+      // 'relay-hint2' is the second offer, where relaying is the suggestion.
+      return UiDialog(
+        title: translate(title),
+        onClose: onClose,
+        body: uiDialogText(text2),
         actions: [
-          dialogButton('Close', onPressed: onClose, isOutline: true),
-          if (type == 'relay-hint')
-            dialogButton('Connect via relay',
-                onPressed: () => reconnect(dialogManager, sessionId, true),
-                buttonStyle: style,
-                isOutline: true),
-          dialogButton('Retry',
-              onPressed: () => reconnect(dialogManager, sessionId, false)),
+          UiDialogAction.secondary('Close', onClose),
           if (type == 'relay-hint2')
-            dialogButton('Connect via relay',
-                onPressed: () => reconnect(dialogManager, sessionId, true),
-                buttonStyle: style),
+            UiDialogAction.secondary('Retry', retry)
+          else
+            UiDialogAction.secondary('Connect via relay', relay),
+          if (type == 'relay-hint2')
+            UiDialogAction.primary('Connect via relay', relay)
+          else
+            UiDialogAction.primary('Retry', retry),
         ],
-        onCancel: onClose,
-      );
+      ).alert(context);
     });
   }
 

@@ -24,6 +24,8 @@ import 'package:flutter_hbb/models/peer_tab_model.dart';
 import 'package:flutter_hbb/models/server_model.dart';
 import 'package:flutter_hbb/models/user_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
+import 'package:flutter_hbb/common/widgets/ui_dialog.dart';
+import 'package:flutter_hbb/common/widgets/ui_fields.dart';
 import 'package:window_size/window_size.dart' as window_size;
 import 'package:flutter_hbb/models/desktop_render_texture.dart';
 import 'package:flutter_hbb/models/terminal_model.dart';
