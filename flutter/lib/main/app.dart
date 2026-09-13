@@ -104,8 +104,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
               : (context, child) {
                   child = _keepScaleBuilder(context, child);
                   child = botToastBuilder(context, child);
-                  if ((isDesktop && desktopType == DesktopType.main) ||
-                      isWebDesktop) {
+                  if (isDesktop && desktopType == DesktopType.main) {
                     child = keyListenerBuilder(context, child);
                   }
                   if (isLinux) {
@@ -153,8 +152,7 @@ _registerEventHandler() {
 
 Widget keyListenerBuilder(BuildContext context, Widget? child) {
   return RawKeyboardListener(
-    // `skipTraversal: isWeb` is to fix "Bad state: RenderBox was not laid out: minified:aeL#c19e4"
-    focusNode: FocusNode(skipTraversal: isWeb),
+    focusNode: FocusNode(),
     child: child ?? Container(),
     onKey: (RawKeyEvent event) {
       if (event.logicalKey == LogicalKeyboardKey.shiftLeft) {

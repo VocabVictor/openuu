@@ -149,7 +149,7 @@ Widget dialogButton(String text,
     Widget? icon,
     TextStyle? style,
     ButtonStyle? buttonStyle}) {
-  if (isDesktop || isWebDesktop) {
+  if (isDesktop) {
     if (isOutline) {
       return icon == null
           ? OutlinedButton(

@@ -7,7 +7,6 @@ import 'package:flutter_hbb/common/widgets/dialog.dart';
 import 'package:flutter_hbb/utils/event_loop.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as path;
-import 'package:flutter_hbb/native/unsupported_web.dart';
 
 import '../../consts.dart';
 import '../model.dart';

@@ -27,16 +27,6 @@ final isLinux = isLinux_;
 
 final isDesktop = isDesktop_;
 
-final isWeb = isWeb_;
-
-final isWebDesktop = isWebDesktop_;
-
-final isWebOnWindows = isWebOnWindows_;
-
-final isWebOnLinux = isWebOnLinux_;
-
-final isWebOnMacOs = isWebOnMacOS_;
-
 var isMobile = isAndroid || isIOS;
 
 var version = '';
