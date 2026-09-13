@@ -201,3 +201,50 @@ LExit:
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
+
+// OPENUU_CONFIG=<path>: copy the provisioning file next to the exe so every start
+// imports it (see src/common/provision.rs). CustomActionData is "<src>|<dst>".
+UINT __stdcall CopyProvisionConfig(__in MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    DWORD er = ERROR_SUCCESS;
+    LPWSTR pwzData = NULL;
+    LPWSTR pwz = NULL;
+    LPWSTR src = NULL;
+    LPWSTR dst = NULL;
+
+    hr = WcaInitialize(hInstall, "CopyProvisionConfig");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = WcaGetProperty(L"CustomActionData", &pwzData);
+    ExitOnFailure(hr, "failed to get CustomActionData");
+
+    pwz = pwzData;
+    hr = WcaReadStringFromCaData(&pwz, &src);
+    ExitOnFailure(hr, "failed to read custom action data: %ls", pwz);
+
+    dst = wcschr(src, L'|');
+    if (dst == NULL || src[0] == L'\0') {
+        WcaLog(LOGMSG_STANDARD, "CopyProvisionConfig: no source or destination in \"%ls\"", src);
+        goto LExit;
+    }
+    dst[0] = L'\0';
+    dst += 1;
+    if (!PathFileExistsW(src)) {
+        WcaLog(LOGMSG_STANDARD, "CopyProvisionConfig: source does not exist: %ls", src);
+        goto LExit;
+    }
+    if (CopyFileW(src, dst, FALSE)) {
+        WcaLog(LOGMSG_STANDARD, "CopyProvisionConfig: copied %ls to %ls", src, dst);
+    }
+    else {
+        WcaLog(LOGMSG_STANDARD, "CopyProvisionConfig: failed to copy %ls to %ls, error: %d", src, dst, GetLastError());
+    }
+
+LExit:
+    if (pwzData) {
+        ReleaseStr(pwzData);
+    }
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}

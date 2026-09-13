@@ -12,3 +12,4 @@ EXPORTS
     SetPropertyFromConfig
     AddRegSoftwareSASGeneration
     RemoveAmyuniIdd
+    CopyProvisionConfig

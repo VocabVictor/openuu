@@ -15,7 +15,13 @@
 		<CustomAction Id="RemoveRuntimeGeneratedFiles.SetParam" Return="check" Property="RemoveRuntimeGeneratedFiles" Value="[INSTALLFOLDER_INNER]" />
 		<CustomAction Id="AddFirewallRules.SetParam" Return="check" Property="AddFirewallRules" Value="1[INSTALLFOLDER_INNER]$(var.Product).exe" />
 		<CustomAction Id="RemoveFirewallRules.SetParam" Return="check" Property="RemoveFirewallRules" Value="0[INSTALLFOLDER_INNER]$(var.Product).exe" />
-		<CustomAction Id="CreateStartService.SetParam" Return="check" Property="CreateStartService" Value="$(var.Product);&quot;[INSTALLFOLDER_INNER]$(var.Product).exe&quot; --service|[AppDataFolder]$(var.Product)\config\$(var.Product).toml" />
+		<!-- OPENUU_CONFIG=<path to openuu-config.json> on the msiexec command line: the file is copied
+		     next to the exe (imported at every start) and handed to the temporary import service
+		     instead of the installing user's legacy toml config. -->
+		<Property Id="OPENUU_CONFIG" Secure="yes" />
+		<CustomAction Id="CopyProvisionConfig.SetParam" Return="check" Property="CopyProvisionConfig" Value="[OPENUU_CONFIG]|[INSTALLFOLDER_INNER]openuu-config.json" />
+		<CustomAction Id="CreateStartService.SetParam.Toml" Return="check" Property="CreateStartService" Value="$(var.Product);&quot;[INSTALLFOLDER_INNER]$(var.Product).exe&quot; --service|[AppDataFolder]$(var.Product)\config\$(var.Product).toml" />
+		<CustomAction Id="CreateStartService.SetParam.Json" Return="check" Property="CreateStartService" Value="$(var.Product);&quot;[INSTALLFOLDER_INNER]$(var.Product).exe&quot; --service|[OPENUU_CONFIG]" />
 		<CustomAction Id="TryStopDeleteService.SetParam" Return="check" Property="TryStopDeleteService" Value="$(var.Product)" />
 
 		<CustomAction Id="LaunchApp" ExeCommand="" Return="asyncNoWait" FileRef="App.exe" />
@@ -50,7 +56,10 @@
 			<!-- Do not call CreateStartService if is uninstalling. -->
 			<!-- (Installed AND REMOVE AND NOT UPGRADINGPRODUCTCODE) means uninstalling. -->
 			<Custom Action="CreateStartService" Before="InstallFinalize" Condition="(NOT (Installed AND REMOVE AND NOT UPGRADINGPRODUCTCODE)) AND (NOT STOP_SERVICE=&quot;&apos;Y&apos;&quot;) AND (NOT CC_CONNECTION_TYPE=&quot;outgoing&quot;)" />
-			<Custom Action="CreateStartService.SetParam" Before="CreateStartService" Condition="(NOT (Installed AND REMOVE AND NOT UPGRADINGPRODUCTCODE)) AND (NOT STOP_SERVICE=&quot;&apos;Y&apos;&quot;) AND (NOT CC_CONNECTION_TYPE=&quot;outgoing&quot;)" />
+			<Custom Action="CreateStartService.SetParam.Toml" Before="CreateStartService" Condition="(NOT OPENUU_CONFIG) AND (NOT (Installed AND REMOVE AND NOT UPGRADINGPRODUCTCODE)) AND (NOT STOP_SERVICE=&quot;&apos;Y&apos;&quot;) AND (NOT CC_CONNECTION_TYPE=&quot;outgoing&quot;)" />
+			<Custom Action="CreateStartService.SetParam.Json" Before="CreateStartService" Condition="OPENUU_CONFIG AND (NOT (Installed AND REMOVE AND NOT UPGRADINGPRODUCTCODE)) AND (NOT STOP_SERVICE=&quot;&apos;Y&apos;&quot;) AND (NOT CC_CONNECTION_TYPE=&quot;outgoing&quot;)" />
+			<Custom Action="CopyProvisionConfig" Before="CreateStartService" Condition="OPENUU_CONFIG AND (NOT (Installed AND REMOVE AND NOT UPGRADINGPRODUCTCODE))" />
+			<Custom Action="CopyProvisionConfig.SetParam" Before="CopyProvisionConfig" Condition="OPENUU_CONFIG AND (NOT (Installed AND REMOVE AND NOT UPGRADINGPRODUCTCODE))" />
 
 			<Custom Action="CustomActionHello" Before="InstallFinalize" />
 
