@@ -275,5 +275,8 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Up to date", ""),
         ("packet-loss-unavailable-tip", "Packet loss cannot be measured on this transport: TCP and relayed sessions retransmit on their own, and the KCP layer does not report its retransmissions yet."),
         ("ctrl-alt-del-unavailable-tip", "The controlled device must run as a service to accept Ctrl + Alt + Del. Install it as a service there, or request elevation first."),
+        ("Online", ""),
+        ("Offline", ""),
+        ("Status unknown", ""),
     ].iter().cloned().collect();
 }

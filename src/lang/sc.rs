@@ -782,5 +782,8 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Packet loss", ""),
         ("packet-loss-unavailable-tip", ""),
         ("ctrl-alt-del-unavailable-tip", ""),
+        ("Online", ""),
+        ("Offline", ""),
+        ("Status unknown", ""),
     ].iter().cloned().collect();
 }
