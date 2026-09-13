@@ -41,6 +41,5 @@ enum SettingsTabKey {
   safety,
   network,
   display,
-  account,
   about,
 }
