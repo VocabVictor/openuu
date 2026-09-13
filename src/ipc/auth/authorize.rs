@@ -1,3 +1,4 @@
+#[cfg_attr(windows, allow(unused_imports))]
 use super::*;
 
 #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]

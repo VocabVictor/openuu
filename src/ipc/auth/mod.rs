@@ -39,6 +39,7 @@ pub(crate) use unix_peer::*;
 mod exe_path;
 pub(crate) use exe_path::*;
 mod authorize;
+#[cfg_attr(windows, allow(unused_imports))]
 pub(crate) use authorize::*;
 #[cfg(test)]
 mod tests;
