@@ -160,12 +160,21 @@ extension _RemotePageView on _RemotePageState {
     }
     paints.add(
       Positioned(
-        // Below the status bar, which is drawn over this stack and would
-        // otherwise cover the monitor's first row.
-        top: UiSession.statusBarHeight + 10,
+        top: 10,
         right: 10,
-        child: _buildRawTouchAndPointerRegion(
-            QualityMonitor(_ffi.qualityMonitorModel), null, null),
+        // The status bar is drawn over this stack and would cover the
+        // monitor's first row, so the monitor sits below it; the bar hides
+        // itself a few seconds after connecting and the monitor follows it
+        // back up rather than leaving a gap.
+        child: Obx(() => AnimatedPadding(
+              duration: UiSession.statusBarFade,
+              padding: EdgeInsets.only(
+                  top: _statusController.visible.isTrue
+                      ? UiSession.statusBarHeight
+                      : 0),
+              child: _buildRawTouchAndPointerRegion(
+                  QualityMonitor(_ffi.qualityMonitorModel), null, null),
+            )),
       ),
     );
     return Stack(
