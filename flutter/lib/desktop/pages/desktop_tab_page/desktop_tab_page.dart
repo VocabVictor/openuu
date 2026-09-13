@@ -51,10 +51,21 @@ class DesktopTabPage extends StatefulWidget {
     page.showSettings(initialPage);
   }
 
+  /// Debug builds and executables that are not the installed copy (a
+  /// portable bundle next to an installation still counts).
+  static bool get _devBuild {
+    if (kDebugMode || !bind.mainIsInstalled()) return true;
+    final programFiles = Platform.environment['ProgramFiles'] ?? '';
+    return programFiles.isEmpty ||
+        !Platform.resolvedExecutable
+            .toLowerCase()
+            .startsWith(programFiles.toLowerCase());
+  }
+
   /// Development start page, `--page assistance|favorites|settings[:tab]`,
   /// honoured by portable and debug builds so a screenshot needs no click.
   static void openDevPage(List<String> args) {
-    if (bind.mainIsInstalled() && !kDebugMode) return;
+    if (!_devBuild) return;
     final i = args.indexOf('--page');
     if (i < 0 || i + 1 >= args.length) return;
     final parts = args[i + 1].split(':');
