@@ -3,6 +3,7 @@
 use super::test_support::*;
 use super::*;
 
+mod clipboard_arms;
 mod misc_arms;
 mod session;
 
