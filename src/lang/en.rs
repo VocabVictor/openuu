@@ -273,5 +273,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("pinned-windows-session-service-tip", "Install as a service to pin the session."),
         ("Check for updates", ""),
         ("Up to date", ""),
+        ("packet-loss-unavailable-tip", "Packet loss cannot be measured on this transport: TCP and relayed sessions retransmit on their own, and the KCP layer does not report its retransmissions yet."),
     ].iter().cloned().collect();
 }

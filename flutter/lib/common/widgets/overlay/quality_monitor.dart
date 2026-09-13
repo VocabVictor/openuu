@@ -76,8 +76,11 @@ class QualityMonitor extends StatelessWidget {
               _row("Codec", data.codecFormat),
               _row("Chroma", data.chroma),
               // Packet loss is not observable on a TCP or relayed session,
-              // and the KCP layer exposes no retransmission counter yet.
-              _row(translate('Packet loss'), null),
+              // and the KCP layer exposes no retransmission counter yet; the
+              // tooltip says so rather than leaving an unexplained dash.
+              Tooltip(
+                  message: translate('packet-loss-unavailable-tip'),
+                  child: _row(translate('Packet loss'), null)),
             ],
           ),
         );

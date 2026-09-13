@@ -780,5 +780,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Direct", "直連"),
         ("Relayed", "中繼"),
         ("Packet loss", "丟包"),
+        ("packet-loss-unavailable-tip", "目前連線方式統計不到丟包：TCP 與中繼會自行重傳，KCP 暫未回報重傳次數。"),
     ].iter().cloned().collect();
 }

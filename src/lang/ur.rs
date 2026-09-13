@@ -778,6 +778,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Direct", ""),
         ("Relayed", ""),
         ("Packet loss", ""),
+        ("packet-loss-unavailable-tip", ""),
     ].iter().cloned().collect();
 }
 
