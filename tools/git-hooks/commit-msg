@@ -39,6 +39,11 @@ fi
 #
 # The rule stays: the costs are not symmetric. A false positive costs one
 # reflow; a miss costs a commit message that is permanently missing a word.
+#
+# After editing this hook, run it against a known positive and a known
+# negative: a message with a run of spaces mid-line must be rejected, and an
+# ordinary message must pass. Checking only the negative is how a check that
+# no longer checks anything goes unnoticed -- it reports nothing either way.
 body=$(grep -v '^#' "$1")
 hits=$(printf '%s\n' "$body" | grep -nE '(^ [^ ]|[^ ] +$|[^ ]  +[^ ])' | grep -vE '^[0-9]+:( {4,}|	)')
 if [ -n "$hits" ]; then
