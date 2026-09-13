@@ -111,22 +111,27 @@ pub fn get_webrtc_enabled() -> bool {
 
 pub fn get_local_option(key: &str) -> String {
     let v = LocalConfig::get_option(key);
-    // UDP and IPv6 hole punching used to be switched off here whenever the
-    // rendezvous server was not one of the public ones. That read a
-    // deployment's shape as a statement about its capability, which it is
-    // not: a self-hosted hbbs answers the NAT test and punches like any
-    // other, so the effect was that self-hosted deployments silently relayed
-    // every session. Both now follow the ordinary `enable-` default of on,
-    // and the runtime decides: the NAT probe falls back to TCP punching when
-    // it gets no answer, and the transports race with a relay behind them.
+    // Hole punching used to be switched off here whenever the rendezvous
+    // server was not one of the public ones, which read a deployment's shape
+    // as a statement about its capability. A self-hosted hbbs answers the NAT
+    // test and punches like any other, so the effect was that self-hosted
+    // deployments silently relayed every session.
     //
-    // WebRTC is not the same case and stays off by default here. With no ICE
-    // servers of its own it falls back to the built-in public STUN list, so
-    // enabling it for a self-hosted deployment would quietly send that
-    // deployment's addresses to third parties it never chose. Configure
-    // `ice-servers`, or turn the switch on explicitly, and it is honoured.
-    if key == keys::OPTION_ENABLE_WEBRTC
-        && webrtc_off_by_default(
+    // What actually decides the default is whose servers the capability needs
+    // when nothing is configured. UDP punching only ever talks to this
+    // deployment's own rendezvous server, so it simply defaults on and the
+    // runtime decides: the NAT probe falls back to TCP punching when it gets
+    // no answer, and the transports race with a relay behind them.
+    //
+    // IPv6 punching and WebRTC both fall back to the built-in list of public
+    // STUN servers when the deployment has configured none of its own: IPv6
+    // punching queries them to learn its public address (`test_ipv6`), and
+    // WebRTC uses them as ICE servers. Defaulting either on would send a
+    // self-hosted deployment's addresses to third parties it never chose, so
+    // both stay off until the deployment has ICE servers of its own or the
+    // user turns the switch on explicitly.
+    if needs_own_ice_servers(key)
+        && off_by_default(
             &v,
             is_public(&Config::get_rendezvous_server()),
             !Config::get_option(keys::OPTION_ICE_SERVERS).trim().is_empty(),
@@ -137,10 +142,16 @@ pub fn get_local_option(key: &str) -> String {
     v
 }
 
+/// The capabilities that reach the built-in public STUN list when this
+/// deployment has configured no servers of its own.
+fn needs_own_ice_servers(key: &str) -> bool {
+    key == keys::OPTION_ENABLE_WEBRTC || key == keys::OPTION_ENABLE_IPV6_PUNCH
+}
+
 /// Split out from `get_local_option` so the decision can be tested without
 /// writing the process-global, on-disk configuration that the real getters
 /// read; the tests of this crate share one process.
-fn webrtc_off_by_default(user_value: &str, server_is_public: bool, has_own_ice_servers: bool) -> bool {
+fn off_by_default(user_value: &str, server_is_public: bool, has_own_ice_servers: bool) -> bool {
     user_value.is_empty() && !server_is_public && !has_own_ice_servers
 }
 

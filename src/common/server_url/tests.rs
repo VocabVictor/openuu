@@ -41,13 +41,19 @@ use super::*;
     /// servers of its own, because it would otherwise fall back to the built-in
     /// public STUN list.
     #[test]
-    fn webrtc_waits_for_ice_servers_only_on_a_self_hosted_server() {
+    fn capabilities_that_need_stun_wait_for_ice_servers() {
+        // IPv6 punching reaches the public STUN list too, so it is governed
+        // alongside WebRTC and not with plain UDP punching
+        assert!(needs_own_ice_servers(keys::OPTION_ENABLE_WEBRTC));
+        assert!(needs_own_ice_servers(keys::OPTION_ENABLE_IPV6_PUNCH));
+        assert!(!needs_own_ice_servers(keys::OPTION_ENABLE_UDP_PUNCH));
+
         // unset + self-hosted + no ICE servers of its own: the one case that stays off
-        assert!(webrtc_off_by_default("", false, false));
+        assert!(off_by_default("", false, false));
 
         // any one of those three conditions lifting is enough to honour the default
-        assert!(!webrtc_off_by_default("", true, false), "a public server has ICE behind it");
-        assert!(!webrtc_off_by_default("", false, true), "the deployment configured its own");
-        assert!(!webrtc_off_by_default("Y", false, false), "an explicit choice is not a default");
-        assert!(!webrtc_off_by_default("N", false, false), "an explicit no is already no");
+        assert!(!off_by_default("", true, false), "a public server has ICE behind it");
+        assert!(!off_by_default("", false, true), "the deployment configured its own");
+        assert!(!off_by_default("Y", false, false), "an explicit choice is not a default");
+        assert!(!off_by_default("N", false, false), "an explicit no is already no");
     }

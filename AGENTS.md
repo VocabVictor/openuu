@@ -90,14 +90,21 @@ user's traffic touches, not only about convenience.
   the case a default governs. A feature that looks self-contained may have a
   fallback that is not.
 
-The worked example is WebRTC. With no `ice-servers` configured it falls back
-to a built-in list of public STUN servers (`DEFAULT_ICE_SERVERS` in
-`libs/hbb_common/src/webrtc.rs`), so defaulting it on would have sent a
-self-hosted deployment's addresses to third parties it never chose, and
-people run a private server precisely to avoid that. It therefore defaults
-off while the deployment has no ICE servers of its own, while UDP and IPv6
-hole punching, which only ever talk to this deployment's own rendezvous
-server, default on.
+The worked example is the three connection switches. With no `ice-servers`
+configured, both WebRTC and IPv6 hole punching fall back to a built-in list
+of public STUN servers (`DEFAULT_ICE_SERVERS` in
+`libs/hbb_common/src/webrtc.rs`): WebRTC uses them as ICE servers, and IPv6
+punching queries them to learn its public address (`test_ipv6`). Defaulting
+either on would send a self-hosted deployment's addresses to third parties it
+never chose, and people run a private server precisely to avoid that, so both
+stay off until the deployment has ICE servers of its own. UDP punching only
+ever talks to this deployment's own rendezvous server, so it defaults on.
+
+The IPv6 case is the reason the third bullet above exists: the first version
+of this very change defaulted IPv6 punching on, because its name suggests a
+purely local capability. Only reading `test_ipv6` showed that it reaches the
+public STUN list. Check what the code does when nothing is configured, not
+what the feature sounds like.
 
 ## File Size Rule (mandatory)
 
