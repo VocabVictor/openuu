@@ -208,5 +208,6 @@ mod test {
     mod clipboard_tests;
     mod file_tests;
     mod cm_data_tests;
+    mod start_arms_tests;
 
 }
