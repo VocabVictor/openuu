@@ -137,64 +137,14 @@ String _settingDescription(BuildContext context, String label) {
   return descriptions[label]?[zh ? 0 : 1] ?? '';
 }
 
-IconData _settingIcon(String label) {
-  final text = label.toLowerCase();
-  if (text.contains('account')) return Icons.person_outline;
-  if (text.contains('record')) return Icons.videocam_outlined;
-  if (text.contains('directory') || text == 'incoming' || text == 'outgoing')
-    return Icons.folder_outlined;
-  if (text.contains('view') ||
-      text.contains('quality') ||
-      text.contains('scale')) return Icons.desktop_windows_outlined;
-
-  if (text.contains('audio')) return Icons.volume_up_outlined;
-  if (text.contains('file')) return Icons.folder_outlined;
-  if (text.contains('keyboard')) return Icons.keyboard_outlined;
-  if (text.contains('clipboard')) return Icons.content_paste_outlined;
-  if (text.contains('update')) return Icons.sync_outlined;
-  if (text.contains('theme')) return Icons.palette_outlined;
-  if (text.contains('language')) return Icons.language_outlined;
-  if (text.contains('tcp') || text.contains('udp') || text.contains('ipv6'))
-    return Icons.lan_outlined;
-  if (text.contains('render') ||
-      text.contains('codec') ||
-      text.contains('screen')) return Icons.monitor_outlined;
-  return Icons.tune_outlined;
-}
-
 Widget _settingRow(BuildContext context, String label, Widget control,
     {bool enabled = true, String? description}) {
   final detail = description ?? _settingDescription(context, label);
-  return Container(
-    constraints: const BoxConstraints(minHeight: 72),
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-    decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xffedf0f2)))),
-    child: Row(children: [
-      Icon(_settingIcon(label),
-          size: 22,
-          color: enabled ? const Color(0xff30343b) : const Color(0xffa7abb2)),
-      const SizedBox(width: 18),
-      Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(translate(label),
-            style: TextStyle(
-                fontSize: 14,
-                color: enabled
-                    ? const Color(0xff20242b)
-                    : const Color(0xff9298a1))),
-        if (detail.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Text(detail,
-              style: const TextStyle(
-                  fontSize: 12, height: 1.4, color: Color(0xff858b95))),
-        ],
-      ])),
-      const SizedBox(width: 20),
-      control,
-    ]),
-  );
+  return SettingsRow(
+      label: translate(label),
+      subtitle: detail,
+      control: control,
+      enabled: enabled);
 }
 
 // ignore: non_constant_identifier_names

@@ -79,6 +79,26 @@ class UiSpace {
   static const double tagHeight = 20;
   static const double tagPaddingX = 6;
   static const double tagRadius = 4;
+
+  // Settings page (design-review-settings.md §2).
+  static const double settingsContentMaxWidth = 760;
+  static const double settingsTabBarHeight = 36;
+  static const double settingsTabGap = s6;
+  static const double settingsScrollPaddingY = s6;
+  static const double settingsGroupTitleHeight = 20;
+  static const double settingsGroupTitleGap = s2;
+  static const double settingsGroupGap = s6;
+  static const double settingsGroupRadius = 8;
+  static const double settingsRowHeight = 48;
+  static const double settingsRowHeightSub = 56;
+  static const double settingsRowPaddingX = s4;
+  static const double settingsControlGap = s3;
+  static const double settingsChildIndent = 20;
+  static const double settingsChildRail = 2;
+  static const double settingsDisabledOpacity = .5;
+  static const double settingsSwitchWidth = 36;
+  static const double settingsSwitchHitHeight = 28;
+  static const double settingsControlHeight = 28;
 }
 
 class UiColor {
@@ -93,6 +113,9 @@ class UiColor {
   static const Color surfaceHover = Color(0xfff5f8ff);
   static const Color ready = Color(0xff22c55e);
   static const Color favorite = Color(0xffffb020);
+  static const Color settingsDivider = Color(0xfff0f1f3);
+  static const Color settingsRowHover = Color(0xfff7f8fa);
+  static const Color settingsSwitchOff = Color(0xffc9cdd4);
 }
 
 class UiType {

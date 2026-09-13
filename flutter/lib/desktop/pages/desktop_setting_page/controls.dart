@@ -52,17 +52,8 @@ Widget _OptionCheckBox(
           label,
           Row(mainAxisSize: MainAxisSize.min, children: [
             if (ref.value && checkedIcon != null) checkedIcon,
-            Text(zh ? (ref.value ? '开' : '关') : (ref.value ? 'On' : 'Off'),
-                style: TextStyle(
-                    fontSize: 12,
-                    color: available
-                        ? const Color(0xff626973)
-                        : const Color(0xffa7abb2))),
-            const SizedBox(width: 10),
-            Switch(
-                value: ref.value,
-                activeColor: DesktopWelcomePage.blue,
-                onChanged: available ? onChanged : null),
+            SettingsSwitch(
+                value: ref.value, onChanged: available ? onChanged : null),
           ]),
           enabled: available,
           description: isOptFixed
@@ -127,7 +118,7 @@ Widget _Radio<T>(BuildContext context,
                 value: value,
                 groupValue: groupValue,
                 onChanged: onChange2,
-                activeColor: DesktopWelcomePage.blue),
+                activeColor: UiColor.primary),
             enabled: onChange2 != null));
   }
   return GestureDetector(
