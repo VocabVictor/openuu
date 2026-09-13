@@ -58,7 +58,11 @@ class UiDialog extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => alert(context);
+
+  /// The dialog as a [CustomAlertDialog], for `dialogManager.show`, whose
+  /// builder has to return that type.
+  CustomAlertDialog alert(BuildContext context) {
     final primary = actions.isNotEmpty && actions.last.isPrimary
         ? actions.last.onPressed
         : null;
