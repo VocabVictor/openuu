@@ -172,11 +172,58 @@ extension InputModelPointer on InputModel {
     final evtToPeer = processEventToPeer(evt, offset,
         onExit: onExit, moveCanvas: moveCanvas, edgeScroll: edgeScroll);
     if (evtToPeer != null) {
-      bind.sessionSendMouse(
-          sessionId: sessionId, msg: json.encode(modify(evtToPeer)));
-      _countSent(evtToPeer['type']);
+      _sendMouseCoalesced(evtToPeer);
     }
     return evtToPeer;
+  }
+}
+
+extension InputModelMoveCoalesce on InputModel {
+  /// A move carries no type of its own, which is what makes it a move: only
+  /// those are held back.
+  void _sendMouseCoalesced(Map<String, dynamic> evt) {
+    final nowUs = DateTime.now().microsecondsSinceEpoch;
+    final type = evt['type'];
+    final isMove = type is! String || type.isEmpty;
+    final out = isMove
+        ? _moveCoalescer.offerMove(evt, nowUs)
+        : _moveCoalescer.offerImmediate(evt, nowUs);
+    for (final e in out) {
+      _sendMouseNow(e);
+    }
+    _scheduleMoveFlush(nowUs);
+  }
+
+  void _sendMouseNow(Map<String, dynamic> evt) {
+    bind.sessionSendMouse(
+        sessionId: sessionId, msg: json.encode(modify(evt)));
+    _countSent(evt['type']);
+  }
+
+  /// A pointer that stops moving leaves its last position held, so the
+  /// interval boundary has to send it even when no further event arrives.
+  void _scheduleMoveFlush(int nowUs) {
+    final delayUs = _moveCoalescer.delayUs(nowUs);
+    if (delayUs == null) {
+      _moveFlushTimer?.cancel();
+      _moveFlushTimer = null;
+      return;
+    }
+    if (_moveFlushTimer?.isActive ?? false) {
+      return;
+    }
+    _moveFlushTimer = Timer(Duration(microseconds: delayUs), () {
+      _moveFlushTimer = null;
+      flushPendingMove();
+    });
+  }
+
+  /// Sends whatever move is held, now.
+  void flushPendingMove() {
+    for (final e
+        in _moveCoalescer.flush(DateTime.now().microsecondsSinceEpoch)) {
+      _sendMouseNow(e);
+    }
   }
 }
 

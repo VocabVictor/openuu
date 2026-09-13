@@ -24,6 +24,10 @@ class InputModel {
       Platform.environment['RUSTDESK_INPUT_VERBOSE'] == '1';
   final MouseSendCounter? _sendCounter =
       _mouseSendVerbose ? MouseSendCounter() : null;
+
+  // Pointer moves are sent at most one per interval; see move_coalescer.dart.
+  final MoveCoalescer<Map<String, dynamic>> _moveCoalescer = MoveCoalescer();
+  Timer? _moveFlushTimer;
   final ToReleaseKeys toReleaseKeys = ToReleaseKeys();
 
   // trackpad

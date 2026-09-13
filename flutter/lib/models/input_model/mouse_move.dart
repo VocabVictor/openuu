@@ -2,6 +2,7 @@ part of 'input_model.dart';
 
 extension InputModelMouseMove on InputModel {
   void enterOrLeave(bool enter) {
+    flushPendingMove();
     toReleaseKeys.release(handleKeyEvent);
     toReleaseRawKeys.release(handleRawKeyEvent);
     _pointerMovedAfterEnter = false;

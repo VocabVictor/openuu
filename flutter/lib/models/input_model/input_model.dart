@@ -21,6 +21,7 @@ import '../relative_mouse_model.dart';
 import '../../common.dart';
 import '../../consts.dart';
 import 'send_counter.dart';
+import 'move_coalescer.dart';
 part 'coords.dart';
 part 'pointer_event.dart';
 part 'key_events.dart';
