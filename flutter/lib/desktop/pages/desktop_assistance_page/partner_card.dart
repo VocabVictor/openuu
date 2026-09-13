@@ -2,20 +2,23 @@ part of 'desktop_assistance_page.dart';
 
 extension _PartnerCard on _DesktopAssistancePageState {
   Widget _partnerCard() {
+    final ui = UiColor.of(context);
+    final type = UiType.of(context);
     final fieldStyle = OutlineInputBorder(
         borderRadius: BorderRadius.circular(UiSpace.inputRadius),
-        borderSide: const BorderSide(color: UiColor.border));
+        borderSide: BorderSide(color: ui.border));
     return _card(
+        context,
         Padding(
             padding: const EdgeInsets.symmetric(vertical: UiSpace.s3),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(translate('Connect to a partner'),
-                  style: UiType.sectionTitle),
+                  style: type.sectionTitle),
               const SizedBox(height: UiSpace.s1),
-              _caption(translate('Connect using a device ID, then authenticate with your partner.')),
+              _caption(context, translate('Connect using a device ID, then authenticate with your partner.')),
             ])),
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _caption(translate('Partner device ID')),
+          _caption(context, translate('Partner device ID')),
           const SizedBox(height: UiSpace.fieldLabelGap),
           Row(children: [
             SizedBox(
@@ -29,12 +32,12 @@ extension _PartnerCard on _DesktopAssistancePageState {
                         widget.onConnect(id.trim());
                       }
                     },
-                    style: UiType.rowTitle.copyWith(fontWeight: FontWeight.w400),
+                    style: type.rowTitle.copyWith(fontWeight: FontWeight.w400),
                     decoration: InputDecoration(
                         hintText: translate('Enter device ID'),
-                        hintStyle: UiType.caption.copyWith(fontSize: 13),
+                        hintStyle: type.caption.copyWith(fontSize: 13),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: ui.surface,
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: UiSpace.inputPaddingX, vertical: 8),
@@ -45,13 +48,13 @@ extension _PartnerCard on _DesktopAssistancePageState {
                 height: UiSpace.controlHeight,
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: UiColor.primary,
-                        foregroundColor: Colors.white,
+                        backgroundColor: ui.primary,
+                        foregroundColor: ui.onPrimary,
                         elevation: 0,
                         minimumSize: const Size(72, UiSpace.controlHeight),
                         padding: const EdgeInsets.symmetric(
                             horizontal: UiSpace.buttonPaddingX),
-                        textStyle: UiType.button,
+                        textStyle: type.button,
                         shape: RoundedRectangleBorder(
                             borderRadius:
                                 BorderRadius.circular(UiSpace.buttonRadius))),

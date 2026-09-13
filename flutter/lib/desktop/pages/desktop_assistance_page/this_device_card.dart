@@ -4,6 +4,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
   Widget _thisDeviceCard() {
     final temporary = widget.temporaryPassword;
     return _card(
+        context,
         Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -11,36 +12,39 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
             runSpacing: UiSpace.s2,
             children: [
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(translate('This device'), style: UiType.sectionTitle),
+                Text(translate('This device'),
+                    style: UiType.of(context).sectionTitle),
                 const SizedBox(width: UiSpace.rowMetaGap),
                 ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 200),
                     child: Text(widget.deviceName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: UiType.caption)),
+                        style: UiType.of(context).caption)),
                 const SizedBox(width: UiSpace.rowMetaGap),
                 Container(
                     width: UiSpace.statusDotSize,
                     height: UiSpace.statusDotSize,
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: widget.online ? UiColor.ready : UiColor.faint)),
+                        color: widget.online
+                            ? UiColor.of(context).ready
+                            : UiColor.of(context).faint)),
                 const SizedBox(width: UiSpace.statusDotGap),
                 Text(widget.online ? translate('Online') : translate('Not ready'),
-                    style: UiType.caption),
+                    style: UiType.of(context).caption),
               ]),
               Row(mainAxisSize: MainAxisSize.min, children: [
                 Text(translate('Allow remote assistance'),
                     style:
-                        UiType.rowTitle.copyWith(fontWeight: FontWeight.w400)),
+                        UiType.of(context).rowTitle.copyWith(fontWeight: FontWeight.w400)),
                 const SizedBox(width: UiSpace.s2),
                 SizedBox(
                     height: UiSpace.controlHeight,
                     child: FittedBox(
                         child: Switch(
                             value: widget.enabled,
-                            activeColor: UiColor.primary,
+                            activeColor: UiColor.of(context).primary,
                             onChanged: _busy
                                 ? null
                                 : (value) async {
@@ -59,9 +63,10 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
           SizedBox(
               width: 200,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _caption(translate('This device ID')),
+                _caption(context, translate('This device ID')),
                 const SizedBox(height: UiSpace.s2),
-                SelectableText(widget.deviceId, style: UiType.deviceId),
+                SelectableText(widget.deviceId,
+                    style: UiType.of(context).deviceId),
               ])),
           const SizedBox(width: UiSpace.s8),
           Expanded(child: _passwordColumn(temporary)),
@@ -78,7 +83,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                           shape: RoundedRectangleBorder(
                               borderRadius:
                                   BorderRadius.circular(UiSpace.buttonRadius)),
-                          textStyle: UiType.button),
+                          textStyle: UiType.of(context).button),
                       onPressed: !widget.enabled
                           ? null
                           : () async {
@@ -109,7 +114,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                           ? null
                           : () => _shareQrDialog(context, temporary),
                       icon: const Icon(Icons.qr_code_2_outlined,
-                          color: UiColor.textSecondary)))),
+                          color: UiColor.of(context).textSecondary)))),
         ]));
   }
 
@@ -140,17 +145,19 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
               child: Row(children: [
                 Expanded(
                     child: Text(translate('Share as QR code'),
-                        style: UiType.sectionTitle.copyWith(fontSize: 16))),
+                        style: UiType.of(context)
+                            .sectionTitle
+                            .copyWith(fontSize: 16))),
                 IconButton(
                     iconSize: 16,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                    icon: const Icon(Icons.close, color: UiColor.muted),
+                    icon: Icon(Icons.close, color: UiColor.of(context).muted),
                     onPressed: close),
               ])),
           const SizedBox(height: UiSpace.s2),
           Container(
-              color: Colors.white,
+              color: UiColor.of(context).surface,
               padding: const EdgeInsets.all(UiSpace.s2),
               child: QrImageView(data: payload, version: QrVersions.auto, size: 200, gapless: false)),
           const SizedBox(height: UiSpace.s3),
@@ -158,7 +165,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
               temporary
                   ? translate('Scanning with OpenUU on a phone connects to this device; the code carries the current one-time password, do not forward it.')
                   : translate('Scanning with OpenUU on a phone connects to this device.'),
-              style: UiType.caption,
+              style: UiType.of(context).caption,
               textAlign: TextAlign.center),
           const SizedBox(height: UiSpace.s6),
         ]),
@@ -178,8 +185,10 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: temporary
-                      ? UiType.deviceId.copyWith(fontSize: 22, height: 1.3)
-                      : UiType.rowTitle)),
+                      ? UiType.of(context)
+                          .deviceId
+                          .copyWith(fontSize: 22, height: 1.3)
+                      : UiType.of(context).rowTitle)),
           const SizedBox(width: UiSpace.rowIconGap),
           if (temporary)
             _actionIcon(
@@ -193,7 +202,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
               translate('Authentication settings'), widget.onSecurity),
         ]),
         const SizedBox(height: 6),
-        _caption(temporary
+        _caption(context, temporary
             ? translate('One-time password, renewed after each session')
             : translate('Uses your security settings')),
       ]);
@@ -209,7 +218,7 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                   iconSize: UiSpace.rowActionIconSize,
                   tooltip: tooltip,
                   onPressed: onTap,
-                  icon: Icon(icon, color: UiColor.textSecondary))));
+                  icon: Icon(icon, color: UiColor.of(context).textSecondary))));
 
   /// The verification method as a menu anchored under its trigger: same
   /// left edge, at least the trigger's width, current value ticked.
@@ -228,9 +237,9 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
             padding: EdgeInsets.zero,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(UiSpace.menuRadius),
-                side: const BorderSide(color: UiColor.border)),
+                side: BorderSide(color: UiColor.of(context).border)),
             elevation: 4,
-            color: Colors.white,
+            color: UiColor.of(context).surface,
             onSelected: widget.onVerificationChanged,
             itemBuilder: (_) => [
                   for (final e in entries)
@@ -242,19 +251,20 @@ extension _ThisDeviceCard on _DesktopAssistancePageState {
                         child: Row(children: [
                           Expanded(
                               child: Text(e.$2,
-                                  style: UiType.rowTitle
+                                  style: UiType.of(context).rowTitle
                                       .copyWith(fontWeight: FontWeight.w400))),
                           if (e.$1 == widget.verificationMethod)
                             const Icon(Icons.check,
-                                size: 14, color: UiColor.primary),
+                                size: 14, color: UiColor.of(context).primary),
                         ])),
                 ],
             child: SizedBox(
                 height: 18,
                 child: Row(children: [
-                  Flexible(child: _caption(widget.verification)),
+                  Flexible(child: _caption(context, widget.verification)),
                   const SizedBox(width: UiSpace.s1),
-                  const Icon(Icons.expand_more, size: 14, color: UiColor.muted)
+                  Icon(Icons.expand_more,
+                      size: 14, color: UiColor.of(context).muted)
                 ])));
       });
 }

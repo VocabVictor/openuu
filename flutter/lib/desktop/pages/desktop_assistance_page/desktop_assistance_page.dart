@@ -58,16 +58,18 @@ const _useTemporaryPassword = 'use-temporary-password';
 const _usePermanentPassword = 'use-permanent-password';
 const _useBothPasswords = 'use-both-passwords';
 
-Widget _caption(String text) => Text(text, style: UiType.caption);
+Widget _caption(BuildContext context, String text) =>
+    Text(text, style: UiType.of(context).caption);
 
 /// A section card: a 48-high header row, a divider, then the content on the
 /// section padding. `divider: false` keeps title and content in one block.
-Widget _card(Widget heading, Widget content, {bool divider = true}) =>
+Widget _card(BuildContext context, Widget heading, Widget content,
+        {bool divider = true}) =>
     Container(
         decoration: BoxDecoration(
-            color: Colors.white,
+            color: UiColor.of(context).surface,
             borderRadius: BorderRadius.circular(UiSpace.sectionCardRadius),
-            border: Border.all(color: UiColor.border)),
+            border: Border.all(color: UiColor.of(context).border)),
         child:
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Container(
@@ -77,7 +79,8 @@ Widget _card(Widget heading, Widget content, {bool divider = true}) =>
                   horizontal: UiSpace.sectionCardPadding),
               alignment: Alignment.centerLeft,
               child: heading),
-          if (divider) const Divider(height: 1, color: UiColor.border),
+          if (divider)
+            Divider(height: 1, color: UiColor.of(context).border),
           Padding(
               padding: EdgeInsets.fromLTRB(
                   UiSpace.sectionCardPadding,
@@ -108,7 +111,8 @@ class _DesktopAssistancePageState extends State<DesktopAssistancePage> {
         onAssistance: () {},
         onFavorites: widget.onFavorites,
         onSettings: widget.onSettings,
-        header: Text(translate('Start assistance'), style: UiType.pageTitle),
+        header: Text(translate('Start assistance'),
+            style: UiType.of(context).pageTitle),
         content: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(UiSpace.pagePaddingX, 0,
                 UiSpace.pagePaddingX, UiSpace.pagePaddingBottom),
