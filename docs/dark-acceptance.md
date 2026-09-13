@@ -263,3 +263,57 @@ Neither needs a build, a machine or a plan — only a user who is connecting
 anyway. Until then the two claims stay open; they are not to be closed by
 inference from the other screenshots, because both are exactly the surfaces
 where a tint that was mapped by inverting would show.
+
+## Result of the run on 2026-09-14
+
+**Not accepted.** Two findings, both in the settings window, and both of the
+same shape as the home shell defect this list caught the first time.
+
+Scope of this run: **sections 0, 1 and 2 only** — everything the command line
+can reach. The screenshots are not part of it, so nothing here says the
+appearance was looked at. A list that reads "accepted" while half of it was
+never run is worse than one that reads "not accepted".
+
+**Section 0, baseline** (build machine, worktree self-reported as
+`68da7776e9`): `fanalyze.ps1` **218 issues, zero errors**;
+`ftest.ps1` with no path, **160 tests, all passing**.
+
+**Section 1, the three greps, run verbatim.**
+
+* **Grep 2 (a token read as a constant): 1 hit**, the documented
+  `DesktopWelcomePage.blue`. Clean.
+* **Grep 3 (a literal in a file already on the palette): 6 hits.** Five are
+  the documented ones — the device page's row waiting on the shell, two in
+  `tunnels.dart`, one manual dark branch in `file_transfer_layout.dart`, one
+  tab hover in `tab_item.dart`. The sixth, `chat_window.dart`'s
+  `_remoteChromeFill`, is new: that file has just joined the tokens.
+* **Grep 1 (a literal white or black): 38 hits.** Most fall under the
+  exclusions above, and one group needs a name the list did not have:
+  **content on a veil** — `desktop_preview/panel.dart` (7),
+  `quality_monitor.dart` (1) and the scrims already listed. White on a
+  black scrim is not a themed surface, same reasoning as the QR quiet zone.
+  **Two hits are findings**, both mine:
+
+  **The settings window pins its own light appearance.**
+  `desktop_setting_page.dart` sets `scaffoldBackgroundColor` to `0xfff8fbfd`
+  and `CardTheme.color` to `Colors.white` for the whole window, so in dark
+  the settings page keeps a light ground and white cards whatever the palette
+  says. It is the home shell defect again, in the one place a user spends the
+  longest. **What is missing: the two values take `panelBg` and `surface`.**
+
+  Three hits in `view_file_list.dart` and one in `menu_buttons.dart` are in
+  the session window, which belongs to another session; they are listed here
+  rather than fixed.
+
+**Section 2, contrast: 30 pairs, the whole table, zero dark failures.**
+`primary` on `surfaceHover` measures 4.46:1 against a 4.5 threshold, and
+**that pair does not occur**: the only two places that paint `surfaceHover`
+are a device row's hover and the tool tiles in `device_action_bar.dart`, and
+neither draws `primary` on it. It is recorded so the next reader does not
+repeat the search. `overlayHover` has no ratio: it is translucent by
+definition, and what it is measured against is whatever lies beneath.
+
+**Still unverified, unchanged:** the toolbar's buttons in dark and the
+connection manager's tiles in dark. Both need a person to open a menu or
+accept a session; neither is closed by inference from the frames that were
+captured.
