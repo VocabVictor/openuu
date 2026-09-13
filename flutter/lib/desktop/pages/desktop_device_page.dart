@@ -15,7 +15,12 @@ class DesktopDevicePage extends StatefulWidget {
   final VoidCallback onBack, onLogin, onSettings, onAssistance, onFavorites;
   final VoidCallback onConnect, onWatch, onFiles, onTerminal, onTunnel;
 
+  /// Supplied by a widget test, which has no bridge to the Rust side.
+  @visibleForTesting
+  final OnlinePoller? poller;
+
   const DesktopDevicePage({super.key, this.onQuickLaunch, required this.name, required this.id,
+    this.poller,
     required this.onBack, required this.onLogin,
     required this.onSettings, required this.onAssistance, required this.onFavorites,
     required this.onConnect, required this.onWatch, required this.onFiles, required this.onTerminal,
@@ -33,11 +38,13 @@ class _DesktopDevicePageState extends State<DesktopDevicePage> {
     super.initState();
     // Nobody else asks the server about this device: the batch query lives in
     // the legacy peers view, which this page does not mount.
-    _poller = OnlinePoller(
-        name: 'DesktopDevicePage',
-        onChanged: () {
-          if (mounted) setState(() {});
-        })
+    _poller = widget.poller ??
+        OnlinePoller(
+            name: 'DesktopDevicePage',
+            onChanged: () {
+              if (mounted) setState(() {});
+            });
+    _poller
       ..start()
       ..watch([widget.id]);
   }

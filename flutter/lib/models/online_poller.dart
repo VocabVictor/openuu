@@ -12,7 +12,14 @@ import 'platform_model.dart';
 /// unknown". This issues the query the page needs and keeps the third
 /// answer, "not asked yet", apart from the other two.
 class OnlinePoller {
-  OnlinePoller({required this.name, this.onChanged});
+  OnlinePoller({
+    required this.name,
+    this.onChanged,
+    Future<void> Function(List<String> ids)? query,
+    Future<bool> Function()? usingPublicServer,
+  })  : _query = query ?? ((ids) => bind.queryOnlines(ids: ids)),
+        _usingPublicServer =
+            usingPublicServer ?? (() => bind.mainIsUsingPublicServer());
 
   /// Distinguishes this listener from the other handlers of the same event.
   final String name;
@@ -25,6 +32,8 @@ class OnlinePoller {
   static const Duration publicInterval = Duration(seconds: 20);
   static const Duration ownInterval = Duration(seconds: 6);
 
+  final Future<void> Function(List<String> ids) _query;
+  final Future<bool> Function() _usingPublicServer;
   final PresenceBook _book = PresenceBook();
   OnlinePollSchedule _schedule = OnlinePollSchedule(interval: publicInterval);
   Timer? _timer;
@@ -58,7 +67,7 @@ class OnlinePoller {
       onChanged?.call();
     });
     () async {
-      final public = await bind.mainIsUsingPublicServer();
+      final public = await _usingPublicServer();
       _schedule = OnlinePollSchedule(
           interval: public ? publicInterval : ownInterval);
     }();
@@ -80,6 +89,6 @@ class OnlinePoller {
     final now = DateTime.now();
     if (!_schedule.due(ids: _ids, visible: _visible, now: now)) return;
     _schedule.sent(_ids, now);
-    bind.queryOnlines(ids: _ids.toList(growable: false));
+    _query(_ids.toList(growable: false));
   }
 }

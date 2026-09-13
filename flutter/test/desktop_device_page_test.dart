@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_device_page.dart';
+import 'package:flutter_hbb/models/online_poller.dart';
 
 void main() {
   for (final size in [const Size(800, 500), const Size(1280, 720), const Size(1920, 1080), const Size(1600, 600)]) {
@@ -10,7 +11,14 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       var connections = 0;
+      // No bridge to the Rust side in a widget test: the poller asks
+      // these instead of the server.
+      final poller = OnlinePoller(
+          name: 'test',
+          query: (_) async {},
+          usingPublicServer: () async => true);
       await tester.pumpWidget(MaterialApp(home: DesktopDevicePage(
+        poller: poller,
         name: 'DESKTOP-A-VERY-LONG-DEVICE-NAME-123456789', id: '123456789',
         onBack: () {}, onLogin: () {}, onSettings: () {}, onAssistance: () {}, onFavorites: () {},
         onWatch: () => connections++, onConnect: () => connections++, onFiles: () {}, onTerminal: () {}, onTunnel: () {})));
