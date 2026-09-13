@@ -246,6 +246,27 @@ split them before a check exists:
 `libs/scrap/examples/benchmark.rs` is a sample, not product source, and is
 left as it is.
 
+### Test a constant by what decides it, not by what it is
+
+`assert_eq!(TIMEOUT, 5_000)` restates the line it is testing: it fails
+whenever the number is changed, including when it is changed correctly, and
+passes whenever it is wrong in a way the author intended. A number that was
+chosen has reasons on both sides of it, and those are what a test can hold:
+
+```rust
+// Longer than the controller needs to measure a collapsed link and cut the
+// bitrate to fit it, or a session that would have recovered is killed.
+assert!(SEND_TIMEOUT_VIDEO > BLOCKED_MS_FOR_CAPACITY as u64 + 3_000);
+// Shorter than anyone waits before reconnecting.
+assert!(SEND_TIMEOUT_VIDEO <= 6_000);
+```
+
+Both bounds come from somewhere real, so the test explains the value, allows
+any value that is still right, and fails when a change to either side
+invalidates it -- including a change made in the other file, which is the
+failure nobody would otherwise notice. Where a bound refers to another
+constant, name that constant rather than its current number.
+
 ### Test fixtures must identify themselves
 
 A fixture that paints the screen (a synthetic capture pattern, a load

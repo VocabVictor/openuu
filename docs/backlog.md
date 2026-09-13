@@ -76,12 +76,34 @@ with its own tests.
   an independent product and is now public, so anything that has to change
   the protocol floor -- the WebSocket transport, KCP, `FramedStream`
   behaviour, the rendezvous messages -- is currently out of reach. The
-  trigger for deciding is the first change we genuinely cannot route around;
-  the ws item above is not it, because waiting costs nothing. The two paths:
-  fork it and carry the cost of tracking upstream ourselves, or send changes
-  upstream and live with their schedule and their view of what belongs in a
-  shared library. Nothing to do now: the cost of forking is continuous and
-  the cost of waiting is, so far, zero.
+  trigger for deciding is the first change we genuinely cannot route around.
+  On 2026-09-13 two came up in one afternoon, which is why this is now a
+  decision rather than a note:
+
+  * the WebSocket Nagle line above, which costs nothing today because nothing
+    uses ws, and
+  * taking the video write out of the connection loop (the item above it),
+    which is the fix for input freezing behind a stalled picture and needs
+    `Stream` split into a reading and a writing half. That one has no
+    workaround at all: the send path carries the encryption sequence, so only
+    one writer may own it.
+
+  What forking would cost, as far as it can be estimated from this side: the
+  pointer has moved 19 times in the last 90 days, about twice a week, and the
+  moves are whole upstream merges (WebRTC, the base crate split, port forward
+  changes), not small patches. Every one of those would become a merge we
+  perform instead of a pointer we move, against a library whose internals we
+  do not follow day to day. Against that, our divergence today is zero: we
+  have changed nothing in it, so a fork starts cheap and gets more expensive
+  the longer we hold changes that upstream does not want. The other path,
+  sending changes upstream, costs us their schedule and their view of what
+  belongs in a shared library; the ws line would plausibly be accepted, the
+  socket split much less so, since it changes a type every one of their
+  transports goes through.
+
+  The decision is not "fork or not" in the abstract: it is whether the video
+  write coupling is worth carrying a fork for, since that is the first change
+  we cannot route around. Nothing to do until that is answered.
 
 ## Session-window restyle follow-ups
 
