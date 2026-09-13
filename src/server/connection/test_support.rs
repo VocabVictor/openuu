@@ -13,6 +13,8 @@ pub(super) struct TestParts {
     pub(super) rx: mpsc::UnboundedReceiver<(Instant, Arc<Message>)>,
     /// Behind `tx_input`, what the input thread would replay.
     pub(super) rx_input: std_mpsc::Receiver<MessageInput>,
+    /// Behind `tx_to_cm`, what the connection manager would receive.
+    pub(super) rx_to_cm: mpsc::UnboundedReceiver<ipc::Data>,
 }
 
 impl Connection {
@@ -67,7 +69,7 @@ impl Connection {
             challenge: "test-challenge".to_owned(),
             ..Default::default()
         };
-        let (tx_to_cm, _rx_to_cm) = mpsc::unbounded_channel::<ipc::Data>();
+        let (tx_to_cm, rx_to_cm) = mpsc::unbounded_channel::<ipc::Data>();
         let (tx, rx) = mpsc::unbounded_channel::<(Instant, Arc<Message>)>();
         let (tx_video, _rx_video) = mpsc::unbounded_channel::<(Instant, Arc<Message>)>();
         let (tx_input, rx_input) = std_mpsc::channel();
@@ -172,6 +174,7 @@ impl Connection {
             controller,
             rx,
             rx_input,
+            rx_to_cm,
         }
     }
 

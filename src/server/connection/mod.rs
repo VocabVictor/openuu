@@ -196,5 +196,8 @@ mod test {
     mod pre_auth_tests;
     mod input_tests;
     mod misc_tests;
+    mod media_tests;
+    mod clipboard_tests;
+    mod file_tests;
 
 }
