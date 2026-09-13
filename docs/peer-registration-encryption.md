@@ -40,3 +40,15 @@ b) 的收益（无连接状态）对我们规模不重要且实现最重；c) �
 分三步：1) OpenUU 构建默认 `disable-udp=Y`（可在网络设置关掉），hbbs 日志加 `event=peer_register transport=tcp|udp`
 统计占比，客户端 `start_tcp` 循环加 `REG_INTERVAL` 周期的 `RegisterPeer`（在 hbbs 部署上线后再落）；2) 打洞回归清单只用日志断言：tcp_punch、对称 NAT 回退到 relay、`RequestRelay` 经 TCP 下发，用两台被控端复测；
 3) UDP 注册占比归零后再评估 c)。
+
+## 回归清单（只用日志断言，hbbs 部署 + 客户端默认切换后，用两台被控端复测）
+
+| 场景 | 被控端日志（server） | hbbs 日志 |
+| --- | --- | --- |
+| 注册走 TCP | `start tcp: <id server>` + `Connection secured`，之后每 15 s 无 `register_pk` 循环 | `event=secure_tcp from=<peer> secured=true`，`event=peer_register transport=tcp id=<id>`，60 s 后 `event=peer_transport online=N tcp=M` 中 M 计入该 peer |
+| 心跳超时 | 拔网线 45 s 内被控端 `Rendezvous connection is timeout` 后重连 | `event=punch_hole … decision=offline` 在 REG_TIMEOUT 后出现，恢复后再次 `transport=tcp` |
+| 直连打洞（非对称 NAT） | `PunchHole` 到达后 `punch hole sent`/直连日志 | `event=punch_hole … decision=punch nat_type=…`，投递经 sink 不经 UDP（无 `udp failure`） |
+| 对称 NAT 回退 relay | `request relay` / 走 relay 的连接日志 | `event=punch_hole … decision=punch nat_type=SYMMETRIC` 后 `event=relay_request … peer=<peer addr>`，`event=relay_peer_ticket` |
+| 同一内网 | `FetchLocalAddr` 处理后 `local addr` 上报 | `decision=local_addr` |
+| 旧客户端（UDP） | 不变 | `transport=udp` 计数不为零，`RegisterPeerResponse` 仍经 UDP |
+| 用户关闭 disable-udp | 被控端回到 `start udp:` | 该 peer 从 tcp 计数消失 |
