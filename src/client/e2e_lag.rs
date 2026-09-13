@@ -1,9 +1,11 @@
 //! Relative end-to-end video latency from the sender's frame `pts`
 //! (docs/perf: P0-7). The first decoded frame calibrates `(local, pts)`;
-//! every later frame's lag is `(local - local0) - (pts - pts0)`, so the value
-//! includes capture, encode, queueing, network and decode, but not the
-//! clock offset between the two machines. Only the distribution matters.
-//! Logged once a second as `qos_e2e`, gated like the server's `qos_*` lines.
+//! every later frame's lag is `(local - local0) - (pts - pts0)`, which
+//! includes capture, encode, queueing, network and decode but not the clock
+//! offset between the two machines. What is reported is the excess over the
+//! smallest lag seen so far, so 0 is the best the path has done and the
+//! first frame (decoder start-up) does not skew the numbers. Logged once a
+//! second as `qos_e2e`, gated like the server's `qos_*` lines.
 
 use base::message_proto::{video_frame, VideoFrame};
 use hbb_common::log;
@@ -28,6 +30,7 @@ pub(super) fn frame_pts(vf: &VideoFrame) -> Option<i64> {
 pub(super) struct E2eLag {
     origin: Option<(Instant, i64)>,
     last_pts: i64,
+    best: i64,
     samples: Vec<i64>,
     window_start: Option<Instant>,
 }
@@ -52,12 +55,14 @@ impl E2eLag {
             Some((t0, p0)) if !restarted => (now - t0).as_millis() as i64 - (pts - p0),
             _ => {
                 self.origin = Some((now, pts));
+                self.best = i64::MAX;
                 self.samples.clear();
                 self.window_start = Some(now);
                 0
             }
         };
-        self.samples.push(lag);
+        self.best = self.best.min(lag);
+        self.samples.push(lag - self.best);
         let start = *self.window_start.get_or_insert(now);
         if now - start >= WINDOW {
             if let Some(line) = summary(display, &mut self.samples) {
@@ -98,6 +103,18 @@ mod tests {
         lag.observe_at(0, 1033, t0 + Duration::from_millis(40));
         lag.observe_at(0, 1066, t0 + Duration::from_millis(96));
         assert_eq!(lag.samples, vec![0, 7, 30]);
+    }
+
+    #[test]
+    fn excess_is_over_the_best_lag_so_far() {
+        let mut lag = E2eLag::default();
+        let t0 = Instant::now();
+        // decoder start-up held the first frame back ~400 ms: the sender's
+        // clock is far ahead of the local one by the time the next frames land
+        lag.observe_at(0, 1000, t0);
+        lag.observe_at(0, 1433, t0 + Duration::from_millis(38));
+        lag.observe_at(0, 1466, t0 + Duration::from_millis(91));
+        assert_eq!(lag.samples, vec![0, 0, 20]);
     }
 
     #[test]
