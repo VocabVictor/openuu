@@ -1,19 +1,44 @@
 use super::*;
 
+/// How often the children that are still running are looked at. There is no portable way
+/// to be woken when one exits, so while any exist they are polled.
+const REAP_INTERVAL: Duration = Duration::from_millis(100);
+/// A backstop for the reaper's sleep, in case a child was added without a notification.
+const REAP_IDLE: Duration = Duration::from_secs(60);
+
+/// A child process the reaper can ask whether it is over.
+pub(super) trait Reapable {
+    fn finished(&mut self) -> bool;
+}
+
+impl Reapable for std::process::Child {
+    fn finished(&mut self) -> bool {
+        matches!(self.try_wait(), Ok(Some(_)))
+    }
+}
+
+/// Drop the children that have exited, and say how long to wait before looking again.
+/// `None` means there is nothing left to reap: the next child has to be spawned before
+/// there is anything to do, and a machine with nobody connected to it never spawns one.
+pub(super) fn reap<T: Reapable>(children: &mut Vec<T>) -> Option<Duration> {
+    children.retain_mut(|child| !child.finished());
+    (!children.is_empty()).then_some(REAP_INTERVAL)
+}
+
+/// Add a child for the reaper to look after. Spawning is what wakes it, so this is the
+/// only way to add one.
+pub fn add_child(child: std::process::Child) {
+    CHILD_PROCESS.lock().unwrap().push(child);
+    CHILD_SPAWNED.notify();
+}
+
 pub fn check_zombie() {
     std::thread::spawn(|| loop {
-        let mut lock = CHILD_PROCESS.lock().unwrap();
-        let mut i = 0;
-        while i != lock.len() {
-            let c = &mut (*lock)[i];
-            if let Ok(Some(_)) = c.try_wait() {
-                lock.remove(i);
-            } else {
-                i += 1;
-            }
+        let next = reap(&mut CHILD_PROCESS.lock().unwrap());
+        match next {
+            Some(interval) => std::thread::sleep(interval),
+            None => CHILD_SPAWNED.wait_for_change(REAP_IDLE),
         }
-        drop(lock);
-        std::thread::sleep(Duration::from_millis(100));
     });
 }
 

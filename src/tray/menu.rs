@@ -97,7 +97,7 @@ pub(super) fn make_tray() -> hbb_common::ResultType<()> {
             // Do not use "xdg-open", it won't read the config.
             if crate::dbus::invoke_new_connection(crate::get_uri_prefix()).is_err() {
                 if let Ok(task) = crate::run_me::<&str>(vec![]) {
-                    crate::server::CHILD_PROCESS.lock().unwrap().push(task);
+                    crate::server::add_child(task);
                 }
             }
         }

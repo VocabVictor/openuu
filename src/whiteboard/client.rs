@@ -1,7 +1,7 @@
 use super::{Cursor, CustomEvent};
 use crate::{
     ipc::{self, Data},
-    CHILD_PROCESS,
+    server::add_child,
 };
 use hbb_common::{
     allow_err,
@@ -183,7 +183,7 @@ async fn start_whiteboard_() -> ResultType<()> {
                 sleep(1.).await;
             }
             if let Some(task) = res? {
-                CHILD_PROCESS.lock().unwrap().push(task);
+                add_child(task);
             }
             run_done = true;
         } else {
@@ -191,7 +191,7 @@ async fn start_whiteboard_() -> ResultType<()> {
         }
         if !run_done {
             log::debug!("Start whiteboard");
-            CHILD_PROCESS.lock().unwrap().push(crate::run_me(args)?);
+            add_child(crate::run_me(args)?);
         }
         for _ in 0..20 {
             sleep(0.3).await;

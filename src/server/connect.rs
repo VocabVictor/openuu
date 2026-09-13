@@ -107,7 +107,7 @@ pub async fn create_tcp_connection(
             .arg("-t 5")
             .spawn()
         {
-            super::CHILD_PROCESS.lock().unwrap().push(task);
+            super::add_child(task);
         }
         log::info!("wake up macos");
     }

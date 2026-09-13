@@ -42,7 +42,7 @@ pub(super) async fn start_ipc(
                 sleep(1.).await;
             }
             if let Some(task) = res? {
-                super::super::CHILD_PROCESS.lock().unwrap().push(task);
+                super::super::add_child(task);
             }
             run_done = true;
         } else {
@@ -50,10 +50,7 @@ pub(super) async fn start_ipc(
         }
         if !run_done {
             log::debug!("Start cm");
-            super::super::CHILD_PROCESS
-                .lock()
-                .unwrap()
-                .push(crate::run_me(args)?);
+            super::super::add_child(crate::run_me(args)?);
         }
         for _ in 0..20 {
             sleep(0.3).await;

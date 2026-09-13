@@ -36,6 +36,8 @@ mod connect;
 pub use connect::*;
 mod server_impl;
 mod start;
+#[cfg(test)]
+mod start_tests;
 pub use start::*;
 mod config_sync;
 #[cfg(any(target_os = "macos", target_os = "linux"))]
@@ -105,6 +107,8 @@ const CONFIG_SYNC_INITIAL_WAIT_SECS: u64 = 3;
 
 lazy_static::lazy_static! {
     pub static ref CHILD_PROCESS: Childs = Default::default();
+    // Woken when a child is added, so the reaper sleeps rather than polling for one.
+    static ref CHILD_SPAWNED: Arc<service::Wakeup> = Default::default();
     // A client server used to provide local services(audio, video, clipboard, etc.)
     // for all initiative connections.
     //

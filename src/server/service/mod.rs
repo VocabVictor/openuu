@@ -54,10 +54,18 @@ impl Wakeup {
     }
 
     /// Something a sleeping loop cares about has happened: a subscriber arrived or left,
-    /// or the service was stopped.
+    /// the service was stopped, a child process was spawned.
     pub(super) fn notify(&self) {
         *self.generation.lock().unwrap() += 1;
         self.changed.notify_all();
+    }
+
+    /// Sleep until the next [`Self::notify`], or for `timeout`. A notification that
+    /// arrived before the call is not remembered, so this is for loops that check their
+    /// own state first and sleep only when they found nothing to do.
+    pub(super) fn wait_for_change(&self, timeout: time::Duration) {
+        let since = self.generation();
+        self.wait(since, timeout);
     }
 
     fn wait(&self, since: u64, timeout: time::Duration) {
