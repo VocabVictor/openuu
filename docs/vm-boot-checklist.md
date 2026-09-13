@@ -4,9 +4,16 @@ Six verifications were blocked on 2026-09-13 when the virtual machine was powere
 give its 8 GB back. They are written here in the order to run them, so that whoever has
 the machine next runs them without arranging anything first.
 
-One machine, one session at a time: the order below is what keeps that from becoming a
-queue. The expensive step is swapping the peer's bundle, so everything that needs the old
-one comes first and everything that needs the new one follows in one group.
+## The two constraints the order comes from
+
+**One bundle swap.** Swapping the peer's build is the expensive step, so everything that
+wants the old one runs first, then one swap, then everything else. Two swaps means half an
+hour of nothing but installing.
+
+**Nothing runs beside anything else.** This peer has two virtual processors. A second
+workload -- another session, a build, an ssh that compiles something -- changes every
+number on this page, including the ones that look robust. That includes running two items
+of this list at once.
 
 **If the machine goes away again before the list is done**, the three that are otherwise
 permanently blocked are 3, 5 and 6: the DXGI verification (no other machine reproduces the
@@ -123,5 +130,4 @@ session (4) come before the ones that need one (5, 6, 7, 9), so that a session l
 by mistake cannot contaminate a standby number. Item 8 sits where its build lands.
 
 About 1 hour 40 minutes of machine time in total, including the swap and the settling
-between runs. None of the items may run at the same time as another: this peer has two
-virtual processors, and a second workload changes every number on this page.
+between runs, with nothing else on the machine while any of it runs.

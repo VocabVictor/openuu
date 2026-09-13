@@ -274,6 +274,26 @@ invalidates it -- including a change made in the other file, which is the
 failure nobody would otherwise notice. Where a bound refers to another
 constant, name that constant rather than its current number.
 
+### Confirm the artefact carries the change
+
+Before measuring a build, prove the build is the one you mean. A timestamp says
+when a file was written, not what went into it: a stale tree, a failed step or
+a swap that silently restored a backup all produce a fresh timestamp on the
+wrong bytes.
+
+Where the change introduces a string of its own -- a log line, an error message,
+a new option name -- grep the built artefact for it:
+
+```
+Select-String -Path libopenuu.dll -Pattern 'cannot be mapped' -Quiet
+```
+
+Where it does not, name the commit the build tree was at and record it beside
+the numbers. Either way the claim "this bundle contains X" is then something a
+reader can check rather than something they take on trust, and a measurement
+of the wrong build is caught before it is published rather than after it has
+been argued from.
+
 ### Test fixtures must identify themselves
 
 A fixture that paints the screen (a synthetic capture pattern, a load
