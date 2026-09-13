@@ -12,12 +12,16 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../common.dart';
+import '../../../desktop/widgets/settings_row.dart';
+import '../../../desktop/widgets/ui_tokens.dart';
+import '../ui_dialog.dart';
 import '.././dialog.dart';
 import '.././oidc_auth_status.dart';
 part 'widget_op_auth.dart';
 part 'widget_op.dart';
 part 'oidc.dart';
 part 'login_dialog.dart';
+part 'login_dialog_desktop.dart';
 part 'login_widgets.dart';
 part 'dialogs.dart';
 

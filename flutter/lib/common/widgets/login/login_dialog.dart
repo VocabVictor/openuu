@@ -24,9 +24,10 @@ Future<bool?> _openLoginDialogOnce() async {
 }
 
 Future<bool?> _openLoginDialog() async {
+  final prefs = _LoginPrefs();
   var username =
       TextEditingController(text: UserModel.getLocalUserInfo()?['name'] ?? '');
-  var password = TextEditingController();
+  var password = TextEditingController(text: prefs.savedPassword);
   final userFocusNode = FocusNode()..requestFocus();
   Timer(Duration(milliseconds: 100), () => userFocusNode..requestFocus());
 
@@ -80,6 +81,7 @@ Future<bool?> _openLoginDialog() async {
         case HttpType.kAuthResTypeToken:
           if (resp.access_token != null) {
             if (storeIfAccessToken) {
+              if (isWindows) await prefs.store(username.text, password.text);
               await bind.mainSetLocalOption(
                   key: 'access_token', value: resp.access_token!);
               await bind.mainSetOption(key: 'openuu-account-token', value: resp.access_token!);
@@ -236,6 +238,22 @@ Future<bool?> _openLoginDialog() async {
           );
         });
 
+    if (isWindows) {
+      return _desktopLoginDialog(
+          context: context,
+          setState: setState,
+          close: onDialogCancel,
+          username: username,
+          password: password,
+          userFocusNode: userFocusNode,
+          usernameMsg: usernameMsg,
+          passwordMsg: passwordMsg,
+          isInProgress: isInProgress,
+          curOP: curOP,
+          onLogin: onLogin,
+          prefs: prefs,
+          thirdAuth: thirdAuthWidget());
+    }
     final title = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
