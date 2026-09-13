@@ -107,3 +107,7 @@ jobs:
       - name: cargo check (lib + tests, flutter feature)
         shell: bash
         run: cargo check --locked --lib --tests --features flutter --target ${{ env.TARGET }}
+
+      - name: cargo check (lib, flutter + drm features)
+        shell: bash
+        run: cargo check --locked --lib --features flutter,drm --target ${{ env.TARGET }}
