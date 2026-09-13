@@ -26,13 +26,20 @@ pub fn start_tray() {
     allow_err!(make_tray());
 }
 
+/// How often the tray asks the service how many sessions are being controlled. The
+/// answer becomes the icon's tooltip, which nobody reads without hovering over it first,
+/// so asking three times as rarely costs nothing anyone can see and saves two thirds of
+/// the round trips a machine with nobody connected to it makes all day.
+#[cfg(windows)]
+const SESSION_COUNT_INTERVAL: Duration = Duration::from_secs(3);
+
 #[cfg(windows)]
 #[tokio::main(flavor = "current_thread")]
 async fn start_query_session_count(sender: std::sync::mpsc::Sender<Data>) {
     let mut last_count = 0;
     loop {
         if let Ok(mut c) = crate::ipc::connect(1000, "").await {
-            let mut timer = crate::rustdesk_interval(tokio::time::interval(Duration::from_secs(1)));
+            let mut timer = crate::rustdesk_interval(tokio::time::interval(SESSION_COUNT_INTERVAL));
             loop {
                 tokio::select! {
                     res = c.next() => {
