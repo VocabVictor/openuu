@@ -493,6 +493,52 @@ decoration; these are phrased as **what to go and get**.
   **Clears when:** somebody starts them; they are ordinary queued work with
   no external dependency. Tracked in `docs/backlog-order-2026-09-14.md`.
 
+## Verifications that did not run, in three shapes
+
+Six of this round's findings are the same family, and they are collected here
+because the family is the point: each one on its own reads as a defect, and
+together they read as a habit. They are not, however, the same failure. Three
+shapes turned up, and they need different answers.
+
+**Shape one: the entry point did not exist.** Nothing could have caught these.
+
+* The Android arms of the Rust core had never been compiled since they were
+  written. The first run of the revived workflow found two errors in code no
+  compiler had ever seen.
+* Nothing ran the Dart widget tests -- no workflow, and no habit on the build
+  machine. A button renamed in `0ec0a3088` had left nine cases red.
+* Linux items were invisible to the Windows build machines; the first run of
+  the Linux workflow found seven errors that had already landed on master.
+* A green artifact upload proved only that a job finished:
+  `if-no-files-found` fires only when *every* glob misses, so a missing MSI
+  would have shipped as a success.
+
+**Shape two: the entry point existed, but every run used part of it.**
+`ftest.ps1 <branch>` runs the whole suite; naming test paths runs a subset.
+Five runs on 2026-09-13 were green, each naming the files it was interested
+in, while `desktop_preview_test.dart` was red the whole time and was in none
+of them. No tool was missing that day. The habit of running "the tests I am
+working on" is what a full-suite command exists to defeat, and it defeated the
+command instead.
+
+**Shape three: the entry point existed, ran every time, and nobody read it.**
+This is the one no further tooling fixes. `linux-check.yml` runs the full
+widget suite on every push to master, and on 2026-09-13 master was red for
+hours with two unrelated failures sitting side by side: the preview test
+above, and `cargo check` dying before it compiled anything because
+`3664a0f9f` added `async-trait` to `libs/base/Cargo.toml` without the lock
+file (`the lock file ... needs to be updated but --locked was passed`).
+Both were found by a session that went looking for something else. Every
+mechanism worked; the results went unread, because seeing them takes a
+deliberate `gh run list` and only one session pushes master.
+
+**How the preview test was found is itself the record.** It was not found by
+this list, or by CI being read, or by a rule. A session ran the suite to check
+that its own change had broken nothing, and the failure was already there.
+That is luck, and luck is why the three shapes are written down separately:
+the first two were answered by building something, and answering the third by
+building something else would be the wrong lesson.
+
 ## Appendix: what went wrong in this session, and what it became
 
 Seven mistakes of my own, each with what it cost and what now prevents it.
