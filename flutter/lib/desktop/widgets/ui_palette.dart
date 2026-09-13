@@ -44,6 +44,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
     required this.statusRunningBg,
     required this.statusStoppedBg,
     required this.danger,
+    required this.dangerFill,
+    required this.onWarning,
     required this.dangerBorder,
     required this.primaryDisabled,
     required this.warning,
@@ -85,6 +87,15 @@ class UiPalette extends ThemeExtension<UiPalette> {
   final Color statusRunningBg;
   final Color statusStoppedBg;
   final Color danger;
+
+  /// The fill under [onPrimary] content for a destructive action. Darker than
+  /// [danger], which is a text colour: white on the bright red measures
+  /// 2.93:1 in dark and 3.71:1 in light, under what a label needs.
+  final Color dangerFill;
+
+  /// Content on the [warning] fill. Warning stays a bright amber in both
+  /// appearances, so what sits on it is dark in both: white on it is 2.12:1.
+  final Color onWarning;
   final Color dangerBorder;
   final Color primaryDisabled;
   final Color warning;
@@ -118,6 +129,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
     statusRunningBg: Color(0xfff2f8f2),
     statusStoppedBg: Color(0xfffff7e8),
     danger: Color(0xfff53f3f),
+    dangerFill: Color(0xffd32f2f),
+    onWarning: Color(0xff1f2329),
     dangerBorder: Color(0xfffbaca3),
     primaryDisabled: Color(0xffb8d0ff),
     warning: Color(0xffff7d00),
@@ -152,6 +165,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
     statusRunningBg: Color(0xff14301f),
     statusStoppedBg: Color(0xff33280f),
     danger: Color(0xfff76965),
+    dangerFill: Color(0xffd32f2f),
+    onWarning: Color(0xff1f2329),
     dangerBorder: Color(0xff6b3a36),
     primaryDisabled: Color(0xff2d3d5c),
     warning: Color(0xffff9a2e),
@@ -187,6 +202,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
     Color? statusRunningBg,
     Color? statusStoppedBg,
     Color? danger,
+    Color? dangerFill,
+    Color? onWarning,
     Color? dangerBorder,
     Color? primaryDisabled,
     Color? warning,
@@ -220,6 +237,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
         statusRunningBg: statusRunningBg ?? this.statusRunningBg,
         statusStoppedBg: statusStoppedBg ?? this.statusStoppedBg,
         danger: danger ?? this.danger,
+        dangerFill: dangerFill ?? this.dangerFill,
+        onWarning: onWarning ?? this.onWarning,
         dangerBorder: dangerBorder ?? this.dangerBorder,
         primaryDisabled: primaryDisabled ?? this.primaryDisabled,
         warning: warning ?? this.warning,
@@ -257,6 +276,8 @@ class UiPalette extends ThemeExtension<UiPalette> {
       statusRunningBg: Color.lerp(statusRunningBg, other.statusRunningBg, t) ?? statusRunningBg,
       statusStoppedBg: Color.lerp(statusStoppedBg, other.statusStoppedBg, t) ?? statusStoppedBg,
       danger: Color.lerp(danger, other.danger, t) ?? danger,
+      dangerFill: Color.lerp(dangerFill, other.dangerFill, t) ?? dangerFill,
+      onWarning: Color.lerp(onWarning, other.onWarning, t) ?? onWarning,
       dangerBorder: Color.lerp(dangerBorder, other.dangerBorder, t) ?? dangerBorder,
       primaryDisabled: Color.lerp(primaryDisabled, other.primaryDisabled, t) ?? primaryDisabled,
       warning: Color.lerp(warning, other.warning, t) ?? warning,
