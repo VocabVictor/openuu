@@ -110,6 +110,35 @@ extension _SafetyPermissions on _SafetyState {
 extension _SafetyMore on _SafetyState {
   Widget more(BuildContext context) {
     bool enabled = !locked;
+    if (isWindows && !bind.isIncomingOnly()) {
+      final zh = Localizations.localeOf(context).languageCode == 'zh';
+      return Column(children: [
+        _Card(title: 'Security', children: [
+          _OptionCheckBox(context, 'Deny LAN discovery', 'enable-lan-discovery',
+              reverse: true, enabled: enabled),
+          ...directIp(context),
+          whitelist(),
+          idWhitelist(),
+          ...autoDisconnect(context),
+          _OptionCheckBox(context, 'keep-awake-during-incoming-sessions-label',
+              kOptionKeepAwakeDuringIncomingSessions,
+              reverse: false, enabled: enabled),
+          if (bind.mainIsInstalled())
+            _OptionCheckBox(context, 'allow-only-conn-window-open-tip',
+                'allow-only-conn-window-open',
+                reverse: false, enabled: enabled),
+          if (bind.mainIsInstalled() && !isUnlockPinDisabled()) unlockPin()
+        ]),
+        _group(
+            zh ? '高级' : 'Advanced',
+            [
+              shareRdp(context, enabled),
+              PinnedSessionSetting(
+                  enabled: enabled, leftMargin: _kContentHMargin),
+            ],
+            collapsible: true),
+      ]);
+    }
     return _Card(title: 'Security', children: [
       shareRdp(context, enabled),
       PinnedSessionSetting(enabled: enabled, leftMargin: _kContentHMargin),

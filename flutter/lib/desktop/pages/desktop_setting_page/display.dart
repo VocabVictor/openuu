@@ -104,6 +104,10 @@ extension _DisplayOther on _DisplayState {
   Widget other(BuildContext context) {
     final children =
         otherDefaultSettings().map((e) => otherRow(e.$1, e.$2)).toList();
+    if (isWindows && !bind.isIncomingOnly()) {
+      final zh = Localizations.localeOf(context).languageCode == 'zh';
+      return _group(zh ? '高级' : 'Advanced', children, collapsible: true);
+    }
     return _Card(title: 'Other Default Options', children: children);
   }
 }
