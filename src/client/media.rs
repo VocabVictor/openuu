@@ -21,7 +21,7 @@ pub fn start_video_thread<F, T>(
     session: Session<T>,
     display: usize,
     video_receiver: mpsc::Receiver<MediaData>,
-    video_queue: Arc<RwLock<ArrayQueue<VideoFrame>>>,
+    video_queue: Arc<VideoFrameQueue>,
     fps: Arc<RwLock<Option<usize>>>,
     chroma: Arc<RwLock<Option<Chroma>>>,
     discard_queue: Arc<RwLock<bool>>,
@@ -53,7 +53,7 @@ pub fn start_video_thread<F, T>(
                                 *vf
                             }
                             MediaData::VideoQueue => {
-                                if let Some(vf) = video_queue.read().unwrap().pop() {
+                                if let Some(vf) = video_queue.pop() {
                                     if discard_queue.read().unwrap().clone() {
                                         continue;
                                     }

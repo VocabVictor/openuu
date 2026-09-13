@@ -9,7 +9,6 @@ use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
     Device, Host, StreamConfig,
 };
-use crossbeam_queue::ArrayQueue;
 use magnum_opus::{Channels::*, Decoder as AudioDecoder};
 #[cfg(not(target_os = "linux"))]
 use ringbuf::{ring_buffer::RbBase, Rb};
@@ -86,6 +85,7 @@ use crate::clipboard::CLIPBOARD_INTERVAL;
 use crate::clipboard::{check_clipboard, ClipboardSide};
 
 pub use super::lang::*;
+pub use video_queue::{VideoFrameQueue, VIDEO_QUEUE_SIZE};
 
 #[cfg(not(target_os = "linux"))]
 mod audio_playback;
@@ -94,13 +94,13 @@ mod audio_state_tests;
 pub mod file_trait;
 pub mod helper;
 pub mod io_loop;
+pub mod video_queue;
 pub mod screenshot;
 
 pub const MILLI1: Duration = Duration::from_millis(1);
 pub const SEC30: Duration = Duration::from_secs(30);
 // Empirical restart reconnect grace window.
 const RESTART_REMOTE_DEVICE_GRACE: Duration = Duration::from_secs(5 * 60);
-pub const VIDEO_QUEUE_SIZE: usize = 120;
 const MAX_DECODE_FAIL_COUNTER: usize = 3;
 
 pub const LOGIN_MSG_PASSWORD_EMPTY: &str = "Empty Password";

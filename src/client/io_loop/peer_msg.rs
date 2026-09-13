@@ -22,18 +22,23 @@ impl<T: InvokeUiSession> Remote<T> {
                         return true;
                     };
                     if Self::contains_key_frame(&vf) {
+                        // A key frame starts a new reference chain: what is
+                        // queued is older than it and no longer decodable.
+                        thread.video_queue.clear();
                         thread
                             .video_sender
                             .send(MediaData::VideoFrame(Box::new(vf)))
                             .ok();
                     } else {
-                        let video_queue = thread.video_queue.read().unwrap();
-                        if video_queue.force_push(vf).is_some() {
-                            drop(video_queue);
+                        // A dropped frame breaks the reference chain, so
+                        // the peer has to send a key frame before the
+                        // picture is whole again. The token goes out either
+                        // way: one token per queued frame keeps the decode
+                        // thread and the queue in step.
+                        if thread.video_queue.push(vf).needs_key_frame() {
                             self.handler.refresh_video(display as _);
-                        } else {
-                            thread.video_sender.send(MediaData::VideoQueue).ok();
                         }
+                        thread.video_sender.send(MediaData::VideoQueue).ok();
                     }
                 }
                 Some(message::Union::Hash(hash)) => {

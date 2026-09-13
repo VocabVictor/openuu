@@ -34,7 +34,7 @@ impl<T: InvokeUiSession> Remote<T> {
         let max_queue_len = self
             .video_threads
             .iter()
-            .map(|v| v.1.video_queue.read().unwrap().len())
+            .map(|v| v.1.video_queue.len())
             .max()
             .unwrap_or_default();
         let min_decode_fps = self
@@ -60,7 +60,7 @@ impl<T: InvokeUiSession> Remote<T> {
         let mut fps_trending = |display: usize| {
             let thread = self.video_threads.get_mut(&display)?;
             let ctl = &mut thread.fps_control;
-            let len = thread.video_queue.read().unwrap().len();
+            let len = thread.video_queue.len();
             let decode_fps = thread.decode_fps.read().unwrap().clone()?;
             let last_auto_fps = last_auto_fps.clone().unwrap_or(custom_fps as _);
             if ctl.inactive_counter > inactive_threshold {
@@ -104,19 +104,20 @@ impl<T: InvokeUiSession> Remote<T> {
                 self.sender.send(Data::Message(msg)).ok();
                 log::info!("Set fps to {}", auto_fps);
                 self.handler.lc.write().unwrap().last_auto_fps = Some(auto_fps);
+                for thread in self.video_threads.values() {
+                    thread.video_queue.set_target_fps(auto_fps as _);
+                }
             }
         }
         // send refresh
         for (display, thread) in self.video_threads.iter_mut() {
             let ctl = &mut thread.fps_control;
-            let video_queue = thread.video_queue.read().unwrap();
-            let tolerable = std::cmp::min(min_decode_fps, video_queue.capacity() / 2);
+            let tolerable = std::cmp::min(min_decode_fps, thread.video_queue.capacity() / 2);
             if ctl.refresh_times < 20 // enough
-                    && (video_queue.len() > tolerable
+                    && (thread.video_queue.len() > tolerable
                             && (ctl.refresh_times == 0 || ctl.last_refresh_instant.map(|t|t.elapsed().as_secs() > 10).unwrap_or(false)))
             {
                 // Refresh causes client set_display, left frames cause flickering.
-                drop(video_queue);
                 self.handler.refresh_video(*display as _);
                 log::info!("Refresh display {} to reduce delay", display);
                 ctl.refresh_times += 1;

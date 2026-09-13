@@ -5,7 +5,7 @@ use crate::{audio_service, clipboard::CLIPBOARD_INTERVAL, ConnInner, CLIENT_SERV
 use crate::{
     client::{
         self, new_voice_call_request, Client, Data, Interface, MediaData, MediaSender,
-        QualityStatus, MILLI1, SEC30,
+        QualityStatus, VideoFrameQueue, MILLI1, SEC30,
     },
     common::get_default_sound_input,
     ui_session_interface::{InvokeUiSession, Session},
@@ -40,7 +40,6 @@ use base::{
     all(target_os = "macos", feature = "unix-file-copy-paste")
 ))]
 use clipboard::ContextSend;
-use crossbeam_queue::ArrayQueue;
 #[cfg(not(target_os = "ios"))]
 use hbb_common::tokio::sync::mpsc::error::TryRecvError;
 use hbb_common::{
@@ -175,7 +174,7 @@ struct FpsControl {
 }
 
 struct VideoThread {
-    video_queue: Arc<RwLock<ArrayQueue<VideoFrame>>>,
+    video_queue: Arc<VideoFrameQueue>,
     video_sender: MediaSender,
     decode_fps: Arc<RwLock<Option<usize>>>,
     frame_count: Arc<RwLock<usize>>,

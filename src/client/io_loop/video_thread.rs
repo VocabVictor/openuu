@@ -2,7 +2,7 @@ use super::*;
 
 impl<T: InvokeUiSession> Remote<T> {
     pub(super) fn new_video_thread(&mut self, display: usize) {
-        let video_queue = Arc::new(RwLock::new(ArrayQueue::new(client::VIDEO_QUEUE_SIZE)));
+        let video_queue = Arc::new(client::VideoFrameQueue::new());
         let (video_sender, video_receiver) = std::sync::mpsc::channel::<MediaData>();
         let decode_fps = Arc::new(RwLock::new(None));
         let frame_count = Arc::new(RwLock::new(0));
