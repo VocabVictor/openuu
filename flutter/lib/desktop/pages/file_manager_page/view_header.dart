@@ -27,7 +27,7 @@ extension _FileManagerViewHeader on _FileManagerViewState {
               onPointerMove: (dx) =>
                   _onDrag(dx, _modifiedColWidth, _sizeColWidth),
               padding: padding),
-          if (!isWeb) SizedBox(width: 58, child: Text(translate('Type'), style: const TextStyle(fontSize: 13))),
+          SizedBox(width: 58, child: Text(translate('Type'), style: const TextStyle(fontSize: 13))),
           Expanded(
               child: headerItemFunc(
                   _sizeColWidth.value, SortBy.size, translate("Size")))
@@ -55,7 +55,7 @@ extension _FileManagerViewHeader on _FileManagerViewState {
                 height: kDesktopFileTransferHeaderHeight,
                 child: Row(
                   children: [
-                    if (!isWeb && sortBy == SortBy.name) SizedBox(width: 28, child: Obx(() {
+                    if (sortBy == SortBy.name) SizedBox(width: 28, child: Obx(() {
                       final entries = controller.directory.value.entries.where((entry) => !entry.isDrive).toList();
                       return Checkbox(value: entries.isNotEmpty && entries.every((entry) => selectedItems.items.contains(entry)),
                         onChanged: entries.isEmpty ? null : (value) {

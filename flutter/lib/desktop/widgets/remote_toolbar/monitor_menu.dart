@@ -46,7 +46,7 @@ class _MonitorMenu extends StatelessWidget {
       bind.mainGetUserDefaultOption(key: kKeyShowMonitorsToolbar) == 'Y';
 
   bool get supportIndividualWindows =>
-      !isWeb && ffi.ffiModel.pi.isSupportMultiDisplay;
+      ffi.ffiModel.pi.isSupportMultiDisplay;
 
   @override
   Widget build(BuildContext context) {

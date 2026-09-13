@@ -165,7 +165,7 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
                 ),
               ),
             )),
-        if (!isMacOS && !isWebDesktop)
+        if (!isMacOS)
           Obx(() => Offstage(
                 offstage: isFullscreen.isFalse,
                 child: buttonWrapper(
@@ -191,27 +191,7 @@ class _DraggableShowHideState extends State<_DraggableShowHide> {
                   size: iconSize,
                 ),
               ))),
-        ),
-        if (isWebDesktop)
-          Obx(() {
-            if (collapse.isFalse) {
-              return Offstage();
-            } else {
-              return buttonWrapper(
-                () => closeConnection(id: widget.id),
-                Tooltip(
-                  message: translate('Close'),
-                  child: Icon(
-                    Icons.close,
-                    size: iconSize,
-                    color: _ToolbarTheme.redColor,
-                  ),
-                ),
-                hoverColor: _ToolbarTheme.redColor,
-              ).paddingOnly(left: iconSize / 2);
-            }
-          })
-      ],
+        ),],
     );
     return TextButtonTheme(
       data: TextButtonThemeData(style: buttonStyle),

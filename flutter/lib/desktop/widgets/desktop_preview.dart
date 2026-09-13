@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -98,7 +97,6 @@ class _DesktopPreviewCaptureState extends State<DesktopPreviewCapture> {
   @override
   void initState() {
     super.initState();
-    if (kIsWeb) return;
     _key = DesktopPreview.cacheKey(widget.peer);
     _timer = Timer.periodic(const Duration(seconds: 2), (_) => _capture());
   }

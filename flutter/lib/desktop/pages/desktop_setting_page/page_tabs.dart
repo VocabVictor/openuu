@@ -98,25 +98,7 @@ extension _DesktopSettingPageList on _DesktopSettingPageState {
     );
     return Row(
       children: [
-        if (isWeb)
-          IconButton(
-            onPressed: () {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              }
-            },
-            icon: Icon(Icons.arrow_back),
-          ).marginOnly(left: 5),
-        if (isWeb)
-          SizedBox(
-            height: 62,
-            child: Align(
-              alignment: Alignment.center,
-              child: settingsText,
-            ),
-          ).marginOnly(left: 20),
-        if (!isWeb)
-          SizedBox(
+        SizedBox(
             height: 62,
             child: settingsText,
           ).marginOnly(left: 20, top: 10),

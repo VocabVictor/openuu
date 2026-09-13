@@ -421,7 +421,7 @@ class _RemotePageState extends State<RemotePage>
 
     // Defensive cleanup: ensure host system-key propagation is reset even if
     // MouseRegion.onExit never fired (e.g., tab closed while cursor inside).
-    if (!isWeb) bind.hostStopSystemKeyPropagate(stopped: true);
+    bind.hostStopSystemKeyPropagate(stopped: true);
 
     _pointerLockCenterDebounceTimer?.cancel();
     _pointerLockCenterDebounceTimer = null;

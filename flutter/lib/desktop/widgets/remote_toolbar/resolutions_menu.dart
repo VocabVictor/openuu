@@ -130,14 +130,6 @@ class _ResolutionsMenuState extends State<_ResolutionsMenu> {
         final display = json.decode(mainDisplay);
         if (display['w'] != null && display['h'] != null) {
           _localResolution = Resolution(display['w'], display['h']);
-          if (isWeb) {
-            if (display['scaleFactor'] != null) {
-              _localResolution = Resolution(
-                (display['w'] / display['scaleFactor']).toInt(),
-                (display['h'] / display['scaleFactor']).toInt(),
-              );
-            }
-          }
         }
       } catch (e) {
         debugPrint('Failed to decode $mainDisplay, $e');

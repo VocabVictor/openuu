@@ -118,9 +118,6 @@ class ScreenAdjustor {
   }
 
   Future<bool> isWindowCanBeAdjusted([BuildContext? context]) async {
-    if (isWeb) {
-      return false;
-    }
     // Capture the view before awaiting because the menu context may be disposed.
     final views = WidgetsBinding.instance.platformDispatcher.views;
     if (context == null && views.isEmpty) {

@@ -10,7 +10,7 @@ extension _GeneralOther on _GeneralState {
             bind.mainIsInstalledDaemon(prompt: false) &&
             !bind.isCustomClient());
     final children = <Widget>[
-      if (!isWeb && !incomingOnly)
+      if (!incomingOnly)
         _OptionCheckBox(context, 'Confirm before closing multiple tabs',
             kOptionEnableConfirmClosingTabs,
             isServer: false),
@@ -24,10 +24,10 @@ extension _GeneralOther on _GeneralState {
             reloadAllWindows();
           },
         ),
-      if (!isWeb && !outgoingOnly)
+      if (!outgoingOnly)
         _OptionCheckBox(context, 'Adaptive bitrate', kOptionEnableAbr),
-      if (!isWeb) wallpaper(),
-      if (!isWeb && !incomingOnly) ...[
+      wallpaper(),
+      if (!incomingOnly) ...[
         _OptionCheckBox(
           context,
           'Open connection in new tab',
@@ -53,8 +53,7 @@ extension _GeneralOther on _GeneralState {
               kOptionAllowAlwaysSoftwareRender,
             ),
           ),
-        if (!isWeb)
-          Tooltip(
+        Tooltip(
             message: translate('texture_render_tip'),
             child: _OptionCheckBox(
               context,
@@ -76,7 +75,7 @@ extension _GeneralOther on _GeneralState {
             ),
           ),
       ],
-      if (!isWeb && !bind.isCustomClient())
+      if (!bind.isCustomClient())
         _OptionCheckBox(
           context,
           'Check for software update on startup',
@@ -96,7 +95,7 @@ extension _GeneralOther on _GeneralState {
           'Capture screen using DirectX',
           kOptionDirectxCapture,
         ),
-      if (!isWeb && !incomingOnly) ...[
+      if (!incomingOnly) ...[
         _OptionCheckBox(
           context,
           'Enable TCP hole punching',
@@ -123,7 +122,7 @@ extension _GeneralOther on _GeneralState {
           kOptionEnableWebrtc,
           isServer: false,
         ),
-      if (!isWeb && !incomingOnly)
+      if (!incomingOnly)
         Tooltip(
           message: translate('sync-clipboard-between-sessions-tip'),
           child: _OptionCheckBox(

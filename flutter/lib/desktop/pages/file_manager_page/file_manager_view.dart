@@ -61,7 +61,7 @@ class _FileManagerViewState extends State<FileManagerView> {
   Widget build(BuildContext context) {
     _handleColumnPorportions();
     return Container(
-      margin: isWeb ? const EdgeInsets.all(16.0) : EdgeInsets.zero,
+      margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +97,7 @@ class _FileManagerViewState extends State<FileManagerView> {
       _windowWidthPrev = windowWidthNow;
       final defaultColumnWidth = windowWidthNow * 0.115;
       _fileTransferMinimumWidth = defaultColumnWidth / 3;
-      _nameColWidth.value = isWeb ? defaultColumnWidth : windowWidthNow * .15;
+      _nameColWidth.value = windowWidthNow * .15;
       _modifiedColWidth.value = defaultColumnWidth;
       _sizeColWidth.value = defaultColumnWidth;
     }

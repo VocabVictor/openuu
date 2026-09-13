@@ -31,9 +31,8 @@ class _NetworkState extends State<_Network> with AutomaticKeepAliveClientMixin {
     final hideServer =
         bind.mainGetBuildinOption(key: kOptionHideServerSetting) == 'Y';
     final hideProxy =
-        isWeb || bind.mainGetBuildinOption(key: kOptionHideProxySetting) == 'Y';
-    final hideWebSocket = isWeb ||
-        bind.mainGetBuildinOption(key: kOptionHideWebSocketSetting) == 'Y';
+        bind.mainGetBuildinOption(key: kOptionHideProxySetting) == 'Y';
+    final hideWebSocket = bind.mainGetBuildinOption(key: kOptionHideWebSocketSetting) == 'Y';
 
     if (hideServer && hideProxy && hideWebSocket) {
       return Offstage();
@@ -143,8 +142,7 @@ class _NetworkState extends State<_Network> with AutomaticKeepAliveClientMixin {
                     'Use WebSocket',
                     '${translate('websocket_tip')}\n\n${translate('server-oss-not-support-tip')}',
                     kOptionAllowWebSocket),
-              if (!isWeb)
-                futureBuilder(
+              futureBuilder(
                   future: bind.mainIsUsingPublicServer(),
                   hasData: (isUsingPublicServer) {
                     if (isUsingPublicServer) {

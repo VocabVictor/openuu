@@ -90,7 +90,7 @@ extension _DisplayStyle on _DisplayState {
           groupValue: groupValue,
           label: 'Scrollbar',
           onChanged: isOptFixed ? null : onChanged),
-      if (!isWeb) ...[
+      ...[
         _Radio(context,
             value: kRemoteScrollStyleEdge,
             groupValue: groupValue,

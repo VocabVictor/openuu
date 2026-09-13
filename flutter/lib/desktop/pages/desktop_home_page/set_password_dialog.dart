@@ -24,7 +24,7 @@ void setPasswordDialog({VoidCallback? notEmptyCallback}) async {
       ? translate('password-hidden-tip')
       : (presetPassword ? translate('preset-password-in-use-tip') : '');
   final showStatusTipOnMobile =
-      statusTip.isNotEmpty && !isDesktop && !isWebDesktop;
+      statusTip.isNotEmpty && !isDesktop;
 
   gFFI.dialogManager.show((setState, close, context) {
     updateCanSubmit() {
@@ -205,7 +205,7 @@ void setPasswordDialog({VoidCallback? notEmptyCallback}) async {
           icon: Icon(Icons.done_rounded),
           onPressed: canSubmit ? submit : null,
         );
-        if (!isDesktop && !isWebDesktop && localPasswordSet) {
+        if (!isDesktop && localPasswordSet) {
           return [
             Align(
               alignment: Alignment.centerRight,

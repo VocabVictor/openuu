@@ -60,7 +60,7 @@ extension _DisplayMenuOptions on _DisplayMenuState {
               closeOnActivate: groupValue != kRemoteScrollStyleEdge,
               ffi: widget.ffi,
             ),
-            if (!isWeb) ...[
+            ...[
               RdoMenuButton<String>(
                 child: Text(translate('ScrollEdge')),
                 value: kRemoteScrollStyleEdge,

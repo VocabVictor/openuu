@@ -116,10 +116,10 @@ extension _RemotePageView on _RemotePageState {
     var paints = <Widget>[
       MouseRegion(
         onEnter: (evt) {
-          if (!isWeb) bind.hostStopSystemKeyPropagate(stopped: false);
+          bind.hostStopSystemKeyPropagate(stopped: false);
         },
         onExit: (evt) {
-          if (!isWeb) bind.hostStopSystemKeyPropagate(stopped: true);
+          bind.hostStopSystemKeyPropagate(stopped: true);
         },
         child: _ViewStyleUpdater(
           canvasModel: _ffi.canvasModel,

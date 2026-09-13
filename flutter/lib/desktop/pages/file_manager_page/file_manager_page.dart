@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:extended_text/extended_text.dart';
-import 'package:flutter_hbb/common/widgets/dialog.dart';
 import 'package:flutter_hbb/desktop/widgets/dragable_divider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:desktop_drop/desktop_drop.dart';
@@ -17,7 +16,6 @@ import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
 import 'package:flutter_hbb/models/file_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:flutter_hbb/native/unsupported_web.dart';
 
 import '../../../consts.dart';
 import '../../../desktop/widgets/material_mod_popup_menu.dart' as mod_menu;
@@ -120,9 +118,6 @@ class _FileManagerPageState extends State<FileManagerPage>
     });
     Get.put<FFI>(_ffi, tag: 'ft_${widget.id}');
     WakelockManager.enable(_uniqueKey);
-    if (isWeb) {
-      _ffi.ffiModel.updateEventListener(_ffi.sessionId, widget.id);
-    }
     debugPrint("File manager page init success with id ${widget.id}");
     _ffi.dialogManager.setOverlayState(_overlayKeyState);
     // Call onSelected in post frame callback, since we cannot guarantee that the callback will not call setState.
@@ -156,17 +151,7 @@ class _FileManagerPageState extends State<FileManagerPage>
   }
 
   Widget willPopScope(Widget child) {
-    if (isWeb) {
-      return WillPopScope(
-        onWillPop: () async {
-          clientClose(_ffi.sessionId, _ffi);
-          return false;
-        },
-        child: child,
-      );
-    } else {
-      return child;
-    }
+    return child;
   }
 
   @override
@@ -176,7 +161,7 @@ class _FileManagerPageState extends State<FileManagerPage>
       OverlayEntry(builder: (_) {
         return willPopScope(Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          body: !isWeb ? AnimatedBuilder(animation: _ffi.ffiModel, builder: (context, _) => Obx(() => FileTransferLayout(
+          body: AnimatedBuilder(animation: _ffi.ffiModel, builder: (context, _) => Obx(() => FileTransferLayout(
             localName: Platform.localHostname,
             remoteName: _ffi.ffiModel.pi.hostname.isEmpty ? widget.id : _ffi.ffiModel.pi.hostname,
             localBrowser: dropArea(FileManagerView(model.localController, _ffi, _mouseFocusScope)),
@@ -184,20 +169,7 @@ class _FileManagerPageState extends State<FileManagerPage>
             transfers: transferTable(),
             onSend: SelectedItems.valid(model.localController.selectedItems.items) ? () => sendSelection(model.localController) : null,
             onReceive: SelectedItems.valid(model.remoteController.selectedItems.items) ? () => sendSelection(model.remoteController) : null,
-          ))) : Row(
-            children: [
-              if (!isWeb)
-                Flexible(
-                    flex: 3,
-                    child: dropArea(FileManagerView(
-                        model.localController, _ffi, _mouseFocusScope))),
-              Flexible(
-                  flex: 3,
-                  child: dropArea(FileManagerView(
-                      model.remoteController, _ffi, _mouseFocusScope))),
-              Flexible(flex: 2, child: statusList())
-            ],
-          ),
+          ))),
         ));
       })
     ]);

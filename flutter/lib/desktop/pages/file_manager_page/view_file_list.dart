@@ -147,7 +147,7 @@ extension _FileManagerViewFileList on _FileManagerViewState {
                                       waitDuration: Duration(milliseconds: 500),
                                       message: entry.name,
                                       child: Row(children: [
-                                        if (!isWeb) SizedBox(width: 28, child: Checkbox(
+                                        SizedBox(width: 28, child: Checkbox(
                                           value: selectedItems.items.contains(entry),
                                           onChanged: entry.isDrive ? null : (value) {
                                             if (value == true) { selectedItems.add(entry); } else { selectedItems.remove(entry); }
@@ -217,7 +217,7 @@ extension _FileManagerViewFileList on _FileManagerViewState {
                             SizedBox(
                               width: 2.0,
                             ),
-                            if (!isWeb) SizedBox(width: 58, child: Text(
+                            SizedBox(width: 58, child: Text(
                               entry.isDrive ? translate('Drive') : entry.isDirectory ? translate('Folder') : translate('File'),
                               maxLines: 1, overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 12))),

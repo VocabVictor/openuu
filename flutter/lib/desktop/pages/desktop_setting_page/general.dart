@@ -10,7 +10,7 @@ class _General extends StatefulWidget {
 class _GeneralState extends State<_General> {
   void _setState(VoidCallback fn) => setState(fn);
   final RxBool serviceStop =
-      isWeb ? RxBool(false) : Get.find<RxBool>(tag: 'stop-service');
+      Get.find<RxBool>(tag: 'stop-service');
   RxBool serviceBtnEnabled = true.obs;
   final GlobalKey _minToolbarOptionKey = GlobalKey();
 
@@ -20,13 +20,13 @@ class _GeneralState extends State<_General> {
     return ListView(
       controller: scrollController,
       children: [
-        if (!isWeb) service(),
+        service(),
         theme(),
         _Card(title: 'Language', children: [language()]),
-        if (!isWeb) hwcodec(),
-        if (!isWeb) audio(context),
-        if (!isWeb) record(context),
-        if (!isWeb) WaylandCard(),
+        hwcodec(),
+        audio(context),
+        record(context),
+        WaylandCard(),
         other()
       ],
     ).marginOnly(bottom: _kListViewBottomMargin);
@@ -208,9 +208,8 @@ extension _GeneralLanguage on _GeneralState {
         initialKey: currentKey,
         onChanged: (key) async {
           await bind.mainSetLocalOption(key: kCommConfKeyLang, value: key);
-          if (isWeb) reloadCurrentWindow();
-          if (!isWeb) reloadAllWindows();
-          if (!isWeb) bind.mainChangeLanguage(lang: key);
+          reloadAllWindows();
+          bind.mainChangeLanguage(lang: key);
         },
         enabled: !isOptFixed,
       ).marginOnly(left: _kContentHMargin);

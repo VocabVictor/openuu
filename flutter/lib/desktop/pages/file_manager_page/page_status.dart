@@ -12,13 +12,7 @@ extension _FileManagerPageStatus on _FileManagerPageState {
           return Icon(Icons.delete_outline, color: color);
         default:
           return Transform.rotate(
-            angle: isWeb
-                ? job.isRemoteToLocal
-                    ? pi / 2
-                    : pi / 2 * 3
-                : job.isRemoteToLocal
-                    ? pi
-                    : 0,
+            angle: job.isRemoteToLocal ? pi : 0,
             child: Icon(Icons.arrow_forward_ios, color: color),
           );
       }
