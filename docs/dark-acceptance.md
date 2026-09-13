@@ -79,6 +79,26 @@ Known and accepted exceptions, which those commands will print:
   purpose: they are the fallback for a widget with no context.
 * `flutter/lib/mobile/` is outside this round (backlog: mobile has no tokens
   at all).
+* **The QR code in `two_factor_dialogs.dart`.** `QrImageView` is given a white
+  background because the white is part of the encoding: many readers refuse an
+  inverted code, so a dark-mode QR would simply fail to scan. **Never
+  retired** — it is not a surface colour.
+* **Everything drawn on top of the preview in `desktop_preview/panel.dart`**
+  (a scrim, a caption, a timestamp badge, a reload icon: seven literals). The
+  layer underneath is somebody's screenshot, not a themed surface, so the
+  scrim darkens a photograph and the white on it means "on a dark scrim", not
+  "foreground on the primary colour". Following the theme would put white text
+  on a pale screenshot. **Never retired.**
+* **The value painted inside the slider thumb in `menu_buttons.dart`.** The
+  white there *is* `onPrimary` — it sits on the primary fill — but the code is
+  a `CustomPainter`, which has no `BuildContext` to resolve the palette from.
+  **Retired as soon as the painter takes the colour as a constructor
+  argument**, which is the only change it needs; unlike the two above, this one
+  is a limitation of where the code sits, not a property of what it draws.
+
+These three are not one exception. The first two say the colour is not a
+surface colour at all; the third says it is, and cannot reach the palette from
+where it stands. Only the third has a release condition.
 
 **Files the palette round never touched.** These last changed in the earlier
 light-token round; the palette round did not open them, so their literals are
