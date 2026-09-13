@@ -835,5 +835,10 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Remove shortcut", ""),
         ("Search applications", ""),
         ("Shortcut added", ""),
+        ("A preview will be saved after connecting", ""),
+        ("Enter desktop", ""),
+        ("Reload saved preview", ""),
+        ("Saved preview · Not live", ""),
+        ("Unable to load preview", ""),
     ].iter().cloned().collect();
 }

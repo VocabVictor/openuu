@@ -843,5 +843,10 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Remove shortcut", "移除快捷方式"),
         ("Search applications", "搜索应用"),
         ("Shortcut added", "已添加快捷方式"),
+        ("A preview will be saved after connecting", "连接后将保存最近桌面画面"),
+        ("Enter desktop", "进入桌面"),
+        ("Reload saved preview", "重新读取预览缓存"),
+        ("Saved preview · Not live", "最近画面 · 非实时"),
+        ("Unable to load preview", "预览读取失败，请重试"),
     ].iter().cloned().collect();
 }
