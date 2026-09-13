@@ -777,5 +777,8 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Connected via relay", "已連線 · 中繼"),
         ("Disconnected, reconnecting in {} s", "已斷線，{} 秒後重連"),
         ("Reconnect now", "立即重連"),
+        ("Direct", "直連"),
+        ("Relayed", "中繼"),
+        ("Packet loss", "丟包"),
     ].iter().cloned().collect();
 }
