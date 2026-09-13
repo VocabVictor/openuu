@@ -2,17 +2,16 @@ use super::*;
 
 impl Connection {
     #[inline]
-    /// Runs the pending file-read jobs, which write their blocks straight to the socket.
+    /// Runs the pending file-read jobs, which send their blocks to the peer.
     ///
-    /// The blocks of one job must arrive in order or the file is corrupt, so this is not a
-    /// thing to hand to a queue casually; the split form is wired up in its own commit,
-    /// and until then reaching here with a split socket is a mistake worth shouting about
-    /// rather than a no-op worth hiding.
+    /// The blocks of one job must arrive in the order they were produced or the file on
+    /// the other side is wrong, which is the promise `MsgSink` carries for both forms of
+    /// the connection.
     pub(super) async fn handle_file_read_jobs(&mut self) -> ResultType<String> {
-        match self.stream.whole() {
-            Some(stream) => fs::handle_read_jobs(&mut self.read_jobs, stream).await,
-            None => bail!("file read jobs on a split connection are not wired up yet"),
-        }
+        let Self {
+            read_jobs, stream, ..
+        } = self;
+        fs::handle_read_jobs(read_jobs, stream).await
     }
 
     pub(super) async fn send(&mut self, msg: Message) {

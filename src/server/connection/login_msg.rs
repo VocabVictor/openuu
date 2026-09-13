@@ -75,16 +75,19 @@ impl Connection {
             }
         }
 
-        self.stream.set_send_timeout(
-            if self.file_transfer.is_some()
-                || self.terminal
-                || matches!(self.lr.union, Some(login_request::Union::PortForward(_)))
-            {
-                SEND_TIMEOUT_OTHER
-            } else {
-                SEND_TIMEOUT_VIDEO
-            },
-        );
+        let carries_video = !(self.file_transfer.is_some()
+            || self.terminal
+            || matches!(self.lr.union, Some(login_request::Union::PortForward(_))));
+        // Only a session with video can be held up by a video write, and only here is the
+        // kind of session finally known.
+        if carries_video && self.stream.split_for_video() {
+            log::info!("#{} writing half moved to its own task", self.inner.id());
+        }
+        self.stream.set_send_timeout(if carries_video {
+            SEND_TIMEOUT_VIDEO
+        } else {
+            SEND_TIMEOUT_OTHER
+        });
 
         if !crate::common::is_direct_ip_access(&lr.username) && lr.username != Config::get_id()
         {

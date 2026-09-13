@@ -10,10 +10,10 @@
 //! and lose messages with no error at all, which is the exact failure this whole change
 //! is meant to remove rather than introduce.
 //!
-//! This commit adds only the whole form; splitting comes next.
-
-// The split form is constructed in the next commit, which is also where this goes.
-#![allow(dead_code)]
+//! Only a remote-desktop session splits. The others are left whole on purpose: port
+//! forwarding needs the socket in raw mode after the loop has ended, file transfer writes
+//! its blocks through a helper that takes the whole thing, and neither carries video, so
+//! neither has the problem the split solves.
 
 use super::*;
 use crate::stream_split::ConnReader;
@@ -35,6 +35,34 @@ pub(super) enum Wire {
 }
 
 impl Wire {
+    /// Hands the writing half to a task, if the transport allows it.
+    ///
+    /// Answers whether it happened; `false` leaves the connection exactly as it was, which
+    /// is why an unsupported transport costs nothing. Called once the login has said this
+    /// is a session with video in it.
+    pub(super) fn split_for_video(&mut self) -> bool {
+        let whole = match std::mem::replace(self, Wire::Taken) {
+            Wire::Whole(s) => s,
+            other => {
+                *self = other;
+                return false;
+            }
+        };
+        match crate::stream_split::split(whole) {
+            Ok((reader, out)) => {
+                *self = Wire::Split {
+                    reader,
+                    writer: writer::Writer::start(out),
+                };
+                true
+            }
+            Err(s) => {
+                *self = Wire::Whole(s);
+                false
+            }
+        }
+    }
+
     /// Takes an `Arc` so that neither path copies the message: the whole form borrows it,
     /// the split form moves the handle into the queue.
     pub(super) async fn send(&mut self, msg: std::sync::Arc<Message>) -> ResultType<()> {
@@ -135,5 +163,18 @@ impl Wire {
             Wire::Split { writer, .. } => Some(writer),
             _ => None,
         }
+    }
+}
+
+/// File transfer sends through whichever form the connection has.
+///
+/// Order is what this has to promise: the blocks of one job arrive in the order they were
+/// produced or the file on the other side is wrong. The whole form is ordered because it
+/// is one writer; the split form is ordered because file messages are not video, so they
+/// go on the control queue, which is a queue.
+#[async_trait::async_trait]
+impl base::fs::MsgSink for Wire {
+    async fn send_msg(&mut self, msg: Message) -> ResultType<()> {
+        self.send(std::sync::Arc::new(msg)).await
     }
 }

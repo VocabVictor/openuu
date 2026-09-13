@@ -43,6 +43,8 @@ mod messages;
 pub use messages::*;
 mod jobs;
 pub use jobs::*;
+mod sink;
+pub use sink::MsgSink;
 mod file_ops;
 pub use file_ops::*;
 

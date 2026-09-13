@@ -15,6 +15,7 @@ default = []
 wayland_probe = []
 
 [dependencies]
+async-trait = "0.1"
 hbb_common = { path = "../hbb_common" }
 protobuf = { version = "3.7", features = ["with-bytes"] }
 # the generated protobuf code refers to `::bytes::Bytes` (tokio_bytes codegen)

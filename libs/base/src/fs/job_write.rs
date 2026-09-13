@@ -137,18 +137,18 @@ impl TransferJob {
         Ok((last_modified, meta.len()))
     }
 
-    pub(super) async fn init_data_stream(&mut self, stream: &mut hbb_common::Stream) -> ResultType<()> {
+    pub(super) async fn init_data_stream<S: MsgSink + ?Sized>(&mut self, stream: &mut S) -> ResultType<()> {
         if let Some((last_modified, file_size)) = self.init_data_stream_for_cm().await? {
             let mut response = FileResponse::new();
             response.set_digest(FileTransferDigest { id: self.id, file_num: self.file_num,
                 last_modified, file_size, is_resume: self.is_resume, ..Default::default() });
             let mut message = Message::new(); message.set_file_response(response);
-            stream.send(&message).await?;
+            stream.send_msg(message).await?;
         }
         for digest in self.prefetch_digests().await? {
             let mut response = FileResponse::new(); response.set_digest(digest);
             let mut message = Message::new(); message.set_file_response(response);
-            stream.send(&message).await?;
+            stream.send_msg(message).await?;
         }
         Ok(())
     }

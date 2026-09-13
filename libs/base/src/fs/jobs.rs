@@ -17,23 +17,23 @@ pub fn get_job_immutable(id: i32, jobs: &[TransferJob]) -> Option<&TransferJob> 
     jobs.iter().find(|x| x.id() == id)
 }
 
-pub(super) async fn init_jobs(jobs: &mut Vec<TransferJob>, stream: &mut hbb_common::Stream) -> ResultType<()> {
+pub(super) async fn init_jobs<S: MsgSink + ?Sized>(jobs: &mut Vec<TransferJob>, stream: &mut S) -> ResultType<()> {
     for job in jobs.iter_mut() {
         if job.is_last_job || job.paused {
             continue;
         }
         if let Err(err) = job.init_data_stream(stream).await {
             stream
-                .send(&new_error(job.id(), err, job.file_num()))
+                .send_msg(new_error(job.id(), err, job.file_num()))
                 .await?;
         }
     }
     Ok(())
 }
 
-pub async fn handle_read_jobs(
+pub async fn handle_read_jobs<S: MsgSink + ?Sized>(
     jobs: &mut Vec<TransferJob>,
-    stream: &mut hbb_common::Stream,
+    stream: &mut S,
 ) -> ResultType<String> {
     init_jobs(jobs, stream).await?;
 
@@ -53,12 +53,12 @@ pub async fn handle_read_jobs(
                 }
                 Ok(Some(block)) => {
                     let file_ended = block.data.is_empty();
-                    stream.send(&new_block(block)).await?;
+                    stream.send_msg(new_block(block)).await?;
                     // Bound each burst so control messages and cancellation get a turn.
                     if file_ended {
                         // Send the next digest immediately, but never bypass its confirmation.
                         if let Err(err) = job.init_data_stream(stream).await {
-                            stream.send(&new_error(job.id(), err, job.file_num())).await?;
+                            stream.send_msg(new_error(job.id(), err, job.file_num())).await?;
                             break;
                         }
                     }
@@ -77,7 +77,7 @@ pub async fn handle_read_jobs(
                                     .send(&new_error(job.id(), err, job.file_num()))
                                     .await?
                             }
-                            None => stream.send(&new_done(job.id(), job.file_num())).await?,
+                            None => stream.send_msg(new_done(job.id(), job.file_num())).await?,
                         }
                     } else {
                         // waiting confirmation.
