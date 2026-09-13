@@ -21,6 +21,8 @@ const TIME_CONN: Duration = Duration::from_secs(3);
 
 mod heartbeat;
 pub use heartbeat::*;
+#[cfg(test)]
+mod sysinfo_tests;
 mod switch_grant;
 pub use switch_grant::*;
 
@@ -61,6 +63,44 @@ struct InfoUploaded {
     last_uploaded: Option<Instant>,
     id: String,
     username: Option<String>,
+}
+
+impl InfoUploaded {
+    /// The system information this heartbeat should upload, if any.
+    ///
+    /// Collecting it refreshes the CPU and memory counters and reads the OS version, and
+    /// the heartbeat ticks every three seconds whether or not anything can come of it, so
+    /// a tick that could not upload does not collect. The server asks for it again at
+    /// most every [`UPLOAD_SYSINFO_TIMEOUT`], and until then nothing about the machine
+    /// can make this tick upload anything.
+    fn sysinfo_to_upload(&self, collect: impl FnOnce() -> Value) -> Option<(Value, String)> {
+        let due = self
+            .last_uploaded
+            .map(|at| at.elapsed() >= UPLOAD_SYSINFO_TIMEOUT)
+            .unwrap_or(true);
+        if !due {
+            return None;
+        }
+        let info = collect();
+        // For Windows:
+        // We can't skip uploading sysinfo when the username is empty, because the username
+        // may always be empty before login. We also need to upload the other sysinfo info.
+        //
+        // https://github.com/rustdesk/rustdesk/discussions/8031
+        // We still need to check the username after uploading sysinfo, because
+        // 1. The username may be empty when logining in, and it can be fetched after a
+        //    while. In this case, we need to upload sysinfo again.
+        // 2. The username may be changed after uploading sysinfo, and we need to upload
+        //    sysinfo again.
+        //
+        // The Windows session will switch to the last user session before the restart,
+        // so it may be able to get the username before login. But strangely, sometimes we
+        // can get the username before login, we may not be able to get the username
+        // before login after the next restart.
+        let username = info["username"].as_str().unwrap_or_default().to_string();
+        let changed = !self.uploaded || self.username.as_ref() != Some(&username);
+        changed.then_some((info, username))
+    }
 }
 
 impl Default for InfoUploaded {

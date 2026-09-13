@@ -27,27 +27,11 @@ pub(super) async fn start_hbbs_sync_async() {
                     info_uploaded.uploaded = false;
                     *PRO.lock().unwrap() = false;
                 }
-                // For Windows:
-                // We can't skip uploading sysinfo when the username is empty, because the username may
-                // always be empty before login. We also need to upload the other sysinfo info.
-                //
-                // https://github.com/rustdesk/rustdesk/discussions/8031
-                // We still need to check the username after uploading sysinfo, because
-                // 1. The username may be empty when logining in, and it can be fetched after a while.
-                //    In this case, we need to upload sysinfo again.
-                // 2. The username may be changed after uploading sysinfo, and we need to upload sysinfo again.
-                //
-                // The Windows session will switch to the last user session before the restart,
-                // so it may be able to get the username before login.
-                // But strangely, sometimes we can get the username before login,
-                // we may not be able to get the username before login after the next restart.
-                let mut v = crate::get_sysinfo();
-                let sys_username = v["username"].as_str().unwrap_or_default().to_string();
                 // Though the username comparison is only necessary on Windows,
                 // we still keep the comparison on other platforms for consistency.
-                let need_upload = (!info_uploaded.uploaded || info_uploaded.username.as_ref() != Some(&sys_username)) &&
-                    info_uploaded.last_uploaded.map(|x| x.elapsed() >= UPLOAD_SYSINFO_TIMEOUT).unwrap_or(true);
-                if need_upload {
+                if let Some((mut v, sys_username)) =
+                    info_uploaded.sysinfo_to_upload(crate::get_sysinfo)
+                {
                     v["version"] = json!(crate::VERSION);
                     v["id"] = json!(id);
                     v["uuid"] = json!(crate::encode64(hbb_common::get_uuid()));
