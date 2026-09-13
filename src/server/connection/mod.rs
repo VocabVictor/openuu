@@ -139,6 +139,8 @@ mod conn_inner;
 mod consts;
 use consts::*;
 mod start;
+mod cm_data;
+mod cm_permission;
 mod loops;
 mod access_checks;
 mod audit;
