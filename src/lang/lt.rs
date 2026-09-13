@@ -772,5 +772,10 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Up to date", ""),
         ("Scan to import configuration", ""),
         ("Permanent password", ""),
+        ("Waiting for the peer to accept", ""),
+        ("Connected via direct connection", ""),
+        ("Connected via relay", ""),
+        ("Disconnected, reconnecting in {} s", ""),
+        ("Reconnect now", ""),
     ].iter().cloned().collect();
 }
