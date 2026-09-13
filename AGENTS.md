@@ -110,6 +110,7 @@ broken up.
 | `flutter/lib/common/widgets/login/login_dialog.dart` | single `_openLoginDialog` function (~350 lines) |
 | `src/ipc/handle.rs` | single `async fn handle` IPC request dispatcher (~430 lines) |
 | `src/server/connection/logon_response.rs` | single `Connection::send_logon_response_and_keep_alive` function (~360 lines) |
+| `src/server/drm_capturer/recv.rs` | single `recv_thread` function (~340 lines); Linux + `drm` feature |
 | `src/flutter_ffi.rs` | flutter_rust_bridge v1 single-file codegen input (`--rust-input`); splitting needs frb v2 or changes to every build script. New exported functions added here must be one-line forwards to the owning module; no logic lives in this file. |
 
 ### Linux check (mandatory for `cfg(linux)` / `cfg(unix)` changes)
@@ -131,10 +132,10 @@ target exists. Linux-only files below are no longer deferred; they are split
 under the Linux check rule above. macOS-only files stay as they are; do not
 split them before a check exists:
 
-* `src/server/drm_capturer.rs` (Linux + `drm` feature, checked by the second
-  step of the Linux workflow; `uinput/`, `wayland/`, `rdp_input/` are split)
+* `src/server/drm_capturer/` and `src/ipc/drm/` are split (Linux + `drm` feature,
+  checked by the third step of the Linux workflow and `check-linux.ps1 -Drm`)
 * `src/platform/linux.rs`, `src/platform/macos.rs`, `src/platform/gtk_sudo.rs`
-* `src/ipc/drm.rs` (Linux + `drm` feature), `src/ipc/auth/mod.rs` (Unix
+* `src/ipc/auth/mod.rs` (Unix
   socket credentials); `src/ipc/fs/` was split under the Linux check
 * `libs/scrap/src/wayland/`, `libs/scrap/src/x11/`, `libs/scrap/src/quartz/`
 * `libs/clipboard/src/platform/unix/`, `libs/enigo/src/linux/`,
