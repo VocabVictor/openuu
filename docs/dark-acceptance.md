@@ -129,9 +129,29 @@ their migration finished. A screenshot that proves nothing is not on the list.
 | 1 | home, device list | the shell, sidebar, cards and the three presence states in one frame |
 | 2 | settings, safety tab | switches, locked controls and the disabled-vs-off distinction |
 | 3 | settings, network tab with a dialog open | dialog surface, fields and the three button kinds against a dark page |
-| 4 | a session window, toolbar expanded | toolbar strip, active and danger buttons, and the quality monitor |
-| 5 | connection manager | the consent surface: permission tiles filled against outlined |
-| 6 | image 1 again, in greyscale | that every state in it survives without colour |
+| 4 | image 1 again, in greyscale | that every state in it survives without colour |
 
-Five are captures; the sixth is the first one put through a greyscale filter,
-which is what makes rule 3 checkable rather than asserted.
+Three are captures; the fourth is the first one put through a greyscale
+filter, which is what makes rule 3 checkable rather than asserted. All four
+are taken with `--page`, which needs no click.
+
+### Two claims this list does not cover
+
+The session toolbar and the connection manager cannot be captured this way:
+the toolbar's buttons are behind a submenu that has to be opened, and the
+connection manager only exists while someone is connected. Verification here
+is command-line only and does not automate interaction (AGENTS.md), so these
+two are **not verified**, and the report says so rather than implying the
+appearance was checked:
+
+* **The toolbar strip, its active and danger buttons, and the quality monitor
+  in dark.** What is missing: a person opening the toolbar's Control Actions
+  menu once, in dark, and looking at it.
+* **The connection manager's permission tiles in dark**, where a granted
+  permission is a filled tile and a withheld one an outlined tile. What is
+  missing: a person accepting one incoming session in dark.
+
+Neither needs a build, a machine or a plan — only a user who is connecting
+anyway. Until then the two claims stay open; they are not to be closed by
+inference from the other screenshots, because both are exactly the surfaces
+where a tint that was mapped by inverting would show.
