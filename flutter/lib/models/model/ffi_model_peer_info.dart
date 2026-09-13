@@ -120,6 +120,7 @@ extension FfiModelPeerInfo on FfiModel {
         resetRestartReconnectState();
         waitForFirstImage.value = true;
         isRefreshing = false;
+        if (!isCache) fitWindowToPeer(peerId);
       }
       Map<String, dynamic> features = json.decode(evt['features']);
       _pi.features.privacyMode = features['privacy_mode'] == true;
