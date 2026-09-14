@@ -288,42 +288,16 @@ Future<bool?> _openLoginDialog() async {
     );
     final titlePadding = EdgeInsets.fromLTRB(MyTheme.dialogPadding, 0, 0, 0);
 
+    // Windows returned _desktopLoginDialog at the top of this function, so
+    // everything below builds the dialog for the platforms that did not.
     final dialog = CustomAlertDialog(
-      title: isWindows
-          ? Row(children: [
-              const BrandIcon(size: 28),
-              const SizedBox(width: 12),
-              const Expanded(
-                  child: Text('OpenUU',
-                      style: TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.w600))),
-              IconButton(
-                  onPressed: onDialogCancel,
-                  tooltip: translate('Close'),
-                  icon: const Icon(Icons.close, size: 20)),
-            ])
-          : title,
-      titlePadding:
-          isWindows ? const EdgeInsets.fromLTRB(28, 20, 16, 0) : titlePadding,
-      contentBoxConstraints: BoxConstraints(
-          minWidth: isWindows ? 360 : 400,
-          maxWidth: isWindows ? 360 : double.infinity),
+      title: title,
+      titlePadding: titlePadding,
+      contentBoxConstraints:
+          const BoxConstraints(minWidth: 400, maxWidth: double.infinity),
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (isWindows) ...[
-            const SizedBox(height: 4),
-            Text(translate('Login'),
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Text(
-                Localizations.localeOf(context).languageCode == 'zh'
-                    ? '登录账号，连接你的设备'
-                    : 'Sign in to connect to your devices',
-                style: TextStyle(fontSize: 13, color: pal.muted)),
-            const SizedBox(height: 16),
-          ],
           const SizedBox(
             height: 8.0,
           ),
