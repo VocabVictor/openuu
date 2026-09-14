@@ -343,50 +343,7 @@ Future<bool?> _openLoginDialog() async {
       onCancel: onDialogCancel,
       onSubmit: onLogin,
     );
-    if (!isWindows) return dialog;
-    final base = Theme.of(context);
-    OutlineInputBorder border(Color color) => OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: color));
-    return CustomAlertDialog(
-      title: dialog.title,
-      titlePadding: dialog.titlePadding,
-      content: dialog.content,
-      contentBoxConstraints: dialog.contentBoxConstraints,
-      onCancel: onDialogCancel,
-      onSubmit: onLogin,
-      theme: base.copyWith(
-        textTheme: base.textTheme.apply(fontFamily: 'Microsoft YaHei'),
-        dialogTheme: DialogTheme(
-            backgroundColor: pal.panelBg,
-            surfaceTintColor: Colors.transparent,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(14)))),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: pal.surface,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          labelStyle: TextStyle(fontSize: 14, color: pal.muted),
-          floatingLabelBehavior: FloatingLabelBehavior.never,
-          prefixIconColor: pal.muted,
-          suffixIconColor: pal.muted,
-          enabledBorder: border(pal.inputBorder),
-          focusedBorder: border(pal.primary),
-          border: border(pal.inputBorder),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-          backgroundColor: pal.primaryFill,
-          foregroundColor: pal.onPrimary,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          textStyle:
-              const TextStyle(fontFamily: 'Microsoft YaHei', fontSize: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        )),
-      ),
-    );
+    return dialog;
   }).whenComplete(oidcAuth.close);
 
   if (res != null) {
