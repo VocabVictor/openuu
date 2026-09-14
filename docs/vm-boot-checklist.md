@@ -15,6 +15,12 @@ workload -- another session, a build, an ssh that compiles something -- changes 
 number on this page, including the ones that look robust. That includes running two items
 of this list at once.
 
+**Every before-and-after pair is measured with the peer on one bundle.** Which bundle
+does not matter; changing it between the two halves does. A comparison that spans a swap
+has two variables in it, and the one you were not watching is the one that moved. This is
+why the mouse pair sits after the swap rather than straddling it, and why the hole-punch
+pair does too.
+
 **If the machine goes away again before the list is done**, take 3 then 4, 5 and 6: the
 swap and the three measurements that nothing else can give. No other machine reproduces
 the DXGI condition, and the standby and teardown "after" numbers need this peer on the new
@@ -47,8 +53,10 @@ the others are identified by the commit the build came from.
 ### 2. Mouse movement, before (counter only) — 52, 10 min
 
 * **Needs**: a controller built at `8176c3a1c`, the commit that adds the counter and
-  nothing else. The peer can stay on whichever bundle it has, since this measures what the
-  controller sends. A window on the peer to drag over.
+  nothing else, **and the peer already on the new bundle — run this after item 3**. What
+  it measures is what the controller emits, and nothing on the peer is known to gate that;
+  but "known to" is not "measured", and holding the peer still across both halves costs
+  nothing and removes the question. A window on the peer to drag over.
 * **Run**: with `RUSTDESK_INPUT_VERBOSE=1`, one continuous drag of a fixed duration, say
   30 s of circles. The controller logs one line a second beginning `[InputModel] mouse
   messages sent`; take the `move` figure from it. **Copy out that line only** — the
@@ -122,12 +130,19 @@ Everything below needs it. One swap, not one per item.
 
 ### 8. Hole punching, before and after — e9, 20 min
 
-* **Needs**: the controller bundle only, so this can run at any point once item 3 is done
-  and does not constrain the order. All three switches are read on the controller side
-  (`src/client/start.rs`, `transport.rs`, `webrtc_bridge.rs`); the peer cannot read them
-  because they live in `LocalConfig`, which the user-interface process writes and never
-  synchronises over the inter-process channel. The answering path says so in a comment of
-  its own rather than reading them.
+* **Needs**: the controller bundle for the switches, **and both halves run with the peer
+  on the new bundle — so this comes after item 3**.
+
+  The switches themselves are read only on the controller side (`src/client/start.rs`,
+  `transport.rs`, `webrtc_bridge.rs`); the peer cannot read them, because they live in
+  `LocalConfig`, which the user-interface process writes and never synchronises over the
+  inter-process channel. An earlier version of this entry concluded from that that the
+  peer's bundle did not matter and the item could run at any time. **That does not
+  follow**: which side reads a switch decides who chooses, not what happens. A punch is
+  something the two ends do together, and the peer's half of it changed twice since the
+  bundle now installed — `fb362d3bf` (an offer this side cannot answer still gets the TCP
+  punch) and `ee2ba8721` (the IPv6 probe follows this host's own switch). Comparing across
+  those would put two changes in one measurement.
 * **Run**: sessions with the defaults as they ship, then with the change, reading the
   controller log for `Hole Punched` and `used to establish`.
 * **Decides**: whether "default on, fall back when the probe fails" reaches direct where
