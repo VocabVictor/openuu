@@ -1,6 +1,8 @@
 lazy_static::lazy_static! {
 pub static ref T: std::collections::HashMap<&'static str, &'static str> =
     [
+        ("pause_downloads_tip", "Pausing downloads requires an updated remote client"),
+        ("update_client_for_pause_tip", "Update the client to support pause"),
         ("desk_tip", "Your desktop can be accessed with this ID and password."),
         ("connecting_status", "Connecting to the RustDesk network..."),
         ("not_ready_status", "Not ready. Please check your connection"),

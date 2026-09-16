@@ -1,6 +1,17 @@
 lazy_static::lazy_static! {
 pub static ref T: std::collections::HashMap<&'static str, &'static str> =
     [
+        ("Transfers", "传输列表"),
+        ("Pause all", "全部暂停"),
+        ("Resume all", "全部开始"),
+        ("Cancel all", "全部取消"),
+        ("Clear completed", "清除完结任务"),
+        ("Source", "发送路径"),
+        ("Destination", "接收路径"),
+        ("Actions", "操作"),
+        ("Pause", "暂停"),
+        ("pause_downloads_tip", "暂停下载需要远端也升级到支持暂停的版本"),
+        ("update_client_for_pause_tip", "需要升级客户端以支持暂停"),
         ("Status", "状态"),
         ("Your Desktop", "你的桌面"),
         ("desk_tip", "你的桌面可以通过下面的 ID 和密码访问。"),

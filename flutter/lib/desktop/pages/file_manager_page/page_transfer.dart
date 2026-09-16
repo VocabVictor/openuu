@@ -12,8 +12,6 @@ extension _FileManagerPageTransfer on _FileManagerPageState {
   }
 
   Widget transferTable() {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
-    String t(String cn, String en) => zh ? cn : en;
     Widget cell(String value, int flex) => Expanded(flex: flex, child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Tooltip(message: value, child: Text(value, maxLines: 1,
@@ -35,25 +33,25 @@ extension _FileManagerPageTransfer on _FileManagerPageState {
       return Column(children: [
         SizedBox(height: 48, child: Row(children: [
           Padding(padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(t('传输列表', 'Transfers'), style: const TextStyle(fontSize: 17))),
+            child: Text(translate('Transfers'), style: const TextStyle(fontSize: 17))),
           Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal,
             reverse: true, child: Row(children: [
-              Tooltip(message: t('暂停下载需要远端也升级到支持暂停的版本', 'Pausing downloads requires an updated remote client'),
+              Tooltip(message: translate('pause_downloads_tip'),
                 child: TextButton.icon(onPressed: pausable.isEmpty ? null : () async {
                   for (final job in pausable) { await jobController.pauseJob(job.id); }
-                }, icon: const Icon(Icons.pause, size: 16), label: Text(t('全部暂停', 'Pause all')))),
+                }, icon: const Icon(Icons.pause, size: 16), label: Text(translate('Pause all')))),
               TextButton.icon(onPressed: paused.isEmpty ? null : () {
                 for (final job in paused) { jobController.resumeJob(job.id); }
-              }, icon: const Icon(Icons.play_arrow_outlined, size: 16), label: Text(t('全部开始', 'Resume all'))),
+              }, icon: const Icon(Icons.play_arrow_outlined, size: 16), label: Text(translate('Resume all'))),
               TextButton.icon(onPressed: pending.isEmpty ? null : () async {
                 for (final job in pending) { await cancel(job); }
-              }, icon: const Icon(Icons.close, size: 16), label: Text(t('全部取消', 'Cancel all'))),
+              }, icon: const Icon(Icons.close, size: 16), label: Text(translate('Cancel all'))),
               TextButton.icon(onPressed: jobs.any((job) => job.state == JobState.done) ? () {
                 for (final job in jobs.where((job) => job.state == JobState.done)) {
                   jobController.jobTable.remove(job);
                   _transferDestinations.remove(job.id);
                 }
-              } : null, icon: const Icon(Icons.delete_outline, size: 16), label: Text(t('清除完结任务', 'Clear completed'))),
+              } : null, icon: const Icon(Icons.delete_outline, size: 16), label: Text(translate('Clear completed'))),
             ]))),
         ])),
         const Divider(height: 1),
@@ -61,10 +59,10 @@ extension _FileManagerPageTransfer on _FileManagerPageState {
           scrollDirection: Axis.horizontal, child: SizedBox(width: max(850.0, bounds.maxWidth),
             child: Column(children: [
               SizedBox(height: 36, child: Row(children: [
-                cell(t('名称', 'Name'), 3), cell(t('状态', 'Status'), 3),
-                cell(t('大小', 'Size'), 1), cell(t('发送路径', 'Source'), 2),
-                cell(t('接收路径', 'Destination'), 2),
-                SizedBox(width: 100, child: Text(t('操作', 'Actions'))),
+                cell(translate('Name'), 3), cell(translate('Status'), 3),
+                cell(translate('Size'), 1), cell(translate('Source'), 2),
+                cell(translate('Destination'), 2),
+                SizedBox(width: 100, child: Text(translate('Actions'))),
               ])),
               const Divider(height: 1),
               Expanded(child: jobs.isEmpty ? Center(child: Text(translate('No transfers in progress'),
@@ -85,7 +83,7 @@ extension _FileManagerPageTransfer on _FileManagerPageState {
                       cell(_transferDestinations[job.id] ?? (job.to.isEmpty ? '—' : job.to), 2),
                       SizedBox(width: 100, child: Row(children: [
                         if (job.state == JobState.inProgress && job.type == JobType.transfer) IconButton(
-                          tooltip: canPause(job) ? t('暂停', 'Pause') : t('需要升级客户端以支持暂停', 'Update the client to support pause'),
+                          tooltip: canPause(job) ? translate('Pause') : translate('update_client_for_pause_tip'),
                           onPressed: canPause(job) ? () => jobController.pauseJob(job.id) : null,
                           icon: const Icon(Icons.pause, size: 18)),
                         if (job.state == JobState.paused) IconButton(tooltip: translate('Resume'),
