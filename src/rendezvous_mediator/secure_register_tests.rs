@@ -1,6 +1,14 @@
 use super::secure_register::*;
 use super::tokio;
 
+lazy_static::lazy_static! {
+    /// The state under test is process-wide, because the thing it describes is: one
+    /// registration flag and one set of hosts, shared by every mediator. Tests that touch
+    /// it run one at a time rather than pretending otherwise with distinct host names,
+    /// which would not separate the flag.
+    static ref ONE_AT_A_TIME: super::Mutex<()> = Default::default();
+}
+
 /// The three states exist so that "never touched" and "turned off" are not the same
 /// answer; a bool here would make the fallback either unreachable or unavoidable.
 #[test]
@@ -14,6 +22,7 @@ fn an_unset_switch_is_not_the_same_as_one_turned_off() {
 
 #[tokio::test]
 async fn a_session_that_registered_never_marks_the_host() {
+    let _serial = ONE_AT_A_TIME.lock().await;
     forget_hosts().await;
     begin_tcp_session();
     registration_answered();
@@ -25,6 +34,7 @@ async fn a_session_that_registered_never_marks_the_host() {
 
 #[tokio::test]
 async fn a_session_with_no_answer_sends_the_next_attempt_to_udp() {
+    let _serial = ONE_AT_A_TIME.lock().await;
     forget_hosts().await;
     begin_tcp_session();
     assert!(tcp_session_ended("hbbs.example").await);
@@ -35,6 +45,7 @@ async fn a_session_with_no_answer_sends_the_next_attempt_to_udp() {
 
 #[tokio::test]
 async fn one_host_failing_does_not_answer_for_the_next_session_of_another() {
+    let _serial = ONE_AT_A_TIME.lock().await;
     forget_hosts().await;
     begin_tcp_session();
     assert!(tcp_session_ended("silent.example").await);
