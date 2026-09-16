@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../common.dart';
-import '../../models/platform_model.dart';
+import '../../models/platform.dart';
 
 const _deployDialogTag = 'android-deploy-device';
 

@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
-import 'package:openuu/models/input_model.dart';
+import 'package:openuu/models/input.dart';
 import 'package:openuu/models/model.dart';
 import 'package:openuu/utils/image.dart';
 import 'package:provider/provider.dart';

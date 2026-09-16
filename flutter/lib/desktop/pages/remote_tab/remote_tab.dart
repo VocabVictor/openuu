@@ -8,12 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
 import 'package:openuu/common/shared_state.dart';
 import 'package:openuu/consts.dart';
-import 'package:openuu/models/input_model.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/input.dart';
+import 'package:openuu/models/state.dart';
 import 'package:openuu/desktop/pages/remote.dart';
 import 'package:openuu/desktop/widgets/remote_toolbar.dart';
-import 'package:openuu/desktop/widgets/tabbar_widget.dart';
-import 'package:openuu/desktop/widgets/material_mod_popup_menu.dart'
+import 'package:openuu/desktop/widgets/tabbar.dart';
+import 'package:openuu/desktop/widgets/popup_menu_mod.dart'
     as mod_menu;
 import 'package:openuu/desktop/widgets/popup_menu.dart';
 import 'package:openuu/utils/multi_window_manager.dart';
@@ -22,7 +22,7 @@ import 'package:get/get.dart';
 import 'package:bot_toast/bot_toast.dart';
 
 import '../../../common/widgets/dialog.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import 'package:openuu/models/model.dart';
 part 'method_handler.dart';
 part 'tab_menu.dart';

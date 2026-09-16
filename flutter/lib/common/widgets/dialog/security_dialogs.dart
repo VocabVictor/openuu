@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../common.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import 'confirm_dialogs.dart';
 import 'validation.dart';
 

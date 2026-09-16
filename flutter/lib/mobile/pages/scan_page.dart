@@ -9,7 +9,7 @@ import 'package:zxing2/qrcode.dart';
 
 import '../../common.dart';
 import '../../common/config_import.dart';
-import '../../models/platform_model.dart';
+import '../../models/platform.dart';
 import '../widgets/dialog.dart';
 
 class ScanPage extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'online_presence.dart';
-import 'platform_model.dart';
+import 'platform.dart';
 
 /// Asks the server which of the listed devices are reachable, and remembers
 /// what it answered.

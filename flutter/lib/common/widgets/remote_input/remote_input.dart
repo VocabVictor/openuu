@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
 
-import 'package:openuu/models/platform_model.dart';
+import 'package:openuu/models/platform.dart';
 import 'package:openuu/common.dart';
 import 'package:openuu/consts.dart';
 import 'package:openuu/models/model.dart';
-import 'package:openuu/models/input_model.dart';
+import 'package:openuu/models/input.dart';
 
 import '.././gestures.dart';
 part 'pans.dart';

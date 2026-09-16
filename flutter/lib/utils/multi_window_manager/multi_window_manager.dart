@@ -8,7 +8,7 @@ import 'package:openuu/consts.dart';
 import 'package:openuu/common.dart';
 import 'package:openuu/common/window_fit.dart';
 import 'package:openuu/main.dart';
-import 'package:openuu/models/input_model.dart';
+import 'package:openuu/models/input.dart';
 import 'package:window_size/window_size.dart' as window_size;
 part 'windows.dart';
 part 'new_windows.dart';

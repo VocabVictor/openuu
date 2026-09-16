@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../common.dart';
 import '../../../models/model.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import 'validation.dart';
 
 void showRestartRemoteDevice(PeerInfo pi, String id, SessionID sessionId,

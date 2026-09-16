@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../common.dart';
 import '../../models/online_presence.dart';
-import '../../models/peer_model.dart';
+import '../../models/peer.dart';
 import '../pages/devices.dart' show deviceName;
 import 'ui_tokens.dart';
 

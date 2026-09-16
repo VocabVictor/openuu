@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../../models/platform_model.dart';
+import '../../models/platform.dart';
 import '../../models/model.dart';
-import '../../models/quick_launch_model.dart';
+import '../../models/quick_launch.dart';
 import '../../common.dart';
 import 'ui_tokens.dart';
 

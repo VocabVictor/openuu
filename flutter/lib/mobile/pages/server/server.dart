@@ -5,15 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:openuu/desktop/pages/setting.dart';
 import 'package:openuu/desktop/widgets/ui_tokens.dart';
 import 'package:openuu/mobile/widgets/dialog.dart';
-import 'package:openuu/models/chat_model.dart';
+import 'package:openuu/models/chat.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common.dart';
 import '../../../common/widgets/dialog.dart';
 import '../../../consts.dart';
-import '../../../models/platform_model.dart';
-import '../../../models/server_model.dart';
+import '../../../models/platform.dart';
+import '../../../models/server.dart';
 import '../home_page.dart';
 import 'package:openuu/models/model.dart';
 part 'scam_warning.dart';

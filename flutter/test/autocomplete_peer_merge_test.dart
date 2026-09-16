@@ -1,5 +1,5 @@
 import 'package:openuu/common/widgets/autocomplete.dart';
-import 'package:openuu/models/peer_model.dart';
+import 'package:openuu/models/peer.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Peer _peer({

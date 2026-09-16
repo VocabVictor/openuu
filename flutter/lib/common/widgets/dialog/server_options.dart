@@ -6,7 +6,7 @@ import 'package:openuu/consts.dart';
 
 import '../../../common.dart';
 import '../../../models/model.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import 'audit_dialogs.dart';
 
 void clientClose(SessionID sessionId, FFI ffi) async {

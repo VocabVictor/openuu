@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'package:openuu/native/common.dart';
 import 'package:openuu/utils/http_service.dart' as http;

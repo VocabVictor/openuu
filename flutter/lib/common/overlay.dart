@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 
 import '../consts.dart';
 import '../models/model.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'ffi_options.dart';
 import 'globals.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:openuu/models/input_model/move_coalescer.dart';
+import 'package:openuu/models/input/move_coalescer.dart';
 
 void main() {
   const us = kMoveCoalesceIntervalUs;

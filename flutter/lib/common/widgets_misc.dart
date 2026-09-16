@@ -10,7 +10,7 @@ import '../models/model.dart';
 import 'ffi_options.dart';
 import 'globals.dart';
 import 'my_theme.dart';
-import 'package:openuu/models/input_model.dart';
+import 'package:openuu/models/input.dart';
 
 final ButtonStyle flatButtonStyle = TextButton.styleFrom(
   minimumSize: Size(0, 36),

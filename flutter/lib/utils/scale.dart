@@ -1,5 +1,5 @@
 import 'package:openuu/consts.dart';
-import 'package:openuu/models/platform_model.dart';
+import 'package:openuu/models/platform.dart';
 import 'package:uuid/uuid.dart';
 
 /// Clamp custom scale percent to supported bounds.

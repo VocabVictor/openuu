@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../common.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 /// Previews a provisioning text (`openuu://config/…`, the legacy payload or
 /// a JSON file) in a confirmation dialog and applies it only on confirm

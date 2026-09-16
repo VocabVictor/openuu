@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:openuu/models/peer_tab_model.dart';
+import 'package:openuu/models/peer_tab.dart';
 import 'package:get/get.dart';
 
 import '../consts.dart';
 import '../models/model.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'ffi_options.dart';
 import 'globals.dart';

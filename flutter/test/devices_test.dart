@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openuu/desktop/pages/devices.dart';
-import 'package:openuu/models/peer_model.dart';
+import 'package:openuu/models/peer.dart';
 import 'package:openuu/models/online_poller.dart';
 
 /// No bridge to the Rust side in a widget test: the poller asks these

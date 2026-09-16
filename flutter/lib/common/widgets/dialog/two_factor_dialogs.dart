@@ -5,7 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../common.dart';
 import '../../../desktop/widgets/ui_tokens.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import '../ui_dialog.dart';
 import '../ui_fields.dart';
 import 'code_fields.dart';

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:openuu/consts.dart';
 import 'package:openuu/models/model.dart';
-import 'package:openuu/models/platform_model.dart';
+import 'package:openuu/models/platform.dart';
 import 'package:openuu/utils/scale.dart';
 import 'package:openuu/common.dart';
 

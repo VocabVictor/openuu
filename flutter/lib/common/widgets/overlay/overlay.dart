@@ -2,14 +2,14 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
-import 'package:openuu/models/platform_model.dart';
+import 'package:openuu/models/platform.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../../../consts.dart';
-import '../../../desktop/widgets/tabbar_widget.dart';
+import '../../../desktop/widgets/tabbar.dart';
 import '../../../desktop/widgets/ui_tokens.dart';
-import '../../../models/chat_model.dart';
+import '../../../models/chat.dart';
 import '../../../models/model.dart';
 import '../chat_page.dart';
 part 'chat_window.dart';

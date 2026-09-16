@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:openuu/common/widgets/remote_input.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/state.dart';
 
 import '../../../consts.dart';
 import '../../../common/widgets/overlay.dart';
@@ -14,15 +14,15 @@ import '../../../common.dart';
 import '../../../common/widgets/dialog.dart';
 import '../../../common/widgets/toolbar.dart';
 import '../../../models/model.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import '../../../common/shared_state.dart';
 import '../../../utils/image.dart';
 import '../../widgets/remote_toolbar.dart';
 import '../../widgets/kb_layout_type_chooser.dart';
-import '../../widgets/tabbar_widget.dart';
+import '../../widgets/tabbar.dart';
 
 import 'package:openuu/native/custom_cursor.dart';
-import 'package:openuu/models/input_model.dart';
+import 'package:openuu/models/input.dart';
 part 'view.dart';
 part 'body.dart';
 part 'image_paint.dart';

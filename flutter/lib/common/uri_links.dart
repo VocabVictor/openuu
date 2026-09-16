@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:uni_links/uni_links.dart';
 
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'globals.dart';
 import 'url_cmd_args.dart';

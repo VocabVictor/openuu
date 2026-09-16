@@ -6,7 +6,7 @@ import 'package:openuu/models/model.dart';
 import 'package:get/get.dart';
 
 import '../common.dart';
-import './platform_model.dart';
+import './platform.dart';
 
 import 'package:texture_rgba_renderer/texture_rgba_renderer.dart';
 

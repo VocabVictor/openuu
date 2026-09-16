@@ -10,11 +10,11 @@ import 'package:openuu/common/widgets/peer_card.dart';
 import 'package:openuu/common/widgets/peers_view.dart';
 import 'package:openuu/consts.dart';
 import 'package:openuu/desktop/widgets/popup_menu.dart';
-import 'package:openuu/models/ab_model.dart';
-import 'package:openuu/models/platform_model.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/ab.dart';
+import 'package:openuu/models/platform.dart';
+import 'package:openuu/models/state.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import '../../../desktop/widgets/material_mod_popup_menu.dart' as mod_menu;
+import '../../../desktop/widgets/popup_menu_mod.dart' as mod_menu;
 import 'package:get/get.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 

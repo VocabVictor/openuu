@@ -5,14 +5,14 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:openuu/main.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/state.dart';
 import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 import 'package:window_size/window_size.dart' as window_size;
 
 import '../consts.dart';
 import '../models/model.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'globals.dart';
 import 'window_restore.dart';

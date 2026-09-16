@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:openuu/common/formatter/id_formatter.dart';
-import 'package:openuu/desktop/widgets/tabbar_widget.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/desktop/widgets/tabbar.dart';
+import 'package:openuu/models/state.dart';
 import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 
@@ -14,13 +14,13 @@ import '../mobile/pages/file_manager.dart';
 import '../mobile/pages/remote.dart';
 import '../mobile/pages/view_camera.dart';
 import '../mobile/pages/terminal.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'ffi_options.dart';
 import 'globals.dart';
 import 'windows_misc.dart';
-import 'package:openuu/models/chat_model.dart';
-import 'package:openuu/models/user_model.dart';
+import 'package:openuu/models/chat.dart';
+import 'package:openuu/models/user.dart';
 
 closeConnection({String? id}) {
   if (isAndroid || isIOS) {

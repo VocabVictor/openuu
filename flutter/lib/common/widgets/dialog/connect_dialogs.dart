@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../common.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import '../../../desktop/widgets/ui_tokens.dart';
 import '../ui_dialog.dart';
 import '../ui_fields.dart';

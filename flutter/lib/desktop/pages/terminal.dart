@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:openuu/common.dart';
-import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/desktop/widgets/tabbar.dart';
 import 'package:openuu/models/model.dart';
-import 'package:openuu/models/terminal_model.dart';
+import 'package:openuu/models/terminal.dart';
 import 'package:openuu/models/terminal_mouse_handler.dart';
 import 'terminal_connection_manager.dart';
 

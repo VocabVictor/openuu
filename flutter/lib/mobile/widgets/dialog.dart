@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:openuu/common/widgets/setting_widgets.dart';
+import 'package:openuu/common/widgets/setting.dart';
 import 'package:openuu/common/widgets/toolbar.dart';
 import 'package:get/get.dart';
 
 import '../../common.dart';
-import '../../models/platform_model.dart';
+import '../../models/platform.dart';
 
 void _showSuccess() {
   showToast(translate("Successful"));

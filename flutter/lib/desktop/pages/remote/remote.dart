@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/state.dart';
 
 import '../../../consts.dart';
 import '../../../common/widgets/overlay.dart';
@@ -16,14 +16,14 @@ import '../../../common.dart';
 import '../../../common/widgets/dialog.dart';
 import '../../../common/widgets/toolbar.dart';
 import '../../../models/model.dart';
-import '../../../models/input_model.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/input.dart';
+import '../../../models/platform.dart';
 import '../../../common/shared_state.dart';
 import '../../../utils/image.dart';
 import '../../widgets/remote_toolbar.dart';
 import '../../widgets/preview.dart';
 import '../../widgets/kb_layout_type_chooser.dart';
-import '../../widgets/tabbar_widget.dart';
+import '../../widgets/tabbar.dart';
 import '../macos_full_screen_focus_recovery.dart';
 
 import 'package:openuu/native/custom_cursor.dart';

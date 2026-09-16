@@ -6,7 +6,7 @@ import 'package:openuu/consts.dart';
 import 'package:get/get.dart';
 
 import '../../../common.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import 'validation.dart';
 
 void changeIdDialog() {

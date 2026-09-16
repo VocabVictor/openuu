@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'ffi_options.dart';
 import 'globals.dart';
 import 'widgets_misc.dart';
-import 'package:openuu/models/user_model.dart';
+import 'package:openuu/models/user.dart';
 
 class ServerConfig {
   late String idServer;

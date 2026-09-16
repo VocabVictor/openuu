@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:openuu/models/peer_model.dart';
-import 'package:openuu/models/peer_tab_model.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/peer.dart';
+import 'package:openuu/models/peer_tab.dart';
+import 'package:openuu/models/state.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../consts.dart';
 import '../models/model.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'peer_widgets.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
 import 'package:openuu/desktop/pages/remote_tab.dart';
-import 'package:openuu/models/platform_model.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/platform.dart';
+import 'package:openuu/models/state.dart';
 import 'package:provider/provider.dart';
 
 /// multi-tab desktop remote screen

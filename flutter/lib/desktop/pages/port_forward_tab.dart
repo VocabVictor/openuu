@@ -4,9 +4,9 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
 import 'package:openuu/consts.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/state.dart';
 import 'package:openuu/desktop/pages/port_forward.dart';
-import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/desktop/widgets/tabbar.dart';
 import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 

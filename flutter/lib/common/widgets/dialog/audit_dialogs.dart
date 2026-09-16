@@ -3,13 +3,13 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:openuu/consts.dart';
-import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/desktop/widgets/tabbar.dart';
 import 'package:get/get.dart';
 import 'package:openuu/utils/http_service.dart' as http;
 
 import '../../../common.dart';
 import '../../../models/model.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import 'session_dialogs.dart';
 
 showAuditDialog(FFI ffi) async {

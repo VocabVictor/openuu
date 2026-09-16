@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../common.dart' show translate;
-import '../../models/wol_model.dart';
+import '../../models/wol.dart';
 import 'ui_tokens.dart';
 
 class DeviceActionBar extends StatefulWidget {

@@ -1,10 +1,10 @@
 
 import 'package:flutter/material.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/state.dart';
 import 'package:get/get.dart';
 
 import '../../../common.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import '../ui_dialog.dart';
 import '../../../desktop/widgets/ui_tokens.dart';
 import '../ui_fields.dart';

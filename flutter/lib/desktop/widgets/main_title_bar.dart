@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
 import 'package:openuu/common/widgets/brand_icon.dart';
 import 'package:openuu/desktop/widgets/account_action.dart';
-import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/desktop/widgets/tabbar.dart';
 import 'package:openuu/desktop/widgets/ui_tokens.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/state.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
 

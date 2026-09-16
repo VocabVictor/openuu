@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:openuu/models/peer_model.dart';
-import 'package:openuu/models/peer_tab_model.dart';
+import 'package:openuu/models/peer.dart';
+import 'package:openuu/models/peer_tab.dart';
 import 'package:get/get.dart';
 
 import '../../../common.dart';
 import '../address_book.dart';
-import 'package:openuu/models/ab_model.dart';
+import 'package:openuu/models/ab.dart';
 
 void editAbTagDialog(
     List<dynamic> currentTags, Function(List<dynamic>) onSubmit) {

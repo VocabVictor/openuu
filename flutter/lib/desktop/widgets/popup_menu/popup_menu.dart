@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../common.dart';
-import '.././material_mod_popup_menu.dart' as mod_menu;
+import '.././popup_menu_mod.dart' as mod_menu;
 part 'radios.dart';
 part 'switches.dart';
 part 'entries.dart';

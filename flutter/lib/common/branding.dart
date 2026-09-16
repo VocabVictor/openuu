@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/desktop/widgets/tabbar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../consts.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'ffi_options.dart';
 import 'globals.dart';

@@ -11,7 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../common.dart' show translate;
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import '../ui_tokens.dart';
 
 part 'capture.dart';

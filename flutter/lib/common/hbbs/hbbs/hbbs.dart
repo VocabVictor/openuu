@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
 import 'package:openuu/consts.dart';
 
-import 'package:openuu/models/peer_model.dart';
+import 'package:openuu/models/peer.dart';
 
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 part 'payloads.dart';
 
 class HttpType {

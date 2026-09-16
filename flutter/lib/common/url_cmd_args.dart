@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../consts.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'connect.dart';
 import 'ffi_options.dart';

@@ -1,0 +1,43 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
+import 'package:flutter/foundation.dart';
+import 'dart:ui' as ui;
+
+import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:openuu/main.dart';
+import 'package:openuu/utils/multi_window_manager.dart';
+import 'package:get/get.dart';
+
+import '../model.dart';
+import '../platform.dart';
+import '../state.dart';
+import '../input_modifier_utils.dart';
+import '../relative_mouse.dart';
+import '../../common.dart';
+import '../../consts.dart';
+import 'send_counter.dart';
+import 'move_coalescer.dart';
+part 'coords.dart';
+part 'pointer_event.dart';
+part 'key_events.dart';
+part 'keyboard.dart';
+part 'mouse_move.dart';
+part 'key_mouse_send.dart';
+part 'touch.dart';
+part 'trackpad.dart';
+part 'pointer_pos.dart';
+part 'pointer.dart';
+part 'input_model_core.dart';
+part 'side_buttons.dart';
+
+/// Mouse button enum.
+enum MouseButtons { left, right, wheel, back, forward }
+
+const _kMouseEventDown = 'mousedown';
+const _kMouseEventUp = 'mouseup';
+const _kMouseEventMove = 'mousemove';

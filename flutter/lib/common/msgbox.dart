@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/model.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'connect.dart';
 import 'ffi_options.dart';

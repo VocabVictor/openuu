@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:openuu/models/file_model.dart';
+import 'package:openuu/models/file.dart';
 import 'package:openuu/models/model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:uuid/uuid.dart';

@@ -4,7 +4,7 @@ import 'package:openuu/common/widgets/login.dart';
 import 'package:openuu/consts.dart';
 import 'package:openuu/desktop/pages/welcome.dart';
 import 'package:get/get.dart';
-import 'package:openuu/models/user_model.dart';
+import 'package:openuu/models/user.dart';
 
 /// Account entry for the main title bar: a sign-in icon when signed out, the
 /// user's name with a sign-out menu when signed in.

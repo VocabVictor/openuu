@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:openuu/desktop/widgets/refresh_wrapper.dart';
-import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/desktop/widgets/tabbar.dart';
 import 'package:openuu/main.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/state.dart';
 import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:openuu/utils/platform_channel.dart';
 import 'package:get/get.dart';
@@ -13,7 +13,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../consts.dart';
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 
 import 'package:openuu/native/win32.dart';
 import 'ffi_options.dart';

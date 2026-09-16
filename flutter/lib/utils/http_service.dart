@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:openuu/consts.dart';
 import 'package:http/http.dart' as http;
-import '../models/platform_model.dart';
+import '../models/platform.dart';
 import 'package:openuu/common.dart';
 export 'package:http/http.dart' show Response;
 

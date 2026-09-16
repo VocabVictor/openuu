@@ -3,18 +3,18 @@ import 'dart:async';
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:openuu/common/formatter/id_formatter.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/state.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:openuu/models/peer_model.dart';
+import 'package:openuu/models/peer.dart';
 
 import '../../../common.dart';
-import '../../../common/widgets/peer_tab_page.dart';
+import '../../../common/widgets/peer_tab.dart';
 import '../../../common/widgets/autocomplete.dart';
 import '../../../consts.dart';
 import '../../../models/model.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import '../home_page.dart';
 part 'id_text_field.dart';
 

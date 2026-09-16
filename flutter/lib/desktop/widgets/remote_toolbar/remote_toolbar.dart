@@ -7,8 +7,8 @@ import 'package:openuu/common/widgets/audio_input.dart';
 import 'package:openuu/desktop/widgets/ui_tokens.dart';
 import 'package:openuu/common/widgets/dialog.dart';
 import 'package:openuu/common/widgets/toolbar.dart';
-import 'package:openuu/models/chat_model.dart';
-import 'package:openuu/models/state_model.dart';
+import 'package:openuu/models/chat.dart';
+import 'package:openuu/models/state.dart';
 import 'package:openuu/consts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -19,13 +19,13 @@ import 'package:window_size/window_size.dart' as window_size;
 
 import '../../../common.dart';
 import '../../../models/model.dart';
-import '../../../models/platform_model.dart';
+import '../../../models/platform.dart';
 import '../../../common/shared_state.dart';
 import '.././popup_menu.dart';
 import '.././kb_layout_type_chooser.dart';
 import 'package:openuu/utils/scale.dart';
 import 'package:openuu/common/widgets/custom_scale_base.dart';
-import 'package:openuu/models/input_model.dart';
+import 'package:openuu/models/input.dart';
 
 part 'chat_voice_menu.dart';
 part 'display_menu.dart';

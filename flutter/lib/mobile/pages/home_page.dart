@@ -4,10 +4,10 @@ import 'package:openuu/mobile/pages/settings.dart';
 import 'package:get/get.dart';
 import '../../common.dart';
 import '../../common/widgets/chat_page.dart';
-import '../../models/platform_model.dart';
+import '../../models/platform.dart';
 import 'connection.dart';
 import 'scan_page.dart';
-import 'package:openuu/models/chat_model.dart';
+import 'package:openuu/models/chat.dart';
 
 abstract class PageShape extends Widget {
   final String title = "";
