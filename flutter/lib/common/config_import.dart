@@ -20,7 +20,6 @@ Future<bool> confirmImportConfig(String text, {required bool trusted}) async {
   final locked = (preview['locked'] as List?) ?? [];
   var applied = false;
   await gFFI.dialogManager.show((setState, close, context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     Widget line(String label, String value) => Padding(
         padding: const EdgeInsets.only(bottom: 4),
         child: Row(children: [
@@ -42,7 +41,7 @@ Future<bool> confirmImportConfig(String text, {required bool trusted}) async {
                 Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                        '${zh ? '将锁定' : 'Locked'}: ${locked.join(', ')}',
+                        translate('These options will be locked: {${locked.join(', ')}}'),
                         style: const TextStyle(fontSize: 12))),
             ]),
         actions: [

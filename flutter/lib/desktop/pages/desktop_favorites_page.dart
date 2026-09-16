@@ -101,7 +101,6 @@ class _DesktopFavoritesPageState extends State<DesktopFavoritesPage> {
   Widget build(BuildContext context) {
     final opened = _opened;
     if (opened != null) return _devicePage(opened);
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final byId = <String, Peer>{};
     for (final peer in [
       ...gFFI.abModel.allPeers(),
@@ -128,9 +127,8 @@ class _DesktopFavoritesPageState extends State<DesktopFavoritesPage> {
                   horizontal: UiSpace.pagePaddingX),
               child: Column(children: [
                 EmptyRow(
-                    text: zh
-                        ? '暂无收藏设备，在设备卡片上点击星标后会显示在这里。'
-                        : 'No favourites yet. Star a device to see it here.'),
+                    text: translate(
+                        'No favourites yet. Star a device to see it here.')),
               ]))
           : DeviceGroups(
               peers: peers,

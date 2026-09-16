@@ -49,7 +49,6 @@ CustomAlertDialog _desktopLoginDialog({
   required _LoginPrefs prefs,
   required Widget thirdAuth,
 }) {
-  final zh = Localizations.localeOf(context).languageCode == 'zh';
   final pal = UiColor.of(context);
   final typeset = UiType.of(context);
 
@@ -63,7 +62,7 @@ CustomAlertDialog _desktopLoginDialog({
             hasData: (server) => Padding(
                 padding: const EdgeInsets.only(bottom: UiSpace.s3),
                 child: Row(children: [
-                  Text(zh ? '账号服务器' : 'Account server',
+                  Text(translate('Account server'),
                       style: UiType.caption),
                   const SizedBox(width: UiSpace.s2),
                   Expanded(
@@ -86,11 +85,11 @@ CustomAlertDialog _desktopLoginDialog({
             onToggleObscure: () =>
                 setState(() => prefs.showPassword = !prefs.showPassword),
             onSubmitted: onLogin),
-        uiDialogToggle(typeset, zh ? '记住账号' : 'Remember account',
+        uiDialogToggle(typeset, translate('Remember account'),
             prefs.rememberAccount,
             isInProgress ? null : (v) => setState(() => prefs.rememberAccount = v)),
         const SizedBox(height: UiSpace.s2),
-        uiDialogToggle(typeset, zh ? '记住密码' : 'Remember password',
+        uiDialogToggle(typeset, translate('Remember password'),
             prefs.rememberPassword,
             isInProgress ? null : (v) => setState(() => prefs.rememberPassword = v)),
         if (isInProgress)

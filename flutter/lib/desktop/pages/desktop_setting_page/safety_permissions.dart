@@ -69,9 +69,8 @@ extension _SafetyPermissions on _SafetyState {
                   vertical: UiSpace.s2),
               color: UiColor.of(context).primaryTint,
               child: Text(
-                  Localizations.localeOf(context).languageCode == 'zh'
-                      ? '当前使用「${presetValues[presetKeys.indexOf(initialKey)]}」预设，下列权限由预设决定；改为「自定义」后可单独调整。'
-                      : 'The "${presetValues[presetKeys.indexOf(initialKey)]}" preset decides the permissions below; switch to "Custom" to adjust them one by one.',
+                  translate(
+                      'The "{${presetValues[presetKeys.indexOf(initialKey)]}}" preset decides the permissions below; switch to "Custom" to adjust them one by one.'),
                   style: UiType.of(context).caption.copyWith(color: UiColor.of(context).primary))),
         Column(
           children: [

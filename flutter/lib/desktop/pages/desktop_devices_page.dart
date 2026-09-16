@@ -175,11 +175,10 @@ class _DeviceGroupsState extends State<DeviceGroups> {
     _poller.watch(widget.peers
         .map((p) => p.id)
         .where((id) => id.isNotEmpty && id != widget.localId));
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final groups = {
-      zh ? '电脑' : 'Computers':
+      translate('Computers'):
           widget.peers.where((p) => !DeviceRow.mobile(p)).toList(),
-      zh ? '手机/平板' : 'Phones / tablets':
+      translate('Phones / tablets'):
           widget.peers.where(DeviceRow.mobile).toList(),
     };
     final children = <Widget>[];
@@ -200,7 +199,7 @@ class _DeviceGroupsState extends State<DeviceGroups> {
       if (collapsed) continue;
       children.add(const SizedBox(height: UiSpace.groupHeaderMarginBottom));
       if (group.value.isEmpty) {
-        children.add(EmptyRow(text: zh ? '暂无设备' : 'No devices'));
+        children.add(EmptyRow(text: translate('No devices')));
       }
       for (var i = 0; i < group.value.length; i++) {
         if (i > 0) children.add(const SizedBox(height: UiSpace.rowCardGap));

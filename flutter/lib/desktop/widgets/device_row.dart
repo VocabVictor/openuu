@@ -129,7 +129,6 @@ class DeviceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final ui = UiColor.of(context);
     final type = UiType.of(context);
     final canFavorite = favorite != null && !local;
@@ -189,7 +188,7 @@ class DeviceRow extends StatelessWidget {
                                   color: ui.primaryTint,
                                   borderRadius:
                                       BorderRadius.circular(UiSpace.tagRadius)),
-                              child: Text(zh ? '本机' : 'This device',
+                              child: Text(translate('This device'),
                                   style: type.tag)),
                         ],
                       ])),
@@ -201,8 +200,8 @@ class DeviceRow extends StatelessWidget {
                                   padding: EdgeInsets.zero,
                                   iconSize: UiSpace.rowActionIconSize,
                                   tooltip: favorite!
-                                      ? (zh ? '取消收藏' : 'Remove from favourites')
-                                      : (zh ? '收藏' : 'Add to favourites'),
+                                      ? (translate('Remove from favourites'))
+                                      : (translate('Add to favourites')),
                                   icon: Icon(
                                       favorite! ? Icons.star : Icons.star_border,
                                       color: favorite!
