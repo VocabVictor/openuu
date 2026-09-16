@@ -1,136 +1,103 @@
 use super::*;
 
-/// Keys no other test in this crate asserts on. Tests in one crate share every
-/// one of these tables, so a test that borrows a key another one is checking
-/// fails that one instead of itself, from a different thread, intermittently.
-const A_LOCAL_SETTING: &str = keys::OPTION_SYNC_AB_TAGS;
-const A_DISPLAY_SETTING: &str = keys::OPTION_SCROLL_STYLE;
+/// Keys no other test in this crate asserts on. One crate shares these tables,
+/// so borrowing a key another test checks fails that one, from another thread.
+const LOCAL: &str = keys::OPTION_SYNC_AB_TAGS;
+const DISPLAY: &str = keys::OPTION_SCROLL_STYLE;
 
-#[test]
-fn a_variable_name_is_the_key_shouted() {
-    assert_eq!(env_name("allow-d3d-render"), "OPENUU_OPT_ALLOW_D3D_RENDER");
-    assert_eq!(env_name("disable-udp"), "OPENUU_OPT_DISABLE_UDP");
+fn env(key: &str, value: &str) -> Set {
+    Set {
+        key: key.to_owned(),
+        value: value.to_owned(),
+        from: From::Env,
+    }
 }
 
 #[test]
-fn both_spellings_of_the_flag_are_taken_and_the_rest_is_left_alone() {
-    let args = vec![
+fn var_is_the_key_shouted() {
+    assert_eq!(var("allow-d3d-render"), "OPENUU_OPT_ALLOW_D3D_RENDER");
+}
+
+#[test]
+fn both_flag_spellings_taken_rest_untouched() {
+    let (found, rest) = from_args(vec![
         "--server".to_owned(),
         "--option".to_owned(),
         "disable-udp=N".to_owned(),
         "--option=view_style=original".to_owned(),
         "--connect".to_owned(),
-    ];
-    let (found, rest) = take_from_command_line(args);
+    ]);
     assert_eq!(
-        found,
-        vec![
-            Override {
-                key: "disable-udp".to_owned(),
-                value: "N".to_owned(),
-                source: Source::CommandLine
-            },
-            Override {
-                key: "view_style".to_owned(),
-                value: "original".to_owned(),
-                source: Source::CommandLine
-            },
-        ]
+        found.iter().map(|s| (&s.key[..], &s.value[..])).collect::<Vec<_>>(),
+        [("disable-udp", "N"), ("view_style", "original")]
     );
-    // Everything the caller still has to act on survives, in order.
-    assert_eq!(rest, vec!["--server".to_owned(), "--connect".to_owned()]);
+    assert_eq!(rest, ["--server", "--connect"]);
 }
 
 #[test]
-fn a_value_with_an_equals_sign_in_it_keeps_it() {
-    let (found, _) = take_from_command_line(vec!["--option".to_owned(), "k=a=b".to_owned()]);
-    assert_eq!(found.len(), 1);
+fn value_keeps_its_own_equals_sign() {
+    let (found, _) = from_args(vec!["--option".to_owned(), "k=a=b".to_owned()]);
     assert_eq!(found[0].value, "a=b");
 }
 
 #[test]
-fn a_flag_without_a_value_is_dropped_rather_than_eating_the_next_argument() {
-    let (found, rest) = take_from_command_line(vec!["--option".to_owned()]);
-    assert!(found.is_empty());
-    assert!(rest.is_empty());
+fn flag_without_value_eats_nothing() {
+    let (found, rest) = from_args(vec!["--option".to_owned()]);
+    assert!(found.is_empty() && rest.is_empty());
 }
 
 #[test]
-fn a_pair_that_is_not_key_equals_value_is_refused() {
-    let (found, _) = take_from_command_line(vec!["--option".to_owned(), "nonsense".to_owned()]);
-    assert!(found.is_empty());
-    let (found, _) = take_from_command_line(vec!["--option".to_owned(), "=novalue".to_owned()]);
-    assert!(found.is_empty());
+fn bad_pair_refused() {
+    for bad in ["nonsense", "=novalue"] {
+        let (found, _) = from_args(vec!["--option".to_owned(), bad.to_owned()]);
+        assert!(found.is_empty(), "{}", bad);
+    }
 }
 
 #[test]
-fn an_unknown_key_is_refused_because_it_has_no_table() {
-    assert!(apply_one(&Override {
-        key: "not-a-real-key".to_owned(),
-        value: "Y".to_owned(),
-        source: Source::CommandLine,
-    })
-    .is_some());
+fn unknown_key_has_no_table() {
+    assert_eq!(set(&env("not-a-real-key", "Y")), Some("no such key"));
 }
 
 #[test]
-fn a_secret_is_refused() {
-    assert!(apply_one(&Override {
-        key: provision::KEY_PERMANENT_PASSWORD.to_owned(),
-        value: "hunter2".to_owned(),
-        source: Source::Environment,
-    })
-    .is_some());
+fn secret_refused() {
+    assert_eq!(
+        set(&env(provision::KEY_PERMANENT_PASSWORD, "hunter2")),
+        Some("secret")
+    );
 }
 
-/// The one that matters: an override has to beat what is underneath it, or it
-/// is useless for answering "what does this build do if".
+/// The one that matters: an override must beat what is under it, or it cannot
+/// answer "what does this build do if".
 ///
-/// The layer underneath is faked with the default table rather than with
-/// `LocalConfig::set_option`, which would write the config of whoever is running
-/// the tests. What is actually under test is that the override lands in the
-/// table `get_or` reads first; which lower layer holds the losing value does not
-/// change that.
+/// The layer under it is faked in the default table rather than through
+/// `LocalConfig::set_option`, which would write the config of whoever runs the
+/// tests. What is under test is that the override lands in the table read first.
 #[test]
-fn an_override_wins_over_what_is_underneath_it() {
+fn override_beats_what_is_under_it() {
     config::DEFAULT_LOCAL_SETTINGS
         .write()
         .unwrap()
-        .insert(A_LOCAL_SETTING.to_owned(), "N".to_owned());
-    assert_eq!(config::LocalConfig::get_option(A_LOCAL_SETTING), "N");
-    assert!(apply_one(&Override {
-        key: A_LOCAL_SETTING.to_owned(),
-        value: "Y".to_owned(),
-        source: Source::Environment,
-    })
-    .is_none());
-    assert_eq!(config::LocalConfig::get_option(A_LOCAL_SETTING), "Y");
-    config::OVERWRITE_LOCAL_SETTINGS.write().unwrap().remove(A_LOCAL_SETTING);
-    config::DEFAULT_LOCAL_SETTINGS.write().unwrap().remove(A_LOCAL_SETTING);
+        .insert(LOCAL.to_owned(), "N".to_owned());
+    assert_eq!(config::LocalConfig::get_option(LOCAL), "N");
+    assert_eq!(set(&env(LOCAL, "Y")), None);
+    assert_eq!(config::LocalConfig::get_option(LOCAL), "Y");
+    config::OVERWRITE_LOCAL_SETTINGS.write().unwrap().remove(LOCAL);
+    config::DEFAULT_LOCAL_SETTINGS.write().unwrap().remove(LOCAL);
 }
 
-/// Command line and environment land in one table, so the order they are
-/// written in is the whole of the rule between them.
+/// Both land in one table, so the write order is the whole rule between them.
 #[test]
-fn the_environment_wins_over_the_command_line() {
-    let key = A_DISPLAY_SETTING;
-    apply_one(&Override {
-        key: key.to_owned(),
+fn env_beats_cli() {
+    set(&Set {
+        key: DISPLAY.to_owned(),
         value: "scrollbar".to_owned(),
-        source: Source::CommandLine,
+        from: From::Cli,
     });
-    apply_one(&Override {
-        key: key.to_owned(),
-        value: "scrolledge".to_owned(),
-        source: Source::Environment,
-    });
+    set(&env(DISPLAY, "scrolledge"));
     assert_eq!(
-        config::OVERWRITE_DISPLAY_SETTINGS
-            .read()
-            .unwrap()
-            .get(key)
-            .map(String::as_str),
+        config::OVERWRITE_DISPLAY_SETTINGS.read().unwrap().get(DISPLAY).map(String::as_str),
         Some("scrolledge")
     );
-    config::OVERWRITE_DISPLAY_SETTINGS.write().unwrap().remove(key);
+    config::OVERWRITE_DISPLAY_SETTINGS.write().unwrap().remove(DISPLAY);
 }

@@ -132,7 +132,7 @@ impl RendezvousMediator {
         match msg {
             Some(rendezvous_message::Union::RegisterPeerResponse(rpr)) => {
                 update_latency();
-                secure_register::registration_answered();
+                secure_register::answered();
                 if rpr.request_pk {
                     log::info!("request_pk received from {}", self.host);
                     self.register_pk(sink).await?;
@@ -140,9 +140,8 @@ impl RendezvousMediator {
             }
             Some(rendezvous_message::Union::RegisterPkResponse(rpr)) => {
                 update_latency();
-                // Any of the results means the server understood the message; only
-                // silence says it did not.
-                secure_register::registration_answered();
+                // Any result means the server understood it; only silence does not.
+                secure_register::answered();
                 match rpr.result.enum_value() {
                     Ok(register_pk_response::Result::OK) => {
                         Config::set_key_confirmed(true);

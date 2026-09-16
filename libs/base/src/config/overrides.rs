@@ -1,44 +1,20 @@
 //! What this run says, over what the machine has stored.
 //!
-//! # The order, and why it is this one
-//!
 //! ```text
 //! OPENUU_OPT_<KEY>   environment   highest -- this run, this shell
 //! --option <k>=<v>   command line
-//! <user's config>    stored files  -- what the app writes when you change a setting
-//! openuu-config.json provisioning  -- a deployment's defaults
-//! built-in           baked in      lowest  -- builtin.rs
+//! <user's config>    stored files
+//! openuu-config.json provisioning
+//! built-in           builtin.rs    lowest
 //! ```
 //!
-//! The two at the top exist to answer one question without editing anything:
-//! *what does this build do if I change this one value*. They are the shortest
-//! way to find out, so they win over what is on disk; nothing they set is
-//! written anywhere, and the next start without them is the old behaviour.
+//! The top two answer "what does this build do if I change this one value"
+//! without editing a file the app also writes. Nothing they set is stored, so
+//! the next start without them is the old behaviour. They also beat a
+//! provisioned `locked` key; `docs/config-precedence.md` argues that one.
 //!
-//! **They also win over a provisioned `locked` key**, which is the one choice
-//! here worth arguing about. A lock is a deployment's policy, and this lets a
-//! person with a shell on the machine step over it. That is the honest reading
-//! of what a lock can do: it is a fence in the UI, not a security boundary --
-//! anyone who can set an environment variable for the process can also edit the
-//! configuration file it reads, or run a build of their own.
-//!
-//! # What they cannot reach
-//!
-//! They are applied once, after the command line is parsed, so anything read
-//! before that -- `global_init`, the built-in defaults, importing a
-//! provisioning file -- sees the stored values. Environment variables reach a
-//! child process because it inherits them; `--option` does not, because the
-//! arguments are not passed on.
-//!
-//! # Why applying and reporting are two steps
-//!
-//! They have to be applied before anything reads a setting, and the logger is
-//! not up that early: `core_main` calls `init_log` well after this. Logging
-//! inside `apply` would have written every line into a logger that discards
-//! it, which is worse than not logging at all -- the promise in this file that
-//! "every override is logged" would have been false and nothing would have
-//! said so. So `apply_all` returns what it did and the caller reports it once
-//! the log exists.
+//! Applying and reporting are separate because these have to be applied before
+//! anything reads a setting, and `init_log` runs much later in `core_main`.
 
 use super::{keys, provision};
 use hbb_common::{config, log};
@@ -46,43 +22,41 @@ use hbb_common::{config, log};
 /// `OPENUU_OPT_ALLOW_D3D_RENDER=N` sets `allow-d3d-render`.
 pub const ENV_PREFIX: &str = "OPENUU_OPT_";
 /// `--option allow-d3d-render=N`, repeatable.
-pub const CLI_FLAG: &str = "--option";
+pub const FLAG: &str = "--option";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Source {
-    CommandLine,
-    Environment,
+pub enum From {
+    Cli,
+    Env,
 }
 
-impl Source {
-    fn as_str(&self) -> &'static str {
+impl From {
+    fn name(&self) -> &'static str {
         match self {
-            Source::CommandLine => "cli",
-            Source::Environment => "env",
+            From::Cli => "cli",
+            From::Env => "env",
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Override {
+pub struct Set {
     pub key: String,
     pub value: String,
-    pub source: Source,
+    pub from: From,
 }
 
-/// The environment variable that sets `key`: upper case, `-` becomes `_`.
+/// The variable that sets `key`: upper case, `-` becomes `_`.
 ///
-/// Only ever used in this direction. Going the other way is ambiguous --
-/// `allow-d3d-render` and `allow_d3d_render` produce the same variable -- so
-/// the environment is read by asking each known key whether its variable is
-/// set, never by parsing a variable name into a key.
-pub fn env_name(key: &str) -> String {
+/// Only used in this direction. Back the other way is ambiguous --
+/// `allow-d3d-render` and `allow_d3d_render` give the same variable -- so the
+/// environment is read by asking each known key whether its variable is set.
+pub fn var(key: &str) -> String {
     format!("{ENV_PREFIX}{}", key.to_uppercase().replace('-', "_"))
 }
 
-/// Every key that can be overridden, which is every key the provisioning file
-/// can carry. A key outside these tables has no table to be written into.
-fn known_keys() -> impl Iterator<Item = &'static str> {
+/// Everything a provisioning file can carry; a key outside these has no table.
+fn keys() -> impl Iterator<Item = &'static str> {
     keys::KEYS_SETTINGS
         .iter()
         .chain(keys::KEYS_DISPLAY_SETTINGS.iter())
@@ -90,127 +64,108 @@ fn known_keys() -> impl Iterator<Item = &'static str> {
         .copied()
 }
 
-/// Splits `--option k=v` out of the arguments. Returns what was found and the
-/// arguments with those removed, so the caller hands the rest on unchanged.
-pub fn take_from_command_line(args: Vec<String>) -> (Vec<Override>, Vec<String>) {
-    let mut found = Vec::new();
-    let mut rest = Vec::new();
-    let mut expecting = false;
+/// Splits `--option k=v` out, returning the rest for the caller to go on with.
+pub fn from_args(args: Vec<String>) -> (Vec<Set>, Vec<String>) {
+    let (mut found, mut rest) = (Vec::new(), Vec::new());
+    let mut want_value = false;
     for arg in args {
-        if expecting {
-            expecting = false;
-            push_pair(&mut found, &arg, Source::CommandLine);
-            continue;
-        }
-        if arg == CLI_FLAG {
-            expecting = true;
-        } else if let Some(pair) = arg.strip_prefix(&format!("{CLI_FLAG}=")) {
-            push_pair(&mut found, pair, Source::CommandLine);
+        if want_value {
+            want_value = false;
+            push(&mut found, &arg);
+        } else if arg == FLAG {
+            want_value = true;
+        } else if let Some(pair) = arg.strip_prefix(&format!("{FLAG}=")) {
+            push(&mut found, pair);
         } else {
             rest.push(arg);
         }
     }
-    if expecting {
-        log::warn!("event=config_override_bad arg={CLI_FLAG} reason=missing_value");
-    }
     (found, rest)
 }
 
-fn push_pair(out: &mut Vec<Override>, pair: &str, source: Source) {
+fn push(out: &mut Vec<Set>, pair: &str) {
     match pair.split_once('=') {
-        Some((k, v)) if !k.is_empty() => out.push(Override {
+        Some((k, v)) if !k.is_empty() => out.push(Set {
             key: k.to_owned(),
             value: v.to_owned(),
-            source,
+            from: From::Cli,
         }),
-        _ => log::warn!(
-            "event=config_override_bad value={pair} reason=not_key_equals_value"
-        ),
+        _ => log::warn!("event=config_override_bad value={pair}"),
     }
 }
 
-/// Reads one variable per known key. Nothing is parsed out of the environment's
-/// own names, so a variable that looks like ours but matches no key is ignored
-/// in silence -- it is far more likely to be someone else's than a typo of ours.
-pub fn from_environment() -> Vec<Override> {
-    let mut found = Vec::new();
-    for key in known_keys() {
-        if let Ok(value) = std::env::var(env_name(key)) {
-            found.push(Override {
+/// One variable per known key. A variable that looks like ours but matches no
+/// key is ignored: far more likely to be someone else's than a typo of ours.
+fn from_env() -> Vec<Set> {
+    keys()
+        .filter_map(|key| {
+            std::env::var(var(key)).ok().map(|value| Set {
                 key: key.to_owned(),
                 value,
-                source: Source::Environment,
-            });
-        }
-    }
-    found
+                from: From::Env,
+            })
+        })
+        .collect()
 }
 
-/// What `apply_all` did, to be logged once the logger exists.
+/// What `apply` did, logged once the logger exists.
 #[derive(Debug, Default)]
 pub struct Report {
-    pub applied: Vec<Override>,
-    pub refused: Vec<(Override, &'static str)>,
+    ok: Vec<Set>,
+    no: Vec<(Set, &'static str)>,
 }
 
 impl Report {
-    /// Called after `init_log`. The values are logged: these are the keys a
-    /// deployment file may carry, and knowing what a run was told is the whole
-    /// point of having said it here.
+    /// Values are logged: these are keys a deployment file may carry, and
+    /// knowing what a run was told is the point of having said it.
     pub fn log(&self) {
-        for o in &self.applied {
+        for s in &self.ok {
             log::info!(
                 "event=config_override key={} value={} source={}",
-                o.key,
-                o.value,
-                o.source.as_str()
+                s.key,
+                s.value,
+                s.from.name()
             );
         }
-        for (o, why) in &self.refused {
+        for (s, why) in &self.no {
             log::warn!(
                 "event=config_override_refused key={} source={} reason={why}",
-                o.key,
-                o.source.as_str()
+                s.key,
+                s.from.name()
             );
         }
     }
 }
 
-/// Command line first, environment second, so the environment wins where both
-/// name the same key: they are written into one table and the last write is the
-/// one that stays.
-pub fn apply_all(from_cli: Vec<Override>) -> Report {
+/// Command line first, environment second: one table, last write wins.
+pub fn apply(cli: Vec<Set>) -> Report {
     let mut report = Report::default();
-    for o in from_cli.into_iter().chain(from_environment()) {
-        match apply_one(&o) {
-            None => report.applied.push(o),
-            Some(why) => report.refused.push((o, why)),
+    for s in cli.into_iter().chain(from_env()) {
+        match set(&s) {
+            None => report.ok.push(s),
+            Some(why) => report.no.push((s, why)),
         }
     }
     report
 }
 
-/// `None` when it was applied, `Some(reason)` when it was not.
-fn apply_one(o: &Override) -> Option<&'static str> {
-    // Secrets have their own stores and are never a table entry; an override
-    // that set one would also be the easiest way to leave a password in a shell
-    // history or a process listing.
-    if provision::is_secret_key(&o.key) {
+/// `None` when applied, `Some(reason)` when not.
+fn set(s: &Set) -> Option<&'static str> {
+    // Secrets have their own stores, and an override is the easiest way to
+    // leave a password in a shell history or a process listing.
+    if provision::is_secret_key(&s.key) {
         return Some("secret");
     }
-    let table = if provision::is_setting(&o.key) {
+    let table = if provision::is_setting(&s.key) {
         &*config::OVERWRITE_SETTINGS
-    } else if provision::is_display_setting(&o.key) {
+    } else if provision::is_display_setting(&s.key) {
         &*config::OVERWRITE_DISPLAY_SETTINGS
-    } else if provision::is_local_setting(&o.key) {
+    } else if provision::is_local_setting(&s.key) {
         &*config::OVERWRITE_LOCAL_SETTINGS
     } else {
         return Some("no such key");
     };
-    table
-        .write()
-        .unwrap()
-        .insert(o.key.clone(), o.value.clone());
+    table.write().unwrap().insert(s.key.clone(), s.value.clone());
     None
 }
 

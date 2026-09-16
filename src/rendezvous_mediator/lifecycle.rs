@@ -106,9 +106,9 @@ impl RendezvousMediator {
         let mut conn = connect_tcp(host.clone(), CONNECT_TIMEOUT).await?;
         let key = crate::get_key(true).await;
         crate::secure_tcp(&mut conn, &key).await?;
-        // From here on this session answers for itself: whether the server ever
-        // acknowledged a registration on it decides if the next attempt uses UDP.
-        secure_register::begin_tcp_session();
+        // This session answers for itself: whether the server ever acknowledged
+        // a registration on it decides if the next attempt uses UDP.
+        secure_register::session_start();
         let mut rz = Self {
             addr: conn.local_addr().into_target_addr()?,
             host: host.clone(),
@@ -172,18 +172,18 @@ impl RendezvousMediator {
         {
             return Self::start_tcp(server, host).await;
         }
-        match secure_register::UdpPreference::read() {
-            // Both of these were asked for. Neither falls back, in either direction.
-            secure_register::UdpPreference::UdpOnly => return Self::start_udp(server, host).await,
-            secure_register::UdpPreference::TcpOnly => return Self::start_tcp(server, host).await,
-            secure_register::UdpPreference::Default => {}
+        match secure_register::Udp::read() {
+            // Both were asked for; neither falls back, in either direction.
+            secure_register::Udp::On => return Self::start_udp(server, host).await,
+            secure_register::Udp::Off => return Self::start_tcp(server, host).await,
+            secure_register::Udp::Unset => {}
         }
         let prefix = Self::get_host_prefix(&check_port(&host, RENDEZVOUS_PORT));
-        if secure_register::tcp_register_known_broken(&prefix).await {
+        if secure_register::tcp_broken(&prefix).await {
             return Self::start_udp(server, host).await;
         }
         let res = Self::start_tcp(server.clone(), host.clone()).await;
-        if secure_register::tcp_session_ended(&prefix).await {
+        if secure_register::session_end(&prefix).await {
             return Self::start_udp(server, host).await;
         }
         res
