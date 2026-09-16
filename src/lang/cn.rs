@@ -939,5 +939,14 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Allow file transfers through remote connections", "允许远程连接传输文件"),
         ("Allow audio from this device", "允许传输此设备的声音"),
         ("These options will be locked: {}", "以下选项将被锁定：{}"),
+        ("Account server", "账号服务器"),
+        ("Remember account", "记住账号"),
+        ("Computers", "电脑"),
+        ("Phones / tablets", "手机/平板"),
+        ("No devices", "暂无设备"),
+        ("No favourites yet. Star a device to see it here.", "暂无收藏设备，在设备卡片上点击星标后会显示在这里。"),
+        ("Add to favourites", "收藏"),
+        ("Remove from favourites", "取消收藏"),
+        ("The \"{}\" preset decides the permissions below; switch to \"Custom\" to adjust them one by one.", "当前使用「{}」预设，下列权限由预设决定；改为「自定义」后可单独调整。"),
     ].iter().cloned().collect();
 }

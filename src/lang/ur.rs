@@ -937,6 +937,15 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Allow file transfers through remote connections", ""),
         ("Allow audio from this device", ""),
         ("These options will be locked: {}", ""),
+        ("Account server", ""),
+        ("Remember account", ""),
+        ("Computers", ""),
+        ("Phones / tablets", ""),
+        ("No devices", ""),
+        ("No favourites yet. Star a device to see it here.", ""),
+        ("Add to favourites", ""),
+        ("Remove from favourites", ""),
+        ("The \"{}\" preset decides the permissions below; switch to \"Custom\" to adjust them one by one.", ""),
     ].iter().cloned().collect();
 }
 
