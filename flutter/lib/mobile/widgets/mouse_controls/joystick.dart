@@ -1,4 +1,4 @@
-part of 'floating_mouse_widgets.dart';
+part of 'mouse_controls.dart';
 
 // Virtual joystick can send either absolute movement (via updatePan)
 // or relative movement (via sendMobileRelativeMouseMove) depending on the

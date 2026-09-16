@@ -6,7 +6,7 @@ import 'package:openuu/common/shared_state.dart';
 import 'package:openuu/common/widgets/toolbar.dart';
 import 'package:openuu/consts.dart';
 import 'package:openuu/mobile/widgets/floating_mouse.dart';
-import 'package:openuu/mobile/widgets/floating_mouse_widgets.dart';
+import 'package:openuu/mobile/widgets/mouse_controls.dart';
 import 'package:openuu/mobile/widgets/gesture_help.dart';
 import 'package:openuu/models/chat.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';

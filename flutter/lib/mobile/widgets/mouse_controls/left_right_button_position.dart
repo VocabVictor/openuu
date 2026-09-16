@@ -1,4 +1,4 @@
-part of 'floating_mouse_widgets.dart';
+part of 'mouse_controls.dart';
 
 extension _FloatingLeftRightButtonPosition on _FloatingLeftRightButtonState {
   void _trySavePosition() {

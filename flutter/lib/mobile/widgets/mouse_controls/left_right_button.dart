@@ -1,4 +1,4 @@
-part of 'floating_mouse_widgets.dart';
+part of 'mouse_controls.dart';
 
 class FloatingLeftRightButton extends StatefulWidget {
   final bool isLeft;
