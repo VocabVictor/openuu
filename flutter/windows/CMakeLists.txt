@@ -103,7 +103,14 @@ if(PLUGIN_BUNDLED_LIBRARIES)
 endif()
 
 # flutter_rust_bridge
-set(RUSTDESK_LIB_BUILD_TYPE $<IF:$<CONFIG:Debug>,debug,release>)
+# OPENUU_RUST_PROFILE_DIR names the cargo profile directory to package from, for a
+# local build made with a faster profile (`build-local.ps1 -Fast`). Unset -- which
+# is every release build and every CI build -- keeps the original behaviour.
+if(DEFINED ENV{OPENUU_RUST_PROFILE_DIR})
+  set(RUSTDESK_LIB_BUILD_TYPE $ENV{OPENUU_RUST_PROFILE_DIR})
+else()
+  set(RUSTDESK_LIB_BUILD_TYPE $<IF:$<CONFIG:Debug>,debug,release>)
+endif()
 message(STATUS "rustdesk lib build type: ${RUSTDESK_LIB_BUILD_TYPE}")
 set(RUSTDESK_LIB "../../target/${RUSTDESK_LIB_BUILD_TYPE}/librustdesk.dll")
 install(FILES "${RUSTDESK_LIB}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"

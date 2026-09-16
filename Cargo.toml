@@ -265,5 +265,25 @@ strip = true
 #opt-level = 'z' # only have smaller size after strip
 rpath = true
 
+# A local build to look at, not a build to ship.
+#
+# `release` is shaped for the artifact: fat LTO merges every crate's IR before
+# optimising and `codegen-units = 1` removes the last parallelism inside the
+# crate, so the final crate compiles on roughly one core however many the
+# machine has. That is the right trade for something people download and the
+# wrong one for "rebuild it so I can see the button move".
+#
+# Thin LTO keeps the cross-crate inlining that matters and does it per-unit, so
+# sixteen units compile at once. The binary is larger and marginally slower.
+#
+# **Never ship this.** It lands in `target/release-fast/`, which keeps it out of
+# the path the packaging and the hash check read, and `build-local.ps1 -Fast`
+# says so in `BUILD-INFO.txt`. A build whose provenance line does not match how
+# it was built makes every other statement about that file worthless.
+[profile.release-fast]
+inherits = "release"
+lto = "thin"
+codegen-units = 16
+
 [profile.dev]
 debug = 1
