@@ -21,8 +21,6 @@ class TerminalSessionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final pal = UiColor.of(context);
     final type = UiType.of(context);
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
-    String t(String cn, String en) => zh ? cn : en;
     final connected = sessions.any((s) => s.connected);
     return Material(color: pal.panelBg, child: DefaultTextStyle(
       style: type.rowTitle.copyWith(fontWeight: FontWeight.w400),
@@ -33,10 +31,10 @@ class TerminalSessionsPage extends StatelessWidget {
           child: Row(children: [
             Expanded(child: GestureDetector(behavior: HitTestBehavior.opaque, onPanStart: (_) => onDrag(),
               child: Padding(padding: const EdgeInsets.symmetric(horizontal: UiSession.tabPaddingX), child: Align(
-                alignment: Alignment.centerLeft, child: Text(t('终端远控', 'Remote terminal'),
+                alignment: Alignment.centerLeft, child: Text(translate('Remote terminal'),
                   style: type.sidebarItem.copyWith(color: pal.text)))))),
-            _windowButton(pal, t('最小化', 'Minimize'), Icons.remove, onMinimize),
-            _windowButton(pal, t('关闭', 'Close'), Icons.close, onClose),
+            _windowButton(pal, translate('Minimize'), Icons.remove, onMinimize),
+            _windowButton(pal, translate('Close'), Icons.close, onClose),
             const SizedBox(width: UiSpace.s2),
           ])),
         Expanded(child: LayoutBuilder(builder: (context, bounds) {
@@ -51,15 +49,15 @@ class TerminalSessionsPage extends StatelessWidget {
                   Icon(Icons.circle, size: UiSpace.statusDotSize,
                     color: connected ? pal.success : pal.muted),
                   const SizedBox(width: UiSpace.statusDotGap),
-                  Text(connected ? t('已连接', 'Connected') : t('连接中', 'Connecting'),
+                  Text(connected ? translate('Connected') : translate('Connecting'),
                     style: type.caption.copyWith(color: pal.textSecondary)),
                 ])),
                 _button(pal, type,
-                    t('创建新的终端会话', 'Create terminal session'), onCreate),
+                    translate('Create terminal session'), onCreate),
               ]),
             const SizedBox(height: 22),
             if (sessions.isEmpty) Padding(padding: const EdgeInsets.all(UiSpace.s8),
-              child: Center(child: Text(t('暂无终端会话', 'No terminal sessions'),
+              child: Center(child: Text(translate('No terminal sessions'),
                 style: type.caption))),
             for (final session in sessions) Container(
               margin: const EdgeInsets.only(bottom: UiSpace.rowCardGap),
@@ -73,18 +71,18 @@ class TerminalSessionsPage extends StatelessWidget {
                   Text(session.name, maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: type.rowTitle),
                   const SizedBox(height: UiSpace.s1),
-                  Text(session.connected ? t('创建时间未提供', 'Creation time unavailable') : t('正在建立会话…', 'Establishing session…'),
+                  Text(session.connected ? translate('Creation time unavailable') : translate('Establishing session...'),
                     style: type.caption),
                 ])),
                 const SizedBox(width: UiSpace.s3),
-                _button(pal, type, t('打开终端', 'Open terminal'),
+                _button(pal, type, translate('Open terminal'),
                     session.connected ? () => onOpen(session.key) : null),
                 const SizedBox(width: UiSpace.s2),
-                PopupMenuButton<String>(tooltip: t('更多', 'More'),
+                PopupMenuButton<String>(tooltip: translate('More'),
                   icon: Icon(Icons.more_horiz, size: UiSpace.rowActionIconSize,
                     color: pal.muted),
                   onSelected: (_) => onRemove(session.key), itemBuilder: (_) => [
-                    PopupMenuItem(value: 'close', child: Text(t('关闭会话标签', 'Close session tab')))]),
+                    PopupMenuItem(value: 'close', child: Text(translate('Close session tab')))]),
               ])),
           ]);
         })),

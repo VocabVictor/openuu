@@ -1,6 +1,14 @@
 lazy_static::lazy_static! {
 pub static ref T: std::collections::HashMap<&'static str, &'static str> =
     [
+        ("Remote terminal", "終端遠端控制"),
+        ("Connecting", "連線中"),
+        ("Create terminal session", "建立新的終端工作階段"),
+        ("No terminal sessions", "暫無終端工作階段"),
+        ("Creation time unavailable", "建立時間未提供"),
+        ("Establishing session...", "正在建立工作階段…"),
+        ("Open terminal", "開啟終端"),
+        ("Close session tab", "關閉工作階段分頁"),
         ("Transfers", "傳輸列表"),
         ("Pause all", "全部暫停"),
         ("Resume all", "全部開始"),
