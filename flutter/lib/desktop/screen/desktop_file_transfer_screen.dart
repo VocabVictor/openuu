@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
-import 'package:openuu/desktop/pages/file_manager_tab_page.dart';
+import 'package:openuu/desktop/pages/file_manager_tab.dart';
 import 'package:provider/provider.dart';
 
 /// multi-tab file transfer remote screen

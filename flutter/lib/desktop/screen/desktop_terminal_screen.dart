@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
 import 'package:provider/provider.dart';
 
-import 'package:openuu/desktop/pages/terminal_tab_page.dart';
+import 'package:openuu/desktop/pages/terminal_tab.dart';
 
 class DesktopTerminalScreen extends StatelessWidget {
   final Map<String, dynamic> params;

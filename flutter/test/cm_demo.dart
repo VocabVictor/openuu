@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:openuu/common.dart';
 import 'package:openuu/consts.dart';
-import 'package:openuu/desktop/pages/server_page.dart';
+import 'package:openuu/desktop/pages/server.dart';
 import 'package:openuu/desktop/widgets/tabbar_widget.dart';
 import 'package:openuu/main.dart';
 import 'package:openuu/models/server_model.dart';

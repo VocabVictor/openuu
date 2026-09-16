@@ -10,10 +10,10 @@ import 'package:get/get.dart';
 
 import '../consts.dart';
 import '../common/widgets/login.dart';
-import '../mobile/pages/file_manager_page.dart';
-import '../mobile/pages/remote_page.dart';
-import '../mobile/pages/view_camera_page.dart';
-import '../mobile/pages/terminal_page.dart';
+import '../mobile/pages/file_manager.dart';
+import '../mobile/pages/remote.dart';
+import '../mobile/pages/view_camera.dart';
+import '../mobile/pages/terminal.dart';
 import '../models/platform_model.dart';
 
 import 'ffi_options.dart';

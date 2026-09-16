@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:openuu/mobile/pages/server_page.dart';
-import 'package:openuu/mobile/pages/settings_page.dart';
+import 'package:openuu/mobile/pages/server.dart';
+import 'package:openuu/mobile/pages/settings.dart';
 import 'package:get/get.dart';
 import '../../common.dart';
 import '../../common/widgets/chat_page.dart';
 import '../../models/platform_model.dart';
-import 'connection_page.dart';
+import 'connection.dart';
 import 'scan_page.dart';
 import 'package:openuu/models/chat_model.dart';
 

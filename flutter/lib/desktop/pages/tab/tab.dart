@@ -23,8 +23,8 @@ import '../../../common/shared_state.dart';
 import '../../../common/widgets/login.dart';
 import '../../../models/wol_model.dart';
 import '../welcome.dart';
-import '../desktop_devices_page.dart';
-import '../desktop_favorites_page.dart';
+import '../devices.dart';
+import '../favorites.dart';
 
 part 'assistance_home.dart';
 part 'window_handlers.dart';

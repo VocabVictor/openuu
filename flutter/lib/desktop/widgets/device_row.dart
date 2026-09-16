@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../common.dart';
 import '../../models/online_presence.dart';
 import '../../models/peer_model.dart';
-import '../pages/desktop_devices_page.dart' show deviceName;
+import '../pages/devices.dart' show deviceName;
 import 'ui_tokens.dart';
 
 /// A collapsible group title: chevron and text share the page's left edge
