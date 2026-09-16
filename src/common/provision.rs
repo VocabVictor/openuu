@@ -2,7 +2,7 @@
 //! (docs/server-config-provisioning.md §3). The parsing and the tables live
 //! in `base::config::provision`; this file only decides when to call them.
 
-use base::config::{builtin, provision};
+use base::config::{builtin, provision, view_style_migration};
 use hbb_common::log;
 use std::path::Path;
 
@@ -11,6 +11,9 @@ use std::path::Path;
 /// client file so `custom.txt` keeps the last word.
 pub fn at_startup() {
     builtin::apply();
+    // After the built-in defaults, because it asks what the default view style
+    // now is before deciding whether a peer's stored one is a leftover.
+    view_style_migration::run_once_after_init();
     provision::reload_persisted();
     match provision::import_exe_dir_file() {
         Some(Ok(report)) => log::info!(
