@@ -12,6 +12,16 @@
 //! default and a value chosen by the user are the same two words in the same
 //! file, so the only honest way to correct the first without overriding the
 //! second forever is to do it a single time and never look again.
+//!
+//! # There should not be a second one of these
+//!
+//! This file is a patch, and patches of this shape accumulate: one module and
+//! one permanent flag per default that was ever changed, each of them guessing
+//! which stored values were choices. If another default needs to reach installs
+//! that already have the key, do not copy this — either make one table of
+//! "default changed from X to Y at version N" that runs under a single flag, or
+//! accept the ordinary rule, which is that a changed default reaches new
+//! configurations only (`docs/config-precedence.md`).
 
 use hbb_common::{
     config::{self, Config, LocalConfig, PeerConfig},

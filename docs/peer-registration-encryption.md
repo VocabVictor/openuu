@@ -7,7 +7,14 @@
   peer 的 sink 存进 `tcp_peers`，`PunchHole`/`RequestRelay`/`FetchLocalAddr` 有 sink 走 sink、
   否则回 UDP；`tcp_register_tests.rs` 覆盖等价性。
 * 客户端侧：`start_tcp` 循环已有 `REG_INTERVAL` 周期的 `register_peer` 心跳。
-* 默认值：`src/rendezvous_mediator/secure_register.rs`。`disable-udp` 现在是三态——
+* **产品构建的主路径是内置默认**：`libs/base/src/config/builtin.rs` 在烤进了 id server 时把
+  `disable-udp` 默认设为 `Y`（`apply_values`），所以我们自己发布的客户端一直走加密 TCP 注册。
+  这一点在 2026-09-16 那笔 `fix(rendezvous)` 的提交信息里没写清楚，读起来像是"默认从明文改成加密"，
+  对我们的构建不成立；以这里为准。
+* 默认值：`src/rendezvous_mediator/secure_register.rs` 补的是另外两件事——**没有烤 id server 的构建**
+  （自编、连第三方服务器）现在也默认走 TCP，以及**服务端不支持 TCP 注册时回退到 UDP** 的兜底：
+  生产 hbbs 万一回滚到没有 `tcp_register.rs` 的版本，`disable-udp=Y` 会让所有被控端永远离线，
+  在此之前没有任何兜底。`disable-udp` 现在是三态——
   `Y` 恒走 TCP、`N` 恒走 UDP、未设置（绝大多数用户）走 TCP 并带一次回退。
   一次 TCP 会话如果自始至终没收到任何注册应答，就把该 host 记下，本进程内之后都走 UDP；
   这是为了让指向上游 hbbs 或旧版 OpenUU 服务端的被控端不至于永远离线（`start_all` 会无限重试）。
