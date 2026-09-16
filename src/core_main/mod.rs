@@ -43,8 +43,13 @@ pub fn core_main() -> Option<Vec<String>> {
     if !crate::common::global_init() {
         return None;
     }
+    // Taken out of the arguments before anything else reads them, applied after
+    // every layer it overrides (docs/config-precedence.md).
+    let (cli_overrides, argv) =
+        base::config::overrides::take_from_command_line(std::env::args().collect());
     crate::common::provision::at_startup();
     crate::load_custom_client();
+    base::config::overrides::apply_all(cli_overrides);
     #[cfg(windows)]
     if !crate::platform::windows::bootstrap() {
         // return None to terminate the process
@@ -59,7 +64,7 @@ pub fn core_main() -> Option<Vec<String>> {
     let mut _is_flutter_invoke_new_connection = false;
     let mut no_server = false;
     let mut arg_exe = Default::default();
-    for arg in std::env::args() {
+    for arg in argv {
         if i == 0 {
             arg_exe = arg;
         } else if i > 0 {

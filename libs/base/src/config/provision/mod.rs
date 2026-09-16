@@ -18,7 +18,8 @@ use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 pub use apply::{
-    apply, import_exe_dir_file, reload_persisted, EXE_DIR_FILE, HASH_KEY, PERSISTED_FILE,
+    apply, import_exe_dir_file, reload_persisted, EXE_DIR_FILE, HASH_KEY, KEY_PERMANENT_PASSWORD,
+    PERSISTED_FILE,
 };
 
 pub const VERSION: u32 = 1;
@@ -257,13 +258,13 @@ pub fn sanitized(p: &Provision) -> Provision {
     copy
 }
 
-pub(crate) fn is_setting(key: &str) -> bool {
+pub fn is_setting(key: &str) -> bool {
     keys::KEYS_SETTINGS.contains(&key)
 }
-pub(crate) fn is_display_setting(key: &str) -> bool {
+pub fn is_display_setting(key: &str) -> bool {
     keys::KEYS_DISPLAY_SETTINGS.contains(&key)
 }
-pub(crate) fn is_local_setting(key: &str) -> bool {
+pub fn is_local_setting(key: &str) -> bool {
     keys::KEYS_LOCAL_SETTINGS.contains(&key)
 }
 pub(crate) fn is_buildin_setting(key: &str) -> bool {
