@@ -1,10 +1,10 @@
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/consts.dart';
-import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
-import 'package:flutter_hbb/models/platform_model.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/consts.dart';
+import 'package:openuu/desktop/widgets/ui_tokens.dart';
+import 'package:openuu/models/platform_model.dart';
 import 'package:get/get.dart';
 part 'image_quality.dart';
 part 'trackpad_speed.dart';

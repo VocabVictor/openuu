@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:flutter_hbb/consts.dart';
+import 'package:openuu/consts.dart';
 import 'package:http/http.dart' as http;
 import '../models/platform_model.dart';
-import 'package:flutter_hbb/common.dart';
+import 'package:openuu/common.dart';
 export 'package:http/http.dart' show Response;
 
 enum HttpMethod { get, post, put, delete }

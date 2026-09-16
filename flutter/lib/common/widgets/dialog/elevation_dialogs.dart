@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/models/state_model.dart';
+import 'package:openuu/models/state_model.dart';
 import 'package:get/get.dart';
 
 import '../../../common.dart';

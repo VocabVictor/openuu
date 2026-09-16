@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hbb/desktop/pages/setting.dart';
-import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
-import 'package:flutter_hbb/mobile/widgets/dialog.dart';
-import 'package:flutter_hbb/models/chat_model.dart';
+import 'package:openuu/desktop/pages/setting.dart';
+import 'package:openuu/desktop/widgets/ui_tokens.dart';
+import 'package:openuu/mobile/widgets/dialog.dart';
+import 'package:openuu/models/chat_model.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +15,7 @@ import '../../../consts.dart';
 import '../../../models/platform_model.dart';
 import '../../../models/server_model.dart';
 import '../home_page.dart';
-import 'package:flutter_hbb/models/model.dart';
+import 'package:openuu/models/model.dart';
 part 'scam_warning.dart';
 part 'server_info.dart';
 part 'connection_manager.dart';

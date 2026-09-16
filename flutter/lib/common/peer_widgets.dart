@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/models/peer_tab_model.dart';
+import 'package:openuu/models/peer_tab_model.dart';
 import 'package:get/get.dart';
 
 import '../consts.dart';

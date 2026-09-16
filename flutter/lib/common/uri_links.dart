@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/utils/multi_window_manager.dart';
+import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:uni_links/uni_links.dart';
 
 import '../models/platform_model.dart';

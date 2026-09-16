@@ -2,14 +2,14 @@ import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
-import 'package:flutter_hbb/models/platform_model.dart';
-import 'package:flutter_hbb/models/state_model.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/models/platform_model.dart';
+import 'package:openuu/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:flutter_hbb/models/model.dart';
+import 'package:openuu/models/model.dart';
 
 class InstallPage extends StatefulWidget {
   const InstallPage({Key? key}) : super(key: key);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/desktop/pages/assistance.dart';
+import 'package:openuu/desktop/pages/assistance.dart';
 
 void main() {
   for (final size in [

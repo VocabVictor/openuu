@@ -3,9 +3,9 @@ import 'dart:convert';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common/window_fit.dart';
-import 'package:flutter_hbb/models/state_model.dart';
-import 'package:flutter_hbb/utils/multi_window_manager.dart';
+import 'package:openuu/common/window_fit.dart';
+import 'package:openuu/models/state_model.dart';
+import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
 import 'package:window_manager/window_manager.dart';

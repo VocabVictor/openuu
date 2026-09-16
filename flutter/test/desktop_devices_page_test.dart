@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/desktop/pages/desktop_devices_page.dart';
-import 'package:flutter_hbb/models/peer_model.dart';
-import 'package:flutter_hbb/models/online_poller.dart';
+import 'package:openuu/desktop/pages/desktop_devices_page.dart';
+import 'package:openuu/models/peer_model.dart';
+import 'package:openuu/models/online_poller.dart';
 
 /// No bridge to the Rust side in a widget test: the poller asks these
 /// instead of the server.

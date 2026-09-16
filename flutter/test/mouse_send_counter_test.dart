@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/models/input_model/send_counter.dart';
+import 'package:openuu/models/input_model/send_counter.dart';
 
 void main() {
   test('nothing is reported before a second has passed', () {

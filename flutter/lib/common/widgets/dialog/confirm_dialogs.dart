@@ -1,10 +1,10 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/models/peer_model.dart';
+import 'package:openuu/models/peer_model.dart';
 import 'package:get/get.dart';
 
 import '../../../common.dart';
-import 'package:flutter_hbb/models/ab_model.dart';
+import 'package:openuu/models/ab_model.dart';
 
 void deleteConfirmDialog(Function onSubmit, String title) async {
   gFFI.dialogManager.show(

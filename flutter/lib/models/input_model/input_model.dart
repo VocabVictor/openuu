@@ -9,8 +9,8 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_hbb/main.dart';
-import 'package:flutter_hbb/utils/multi_window_manager.dart';
+import 'package:openuu/main.dart';
+import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 
 import '../model.dart';

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/models/quick_launch_model.dart';
+import 'package:openuu/models/quick_launch_model.dart';
 
 void main() {
   test('correlates concurrent remote responses', () async {

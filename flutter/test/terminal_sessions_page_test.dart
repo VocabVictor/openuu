@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/desktop/pages/terminal_sessions_page.dart';
+import 'package:openuu/desktop/pages/terminal_sessions_page.dart';
 
 void main() {
   for (final size in [const Size(800, 500), const Size(1280, 720), const Size(1920, 1080)]) {

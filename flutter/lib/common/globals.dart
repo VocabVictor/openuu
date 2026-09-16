@@ -7,8 +7,8 @@ import 'package:uuid/uuid.dart';
 
 import '../models/platform_model.dart';
 
-import 'package:flutter_hbb/native/common.dart';
-import 'package:flutter_hbb/utils/http_service.dart' as http;
+import 'package:openuu/native/common.dart';
+import 'package:openuu/utils/http_service.dart' as http;
 import 'windows_misc.dart';
 
 final globalKey = GlobalKey<NavigatorState>();

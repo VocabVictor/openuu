@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hbb/common/formatter/id_formatter.dart';
-import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
-import 'package:flutter_hbb/models/state_model.dart';
-import 'package:flutter_hbb/utils/multi_window_manager.dart';
+import 'package:openuu/common/formatter/id_formatter.dart';
+import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/models/state_model.dart';
+import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 
 import '../consts.dart';
@@ -19,8 +19,8 @@ import '../models/platform_model.dart';
 import 'ffi_options.dart';
 import 'globals.dart';
 import 'windows_misc.dart';
-import 'package:flutter_hbb/models/chat_model.dart';
-import 'package:flutter_hbb/models/user_model.dart';
+import 'package:openuu/models/chat_model.dart';
+import 'package:openuu/models/user_model.dart';
 
 closeConnection({String? id}) {
   if (isAndroid || isIOS) {

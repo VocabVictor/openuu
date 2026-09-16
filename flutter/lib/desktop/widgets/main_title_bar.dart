@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/common/widgets/brand_icon.dart';
-import 'package:flutter_hbb/desktop/widgets/account_action.dart';
-import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
-import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
-import 'package:flutter_hbb/models/state_model.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/common/widgets/brand_icon.dart';
+import 'package:openuu/desktop/widgets/account_action.dart';
+import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/desktop/widgets/ui_tokens.dart';
+import 'package:openuu/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
 

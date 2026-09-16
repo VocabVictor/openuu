@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/desktop/pages/desktop_device_page.dart';
-import 'package:flutter_hbb/models/online_poller.dart';
+import 'package:openuu/desktop/pages/desktop_device_page.dart';
+import 'package:openuu/models/online_poller.dart';
 
 void main() {
   for (final size in [const Size(800, 500), const Size(1280, 720), const Size(1920, 1080), const Size(1600, 600)]) {

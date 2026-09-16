@@ -9,11 +9,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/common/widgets/remote_input.dart';
-import 'package:flutter_hbb/models/input_model.dart';
-import 'package:flutter_hbb/models/model.dart';
-import 'package:flutter_hbb/models/platform_model.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/common/widgets/remote_input.dart';
+import 'package:openuu/models/input_model.dart';
+import 'package:openuu/models/model.dart';
+import 'package:openuu/models/platform_model.dart';
 part 'wheel.dart';
 part 'joystick.dart';
 part 'left_right_button_position.dart';

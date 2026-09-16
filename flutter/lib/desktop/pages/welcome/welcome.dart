@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
+import 'package:openuu/common.dart';
 import '../../widgets/ui_tokens.dart';
 
 part 'devices_painter.dart';

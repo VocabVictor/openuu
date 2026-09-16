@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/desktop/widgets/settings_row.dart';
-import 'package:flutter_hbb/desktop/widgets/ui_palette.dart';
-import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
+import 'package:openuu/desktop/widgets/settings_row.dart';
+import 'package:openuu/desktop/widgets/ui_palette.dart';
+import 'package:openuu/desktop/widgets/ui_tokens.dart';
 
 /// Controls shared by the dialogs built on [UiDialog]: a label above a
 /// 32-high field with the error line under it, a switch row without on/off

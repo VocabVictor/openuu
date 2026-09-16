@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/desktop/widgets/device_action_bar.dart';
+import 'package:openuu/desktop/widgets/device_action_bar.dart';
 
 void main() {
   for (final width in [320.0, 600.0, 1000.0]) {

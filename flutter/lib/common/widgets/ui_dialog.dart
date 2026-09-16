@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/desktop/widgets/ui_palette.dart';
-import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/desktop/widgets/ui_palette.dart';
+import 'package:openuu/desktop/widgets/ui_tokens.dart';
 
 /// One button of a [UiDialog]'s action row.
 ///

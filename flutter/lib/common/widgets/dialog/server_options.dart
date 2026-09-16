@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hbb/consts.dart';
+import 'package:openuu/consts.dart';
 
 import '../../../common.dart';
 import '../../../models/model.dart';

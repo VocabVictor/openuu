@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart' show translate;
-import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
+import 'package:openuu/common.dart' show translate;
+import 'package:openuu/desktop/widgets/ui_tokens.dart';
 
 class FileTransferLayout extends StatelessWidget {
   final String localName, remoteName;

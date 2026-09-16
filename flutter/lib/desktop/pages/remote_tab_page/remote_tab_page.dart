@@ -5,25 +5,25 @@ import 'dart:ui' as ui;
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/common/shared_state.dart';
-import 'package:flutter_hbb/consts.dart';
-import 'package:flutter_hbb/models/input_model.dart';
-import 'package:flutter_hbb/models/state_model.dart';
-import 'package:flutter_hbb/desktop/pages/remote_page.dart';
-import 'package:flutter_hbb/desktop/widgets/remote_toolbar.dart';
-import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
-import 'package:flutter_hbb/desktop/widgets/material_mod_popup_menu.dart'
+import 'package:openuu/common.dart';
+import 'package:openuu/common/shared_state.dart';
+import 'package:openuu/consts.dart';
+import 'package:openuu/models/input_model.dart';
+import 'package:openuu/models/state_model.dart';
+import 'package:openuu/desktop/pages/remote_page.dart';
+import 'package:openuu/desktop/widgets/remote_toolbar.dart';
+import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/desktop/widgets/material_mod_popup_menu.dart'
     as mod_menu;
-import 'package:flutter_hbb/desktop/widgets/popup_menu.dart';
-import 'package:flutter_hbb/utils/multi_window_manager.dart';
+import 'package:openuu/desktop/widgets/popup_menu.dart';
+import 'package:openuu/utils/multi_window_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:bot_toast/bot_toast.dart';
 
 import '../../../common/widgets/dialog.dart';
 import '../../../models/platform_model.dart';
-import 'package:flutter_hbb/models/model.dart';
+import 'package:openuu/models/model.dart';
 part 'method_handler.dart';
 part 'tab_menu.dart';
 

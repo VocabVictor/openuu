@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/consts.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/consts.dart';
 
-import 'package:flutter_hbb/models/peer_model.dart';
+import 'package:openuu/models/peer_model.dart';
 
 import '../../../models/platform_model.dart';
 part 'payloads.dart';

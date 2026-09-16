@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/models/online_presence.dart';
+import 'package:openuu/models/online_presence.dart';
 
 void main() {
   final t0 = DateTime(2026, 9, 13, 12);

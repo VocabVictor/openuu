@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/common/widgets/login.dart';
-import 'package:flutter_hbb/consts.dart';
-import 'package:flutter_hbb/desktop/pages/welcome.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/common/widgets/login.dart';
+import 'package:openuu/consts.dart';
+import 'package:openuu/desktop/pages/welcome.dart';
 import 'package:get/get.dart';
-import 'package:flutter_hbb/models/user_model.dart';
+import 'package:openuu/models/user_model.dart';
 
 /// Account entry for the main title bar: a sign-in icon when signed out, the
 /// user's name with a sign-out menu when signed in.

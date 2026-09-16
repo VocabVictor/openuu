@@ -8,7 +8,7 @@ import '../../../desktop/widgets/ui_tokens.dart';
 import '../ui_dialog.dart';
 import '../ui_fields.dart';
 import 'validation.dart';
-import 'package:flutter_hbb/models/model.dart';
+import 'package:openuu/models/model.dart';
 
 void wrongPasswordDialog(SessionID sessionId,
     OverlayDialogManager dialogManager, type, title, text) {

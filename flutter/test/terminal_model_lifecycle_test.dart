@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter_hbb/models/model.dart';
-import 'package:flutter_hbb/models/terminal_model.dart';
+import 'package:openuu/models/model.dart';
+import 'package:openuu/models/terminal_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xterm/xterm.dart';
 

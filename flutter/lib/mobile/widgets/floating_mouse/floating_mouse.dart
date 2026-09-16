@@ -3,10 +3,10 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/models/input_model.dart';
-import 'package:flutter_hbb/models/model.dart';
-import 'package:flutter_hbb/utils/image.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/models/input_model.dart';
+import 'package:openuu/models/model.dart';
+import 'package:openuu/utils/image.dart';
 import 'package:provider/provider.dart';
 part 'mouse_build.dart';
 part 'mouse_move.dart';

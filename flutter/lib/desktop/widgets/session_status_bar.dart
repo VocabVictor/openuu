@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/desktop/widgets/ui_palette.dart';
-import 'package:flutter_hbb/desktop/widgets/ui_tokens.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/desktop/widgets/ui_palette.dart';
+import 'package:openuu/desktop/widgets/ui_tokens.dart';
 import 'package:get/get.dart';
 
 enum SessionPhase { connecting, waitingAccept, connected, disconnected }

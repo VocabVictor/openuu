@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/consts.dart';
-import 'package:flutter_hbb/desktop/pages/server_page.dart';
-import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
-import 'package:flutter_hbb/main.dart';
-import 'package:flutter_hbb/models/server_model.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/consts.dart';
+import 'package:openuu/desktop/pages/server_page.dart';
+import 'package:openuu/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/main.dart';
+import 'package:openuu/models/server_model.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';

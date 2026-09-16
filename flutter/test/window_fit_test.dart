@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:flutter_hbb/common/window_fit.dart';
+import 'package:openuu/common/window_fit.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

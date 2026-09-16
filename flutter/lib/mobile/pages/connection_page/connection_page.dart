@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common/formatter/id_formatter.dart';
-import 'package:flutter_hbb/models/state_model.dart';
+import 'package:openuu/common/formatter/id_formatter.dart';
+import 'package:openuu/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_hbb/models/peer_model.dart';
+import 'package:openuu/models/peer_model.dart';
 
 import '../../../common.dart';
 import '../../../common/widgets/peer_tab_page.dart';

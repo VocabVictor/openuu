@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/common/widgets/dialog.dart';
-import 'package:flutter_hbb/utils/event_loop.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/common/widgets/dialog.dart';
+import 'package:openuu/utils/event_loop.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as path;
 

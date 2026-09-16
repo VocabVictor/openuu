@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hbb/common/widgets/remote_input.dart';
+import 'package:openuu/common/widgets/remote_input.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_hbb/models/state_model.dart';
+import 'package:openuu/models/state_model.dart';
 
 import '../../../consts.dart';
 import '../../../common/widgets/overlay.dart';
@@ -21,8 +21,8 @@ import '../../widgets/remote_toolbar.dart';
 import '../../widgets/kb_layout_type_chooser.dart';
 import '../../widgets/tabbar_widget.dart';
 
-import 'package:flutter_hbb/native/custom_cursor.dart';
-import 'package:flutter_hbb/models/input_model.dart';
+import 'package:openuu/native/custom_cursor.dart';
+import 'package:openuu/models/input_model.dart';
 part 'view.dart';
 part 'body.dart';
 part 'image_paint.dart';

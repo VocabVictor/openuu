@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/consts.dart';
-import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/consts.dart';
+import 'package:openuu/desktop/widgets/tabbar_widget.dart';
 import 'package:get/get.dart';
-import 'package:flutter_hbb/utils/http_service.dart' as http;
+import 'package:openuu/utils/http_service.dart' as http;
 
 import '../../../common.dart';
 import '../../../models/model.dart';

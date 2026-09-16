@@ -2,7 +2,7 @@ import 'dart:async';
 import '../desktop/widgets/ui_palette.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
+import 'package:openuu/desktop/widgets/tabbar_widget.dart';
 import 'package:get/get.dart';
 
 import '../consts.dart';

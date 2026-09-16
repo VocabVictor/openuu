@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/desktop/widgets/preview.dart';
+import 'package:openuu/desktop/widgets/preview.dart';
 
 void main() {
   test('preview keys isolate login, server and device', () {

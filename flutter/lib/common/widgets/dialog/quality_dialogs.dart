@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common/shared_state.dart';
-import 'package:flutter_hbb/common/widgets/setting_widgets.dart';
-import 'package:flutter_hbb/consts.dart';
+import 'package:openuu/common/shared_state.dart';
+import 'package:openuu/common/widgets/setting_widgets.dart';
+import 'package:openuu/consts.dart';
 
 import '../../../common.dart';
 import '../../../models/model.dart';
 import '../../../models/platform_model.dart';
-import 'package:flutter_hbb/models/input_model.dart';
+import 'package:openuu/models/input_model.dart';
 
 customImageQualityDialog(SessionID sessionId, String id, FFI ffi) async {
   double initQuality = kDefaultQuality;

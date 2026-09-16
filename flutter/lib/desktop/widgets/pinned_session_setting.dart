@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/models/platform_model.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/models/platform_model.dart';
 import 'package:get/get.dart';
 
 const kOptionPinnedWindowsSession = 'pinned-windows-session';

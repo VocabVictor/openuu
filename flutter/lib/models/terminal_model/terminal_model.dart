@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/common.dart';
-import 'package:flutter_hbb/consts.dart';
-import 'package:flutter_hbb/main.dart';
+import 'package:openuu/common.dart';
+import 'package:openuu/consts.dart';
+import 'package:openuu/main.dart';
 import 'package:xterm/xterm.dart';
 
 import '../input_modifier_utils.dart';

@@ -9,7 +9,7 @@ import '../../../models/platform_model.dart';
 import '../ui_dialog.dart';
 import '../ui_fields.dart';
 import 'code_fields.dart';
-import 'package:flutter_hbb/models/model.dart';
+import 'package:openuu/models/model.dart';
 
 void changeBot({Function()? callback}) async {
   if (bind.mainHasValidBotSync()) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_hbb/desktop/widgets/file_transfer_layout.dart';
+import 'package:openuu/desktop/widgets/file_transfer_layout.dart';
 
 void main() {
   for (final size in [
