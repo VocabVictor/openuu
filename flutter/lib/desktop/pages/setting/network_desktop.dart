@@ -1,0 +1,111 @@
+part of 'setting.dart';
+
+extension _NetworkDesktop on _NetworkState {
+  /// The network tab on the desktop shell: a Server group of navigation
+  /// rows with value summaries, then a Connection group of switch rows
+  /// whose former tooltips are resident subtitles.
+  Widget _networkDesktop(BuildContext context,
+      {required bool hideServer,
+      required bool hideProxy,
+      required bool hideWebSocket}) {
+
+    Future<String> serverSummary() async {
+      Map<String, dynamic> options = {};
+      try {
+        options = jsonDecode(await bind.mainGetOptions());
+      } catch (e) {
+        debugPrint("Invalid server config: $e");
+      }
+      final id = ServerConfig.fromOptions(options).idServer;
+      return id.isEmpty ? (translate('Default server')) : id;
+    }
+
+    Future<String> proxySummary() async {
+      final socks = await bind.mainGetSocks();
+      return socks.length == 3 && socks[0].isNotEmpty
+          ? socks[0]
+          : (translate('No proxy'));
+    }
+
+    Widget boolRow(String label, String tip, String key) => _switchRow(
+        context, label, mainGetBoolOptionSync(key), (value) {
+      mainSetBoolOption(key, value);
+      _setState(() {});
+    }, enabled: !locked && !isOptionFixed(key), description: translate(tip));
+
+    final outgoingOnly = bind.isOutgoingOnly();
+    return Column(children: [
+      if (!hideServer || !hideProxy)
+        _group(translate('Server'), [
+          if (!hideServer)
+            futureBuilder(
+                future: serverSummary(),
+                hasData: (summary) => SettingsExpandPanel(
+                    label: translate('ID/Relay Server'),
+                    summary: summary.toString(),
+                    enabled: !locked,
+                    panel: (context, close) => _ServerPanel(
+                        close: close, onSaved: () => _setState(() {})))),
+          if (!hideProxy)
+            futureBuilder(
+                future: proxySummary(),
+                hasData: (summary) => SettingsExpandPanel(
+                    label: translate('Socks5/Http(s) Proxy'),
+                    summary: summary.toString(),
+                    enabled: !locked,
+                    panel: (context, close) => _ProxyPanel(
+                        close: close, onSaved: () => _setState(() {})))),
+          if (!hideServer) ..._provisionRows(context),
+        ]),
+      futureBuilder(
+          future: bind.mainIsUsingPublicServer(),
+          hasData: (isUsingPublicServer) {
+            final rows = [
+              if (!hideWebSocket)
+                boolRow('Use WebSocket', 'websocket_tip',
+                    kOptionAllowWebSocket),
+              if (isUsingPublicServer != true && !outgoingOnly)
+                _switchRow(
+                    context,
+                    'Disable UDP',
+                    // Unset means on: the peer registers over the encrypted TCP
+                    // rendezvous by default (src/rendezvous_mediator/secure_register.rs).
+                    option2bool(kOptionDisableUdp,
+                        bind.mainGetOptionSync(key: kOptionDisableUdp)),
+                    (value) async {
+                      await bind.mainSetOption(
+                          key: kOptionDisableUdp, value: value ? 'Y' : 'N');
+                      _setState(() {});
+                    },
+                    enabled: !locked && !isOptionFixed(kOptionDisableUdp),
+                    description: translate('disable-udp-tip')),
+              if (isUsingPublicServer != true) _tlsFallbackRow(context),
+            ];
+            if (rows.isEmpty) return const Offstage();
+            return _group(translate('Connection'), rows);
+          }),
+    ]);
+  }
+
+  /// The only switch that lowers security: its subtitle turns to the warning
+  /// colour with a warning icon while it is on (design-review-settings N4).
+  Widget _tlsFallbackRow(BuildContext context) {
+    const key = kOptionAllowInsecureTLSFallback;
+    final on = mainGetBoolOptionSync(key);
+    return SettingsRow(
+        label: translate('Allow insecure TLS fallback'),
+        subtitle:
+            '${on ? '⚠ ' : ''}${translate('allow-insecure-tls-fallback-tip')}',
+        subtitleStyle:
+            on ? UiType.of(context).caption.copyWith(color: UiColor.of(context).warning) : null,
+        enabled: !locked && !isOptionFixed(key),
+        control: SettingsSwitch(
+            value: on,
+            onChanged: !locked && !isOptionFixed(key)
+                ? (value) {
+                    mainSetBoolOption(key, value);
+                    _setState(() {});
+                  }
+                : null));
+  }
+}

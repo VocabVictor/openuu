@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/common/widgets/login.dart';
 import 'package:flutter_hbb/consts.dart';
-import 'package:flutter_hbb/desktop/pages/desktop_welcome_page.dart';
+import 'package:flutter_hbb/desktop/pages/welcome.dart';
 import 'package:get/get.dart';
 import 'package:flutter_hbb/models/user_model.dart';
 

@@ -8,8 +8,8 @@ import '../../models/peer_model.dart';
 import '../../models/peer_tab_model.dart';
 import '../../models/platform_model.dart';
 import 'desktop_device_page.dart';
-import 'desktop_tab_page.dart';
-import 'desktop_welcome_page.dart';
+import 'tab.dart';
+import 'welcome.dart';
 import '../widgets/device_row.dart';
 import '../widgets/ui_tokens.dart';
 

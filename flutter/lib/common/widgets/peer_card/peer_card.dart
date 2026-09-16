@@ -1,5 +1,5 @@
 import '../../../desktop/pages/desktop_device_page.dart';
-import '../../../desktop/pages/desktop_tab_page.dart';
+import '../../../desktop/pages/tab.dart';
 import '../login.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';

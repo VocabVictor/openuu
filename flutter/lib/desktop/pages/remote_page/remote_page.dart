@@ -21,7 +21,7 @@ import '../../../models/platform_model.dart';
 import '../../../common/shared_state.dart';
 import '../../../utils/image.dart';
 import '../../widgets/remote_toolbar.dart';
-import '../../widgets/desktop_preview.dart';
+import '../../widgets/preview.dart';
 import '../../widgets/kb_layout_type_chooser.dart';
 import '../../widgets/tabbar_widget.dart';
 import '../macos_full_screen_focus_recovery.dart';
