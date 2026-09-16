@@ -18,16 +18,15 @@ class _GeneralState extends State<_General> {
   Widget build(BuildContext context) {
     final scrollController = ScrollController();
     if (isWindows && !bind.isIncomingOnly()) {
-      final zh = Localizations.localeOf(context).languageCode == 'zh';
       return ListView(
         controller: scrollController,
         children: [
           service(),
-          _group(zh ? '外观' : 'Appearance', [
+          _group(translate('Appearance'), [
             theme(),
             _settingRow(context, 'Language', language()),
           ]),
-          _mediaGroup(context, zh),
+          _mediaGroup(context),
           record(context),
           WaylandCard(),
           other()

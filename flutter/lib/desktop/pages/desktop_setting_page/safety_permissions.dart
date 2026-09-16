@@ -122,7 +122,6 @@ extension _SafetyMore on _SafetyState {
   Widget more(BuildContext context) {
     bool enabled = !locked;
     if (isWindows && !bind.isIncomingOnly()) {
-      final zh = Localizations.localeOf(context).languageCode == 'zh';
       return Column(children: [
         _Card(title: 'Security', children: [
           _OptionCheckBox(context, 'Deny LAN discovery', 'enable-lan-discovery',
@@ -141,7 +140,7 @@ extension _SafetyMore on _SafetyState {
           if (bind.mainIsInstalled() && !isUnlockPinDisabled()) unlockPin()
         ]),
         _group(
-            zh ? '高级' : 'Advanced',
+            translate('Advanced'),
             [
               shareRdp(context, enabled),
               PinnedSessionSetting(

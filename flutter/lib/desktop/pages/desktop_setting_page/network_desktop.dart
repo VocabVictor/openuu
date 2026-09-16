@@ -8,7 +8,6 @@ extension _NetworkDesktop on _NetworkState {
       {required bool hideServer,
       required bool hideProxy,
       required bool hideWebSocket}) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
 
     Future<String> serverSummary() async {
       Map<String, dynamic> options = {};
@@ -18,14 +17,14 @@ extension _NetworkDesktop on _NetworkState {
         debugPrint("Invalid server config: $e");
       }
       final id = ServerConfig.fromOptions(options).idServer;
-      return id.isEmpty ? (zh ? '使用默认服务器' : 'Default server') : id;
+      return id.isEmpty ? (translate('Default server')) : id;
     }
 
     Future<String> proxySummary() async {
       final socks = await bind.mainGetSocks();
       return socks.length == 3 && socks[0].isNotEmpty
           ? socks[0]
-          : (zh ? '未使用代理' : 'No proxy');
+          : (translate('No proxy'));
     }
 
     Widget boolRow(String label, String tip, String key) => _switchRow(
@@ -37,7 +36,7 @@ extension _NetworkDesktop on _NetworkState {
     final outgoingOnly = bind.isOutgoingOnly();
     return Column(children: [
       if (!hideServer || !hideProxy)
-        _group(zh ? '服务器' : 'Server', [
+        _group(translate('Server'), [
           if (!hideServer)
             futureBuilder(
                 future: serverSummary(),
@@ -56,7 +55,7 @@ extension _NetworkDesktop on _NetworkState {
                     enabled: !locked,
                     panel: (context, close) => _ProxyPanel(
                         close: close, onSaved: () => _setState(() {})))),
-          if (!hideServer) ..._provisionRows(context, zh),
+          if (!hideServer) ..._provisionRows(context),
         ]),
       futureBuilder(
           future: bind.mainIsUsingPublicServer(),
@@ -80,7 +79,7 @@ extension _NetworkDesktop on _NetworkState {
               if (isUsingPublicServer != true) _tlsFallbackRow(context),
             ];
             if (rows.isEmpty) return const Offstage();
-            return _group(zh ? '连接方式' : 'Connection', rows);
+            return _group(translate('Connection'), rows);
           }),
     ]);
   }

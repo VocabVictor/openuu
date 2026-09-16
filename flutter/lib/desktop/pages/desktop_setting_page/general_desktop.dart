@@ -3,7 +3,6 @@ part of 'desktop_setting_page.dart';
 extension _GeneralDesktop on _GeneralState {
   /// The service as a status bar above the groups: dot, state, Start/Stop.
   Widget _serviceBar(BuildContext context, VoidCallback onToggle) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final stopped = serviceStop.value;
     return Padding(
         padding: const EdgeInsets.only(top: UiSpace.settingsGroupGap),
@@ -27,8 +26,8 @@ extension _GeneralDesktop on _GeneralState {
               const SizedBox(width: UiSpace.s2),
               Text(
                   stopped
-                      ? (zh ? '服务已停止' : 'Service stopped')
-                      : (zh ? '服务运行中' : 'Service running'),
+                      ? (translate('Service stopped'))
+                      : (translate('Service running')),
                   style:
                       UiType.of(context).rowTitle.copyWith(fontWeight: FontWeight.w400)),
               const Spacer(),
@@ -38,11 +37,11 @@ extension _GeneralDesktop on _GeneralState {
   }
 
   /// Hardware codec and audio input as one group on the desktop shell.
-  Widget _mediaGroup(BuildContext context, bool zh) {
+  Widget _mediaGroup(BuildContext context) {
     final hasHwcodec = bind.mainHasHwcodec() || bind.mainHasVram();
     final outgoingOnly = bind.isOutgoingOnly();
     if (!hasHwcodec && outgoingOnly) return const Offstage();
-    return _group(zh ? '音视频' : 'Audio and video', [
+    return _group(translate('Audio and video'), [
       if (hasHwcodec)
         _OptionCheckBox(context, 'Enable hardware codec', kOptionEnableHwcodec,
             update: (bool v) {

@@ -83,7 +83,6 @@ class _ServerPanelState extends State<_ServerPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final locked = isOptionFixed('custom-rendezvous-server');
     return Obx(() =>
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -114,8 +113,8 @@ class _ServerPanelState extends State<_ServerPanel> {
           SettingsPanelFooter(buttons: [
             _secondaryButton(context, 'Import server config',
                 locked || _busy ? null : _importClipboard),
-            _secondaryButton(context, zh ? '重置' : 'Reset', _busy ? null : _load),
-            _primaryButton(context, zh ? '保存' : 'Save', locked || _busy ? null : _save),
+            _secondaryButton(context, translate('Reset'), _busy ? null : _load),
+            _primaryButton(context, translate('Save'), locked || _busy ? null : _save),
           ]),
         ]));
   }

@@ -13,9 +13,8 @@ class _DisplayState extends State<_Display> {
   Widget build(BuildContext context) {
     final scrollController = ScrollController();
     if (isWindows && !bind.isIncomingOnly()) {
-      final zh = Localizations.localeOf(context).languageCode == 'zh';
       return ListView(controller: scrollController, children: [
-        _group(zh ? '新建连接的默认值' : 'Defaults for new connections', [
+        _group(translate('Defaults for new connections'), [
           viewStyle(context),
           scrollStyle(context),
           imageQuality(context),
@@ -119,8 +118,7 @@ extension _DisplayOther on _DisplayState {
     final children =
         otherDefaultSettings().map((e) => otherRow(e.$1, e.$2)).toList();
     if (isWindows && !bind.isIncomingOnly()) {
-      final zh = Localizations.localeOf(context).languageCode == 'zh';
-      return _group(zh ? '高级' : 'Advanced', children, collapsible: true);
+      return _group(translate('Advanced'), children, collapsible: true);
     }
     return _Card(title: 'Other Default Options', children: children);
   }

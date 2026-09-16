@@ -142,7 +142,6 @@ extension _SafetyPassword on _SafetyState {
                   onChanged: (key) => model.setApproveMode(key),
                 ).marginOnly(left: _kContentHMargin);
           if (desktop) {
-            final zh = Localizations.localeOf(context).languageCode == 'zh';
             return futureBuilder(
                 future: bind.mainGetCommon(key: 'permanent-password-set'),
                 hasData: (data) {
@@ -154,7 +153,7 @@ extension _SafetyPassword on _SafetyState {
                         if (usePassword)
                           _settingRow(
                               context,
-                              zh ? '验证方式' : 'Verification method',
+                              translate('Verification method'),
                               SettingsDropdown(
                                   keys: passwordKeys,
                                   values: passwordValues,

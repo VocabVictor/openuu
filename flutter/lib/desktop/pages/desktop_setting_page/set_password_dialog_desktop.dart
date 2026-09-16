@@ -15,7 +15,6 @@ void _setPasswordDialogDesktop(
   var err0 = '', err1 = '';
   var visible = false;
   gFFI.dialogManager.show((setState, close, context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final pass = p0.text.trim();
     final canSubmit = pass.isNotEmpty || p1.text.trim().isNotEmpty;
 
@@ -202,7 +201,7 @@ void _setPasswordDialogDesktop(
                     height: UiSpace.controlHeight),
                 if (localPasswordSet) ...[
                   const SizedBox(width: UiSpace.s2),
-                  _dangerButton(context, zh ? '清除' : 'Remove', remove,
+                  _dangerButton(context, translate('Remove'), remove,
                       height: UiSpace.controlHeight),
                 ],
                 const SizedBox(width: UiSpace.s2),

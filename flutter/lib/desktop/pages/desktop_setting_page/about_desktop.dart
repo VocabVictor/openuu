@@ -31,7 +31,7 @@ Widget _aboutDesktop(BuildContext context,
                         color: UiColor.of(context).muted),
                     onPressed: () async {
                       await Clipboard.setData(ClipboardData(text: value));
-                      showToast(zh ? '已复制' : 'Copied');
+                      showToast(translate('Copied'));
                     })),
           ]),
           description: '');
@@ -85,7 +85,7 @@ Widget _aboutDesktop(BuildContext context,
       copyRow('Build Date', buildDate),
       copyRow('ID', myId),
       SettingsRow(
-          label: zh ? '开源许可' : 'Open source licence',
+          label: translate('Open source licence'),
           onTap: () => _licenceDialog(zh),
           control: Icon(Icons.chevron_right,
               size: 16, color: UiColor.of(context).muted)),
@@ -95,7 +95,7 @@ Widget _aboutDesktop(BuildContext context,
           control: Icon(Icons.open_in_new, size: 14, color: UiColor.of(context).muted)),
     ]),
     if (fingerprint.isNotEmpty)
-      _group(zh ? '高级' : 'Advanced', [copyRow('Fingerprint', fingerprint)],
+      _group(translate('Advanced'), [copyRow('Fingerprint', fingerprint)],
           collapsible: true),
     const SizedBox(height: UiSpace.s3),
     SelectableText(
@@ -117,19 +117,25 @@ void _licenceDialog(bool zh) {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _dialogTitle(context, zh ? '开源许可' : 'Open source licence', close),
+            _dialogTitle(context, translate('Open source licence'), close),
             const SizedBox(height: UiSpace.s2),
             Text(
-                zh ? 'OpenUU 基于 RustDesk 开发，遵循 GNU Affero General Public License v3.0 发布。你可以按该许可的条款使用、修改和分发本软件，完整许可文本与源代码见下方链接。' : 'OpenUU is derived from RustDesk and is released under the GNU Affero General Public License v3.0. You may use, modify and redistribute it under that licence; the full text and the source code are behind the link below.',
+                zh
+                    // Not translate(): the table's lookup rewrites "RustDesk" to the
+                    // application name, which would make this attribution read
+                    // "OpenUU is derived from OpenUU". An AGPL notice has to name
+                    // the work it derives from.
+                    ? 'OpenUU 基于 RustDesk 开发，遵循 GNU Affero General Public License v3.0 发布。你可以按该许可的条款使用、修改和分发本软件，完整许可文本与源代码见下方链接。'
+                    : 'OpenUU is derived from RustDesk and is released under the GNU Affero General Public License v3.0. You may use, modify and redistribute it under that licence; the full text and the source code are behind the link below.',
                 style: UiType.of(context).rowTitle
                     .copyWith(fontWeight: FontWeight.w400, height: 1.5)),
             const SizedBox(height: UiSpace.s6),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              _secondaryButton(context, zh ? '查看许可全文' : 'View licence',
+              _secondaryButton(context, translate('View licence'),
                   () => launchUrlString(url),
                   height: UiSpace.controlHeight),
               const SizedBox(width: UiSpace.s2),
-              _primaryButton(context, zh ? '关闭' : 'Close', close,
+              _primaryButton(context, translate('Close'), close,
                   height: UiSpace.controlHeight),
             ]),
           ]),

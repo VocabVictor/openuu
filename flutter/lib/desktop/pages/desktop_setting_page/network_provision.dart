@@ -6,33 +6,31 @@ part of 'desktop_setting_page.dart';
 /// row (clipboard or file) that previews the decoded server values in a
 /// confirmation dialog before anything is applied.
 extension _NetworkProvision on _NetworkState {
-  List<Widget> _provisionRows(BuildContext context, bool zh) => [
+  List<Widget> _provisionRows(BuildContext context) => [
         SettingsRow(
-            label: zh ? '分享配置二维码' : 'Share configuration QR code',
+            label: translate('Share configuration QR code'),
             enabled: !locked,
-            onTap: () => _shareConfigDialog(context, zh),
+            onTap: () => _shareConfigDialog(context),
             control: Icon(Icons.qr_code_2_outlined,
                 size: 16, color: UiColor.of(context).muted)),
         _settingRow(
             context,
-            zh ? '导入配置' : 'Import configuration',
+            translate('Import configuration'),
             Row(mainAxisSize: MainAxisSize.min, children: [
-              _secondaryButton(context, zh ? '从剪贴板' : 'From clipboard',
-                  locked ? null : () => _importFromClipboard(context, zh)),
+              _secondaryButton(context, translate('From clipboard'),
+                  locked ? null : () => _importFromClipboard(context)),
               const SizedBox(width: UiSpace.s2),
-              _secondaryButton(context, zh ? '从文件' : 'From file',
-                  locked ? null : () => _importFromFile(context, zh)),
+              _secondaryButton(context, translate('From file'),
+                  locked ? null : () => _importFromFile(context)),
             ]),
-            description: zh
-                ? '支持 openuu://config 链接与 JSON 配置文件，导入前会先确认'
-                : 'Accepts openuu://config links and JSON files; asks before applying'),
+            description: translate('Accepts openuu://config links and JSON files; asks before applying')),
       ];
 
-  Future<void> _shareConfigDialog(BuildContext context, bool zh) async {
+  Future<void> _shareConfigDialog(BuildContext context) async {
     final reply = _json(await bind.mainEncodeShareConfig(optionKeys: []));
     if (reply['ok'] != true) {
       showToast(reply['error']?.toString() ??
-          (zh ? '无法生成二维码' : 'Cannot build the QR code'));
+          (translate('Cannot build the QR code')));
       return;
     }
     final payload = reply['payload'].toString();
@@ -42,7 +40,7 @@ extension _NetworkProvision on _NetworkState {
             minWidth: UiSpace.dialogContentWidth,
             maxWidth: UiSpace.dialogContentWidth),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          _dialogTitle(context, zh ? '分享配置二维码' : 'Share configuration', close),
+          _dialogTitle(context, translate('Share configuration'), close),
           const SizedBox(height: UiSpace.s2),
           Container(
               // Not a themed surface: a QR code is read as dark modules on a
@@ -56,45 +54,43 @@ extension _NetworkProvision on _NetworkState {
                   gapless: false)),
           const SizedBox(height: UiSpace.s3),
           Text(
-              zh
-                  ? '用手机 OpenUU 扫码即可导入服务器设置；二维码不含密码等秘密。'
-                  : 'Scan with OpenUU on a phone to import the server settings; the code carries no secrets.',
+              translate('Scan with OpenUU on a phone to import the server settings; the code carries no secrets.'),
               style: UiType.of(context).caption,
               textAlign: TextAlign.center),
           const SizedBox(height: UiSpace.s6),
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            _secondaryButton(context, zh ? '复制链接' : 'Copy link', () async {
+            _secondaryButton(context, translate('Copy link'), () async {
               await Clipboard.setData(ClipboardData(text: payload));
-              showToast(zh ? '已复制' : 'Copied');
+              showToast(translate('Copied'));
             }, height: UiSpace.controlHeight),
             const SizedBox(width: UiSpace.s2),
-            _primaryButton(context, zh ? '关闭' : 'Close', close,
+            _primaryButton(context, translate('Close'), close,
                 height: UiSpace.controlHeight),
           ]),
         ]),
         onCancel: close));
   }
 
-  Future<void> _importFromClipboard(BuildContext context, bool zh) async {
+  Future<void> _importFromClipboard(BuildContext context) async {
     final text = (await Clipboard.getData(Clipboard.kTextPlain))?.text?.trim();
     if (text == null || text.isEmpty) {
-      showToast(zh ? '剪贴板为空' : 'The clipboard is empty');
+      showToast(translate('The clipboard is empty'));
       return;
     }
-    await _confirmImport(context, zh, text, trusted: false);
+    await _confirmImport(context, text, trusted: false);
   }
 
-  Future<void> _importFromFile(BuildContext context, bool zh) async {
+  Future<void> _importFromFile(BuildContext context) async {
     final picked = await FilePicker.platform.pickFiles(
         type: FileType.custom, allowedExtensions: ['json', 'toml', 'txt']);
     final path = picked?.files.single.path;
     if (path == null) return;
     final text = await File(path).readAsString();
-    await _confirmImport(context, zh, text, trusted: true);
+    await _confirmImport(context, text, trusted: true);
   }
 
   /// Shows the decoded server values and applies the text only on confirm.
-  Future<void> _confirmImport(BuildContext context, bool zh, String text,
+  Future<void> _confirmImport(BuildContext context, String text,
       {required bool trusted}) async {
     final preview = _json(await bind.mainPreviewConfigText(text: text));
     if (preview['ok'] != true) {
@@ -123,28 +119,27 @@ extension _NetworkProvision on _NetworkState {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _dialogTitle(context, zh ? '导入配置' : 'Import configuration', close),
+              _dialogTitle(context, translate('Import configuration'), close),
               const SizedBox(height: UiSpace.s2),
               line(translate('ID Server'), '${server['id'] ?? ''}'),
               line(translate('Relay Server'), '${server['relay'] ?? ''}'),
               line(translate('API Server'), '${server['api'] ?? ''}'),
               line('Key', (server['key'] ?? '').toString().isEmpty
                   ? ''
-                  : (zh ? '已包含' : 'included')),
+                  : (translate('included'))),
               if (locked.isNotEmpty)
                 Padding(
                     padding: const EdgeInsets.only(top: UiSpace.s2),
                     child: Text(
-                        zh
-                            ? '以下选项将被锁定：${locked.join(', ')}'
-                            : 'These options will be locked: ${locked.join(', ')}',
+                        translate(
+                            'These options will be locked: {${locked.join(', ')}}'),
                         style: UiType.of(context).caption)),
               const SizedBox(height: UiSpace.s6),
               Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                 _secondaryButton(context, 'Cancel', close,
                     height: UiSpace.controlHeight),
                 const SizedBox(width: UiSpace.s2),
-                _primaryButton(context, zh ? '导入' : 'Import', () async {
+                _primaryButton(context, translate('Import'), () async {
                   final report = _json(await bind.mainImportConfigText(
                       text: text, trusted: trusted));
                   close();
@@ -153,9 +148,7 @@ extension _NetworkProvision on _NetworkState {
                         ((report['report'] as Map?)?['applied'] as List?)
                                 ?.length ??
                             0;
-                    showToast(zh
-                        ? '已导入 $applied 项设置'
-                        : 'Imported $applied settings');
+                    showToast(translate('Imported {$applied} settings'));
                     _setState(() {});
                   } else {
                     showToast(report['error']?.toString() ??

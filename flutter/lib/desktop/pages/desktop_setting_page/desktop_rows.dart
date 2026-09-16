@@ -69,17 +69,16 @@ Widget _dangerButton(BuildContext context, String label, VoidCallback? onPressed
 Widget _secretRow(BuildContext context, String label, bool isSet,
     VoidCallback? onEdit,
     {bool enabled = true, String? description}) {
-  final zh = Localizations.localeOf(context).languageCode == 'zh';
   return _settingRow(
       context,
       label,
       Row(mainAxisSize: MainAxisSize.min, children: [
-        Text(isSet ? (zh ? '已设置' : 'Set') : (zh ? '未设置' : 'Not set'),
+        Text(isSet ? (translate('Set')) : (translate('Not set')),
             style: UiType.of(context).caption
                 .copyWith(color: isSet ? UiColor.of(context).textSecondary : UiColor.of(context).faint)),
         const SizedBox(width: UiSpace.settingsControlGap),
         _secondaryButton(context, 
-            isSet ? (zh ? '修改' : 'Change') : (zh ? '设置' : 'Set'),
+            isSet ? (translate('Change')) : (translate('Set up')),
             enabled ? onEdit : null),
       ]),
       enabled: enabled,

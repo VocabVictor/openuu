@@ -47,7 +47,6 @@ Widget _OptionCheckBox(
 
   if (isWindows && !bind.isIncomingOnly()) {
     final available = enabled && !isOptFixed;
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     return Obx(() => _settingRow(
           context,
           label,
@@ -58,11 +57,9 @@ Widget _OptionCheckBox(
           ]),
           enabled: available,
           description: isOptFixed
-              ? (zh ? '此选项由配置策略管理' : 'This option is managed by configuration')
+              ? (translate('This option is managed by configuration'))
               : !enabled
-                  ? (zh
-                      ? '当前配置下不可用'
-                      : 'Unavailable with the current configuration')
+                  ? (translate('Unavailable with the current configuration'))
                   : description,
         ));
   }
