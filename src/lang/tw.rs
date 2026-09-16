@@ -871,5 +871,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("All devices", "全部裝置"),
         ("Favorite devices", "收藏裝置"),
         ("Remote assistance", "遠端協助"),
+        ("Sign in", "立即登入"),
+        ("Access your devices for work, games and file transfers.", "隨時存取個人裝置，可用於辦公、遊戲、檔案傳輸。"),
     ].iter().cloned().collect();
 }

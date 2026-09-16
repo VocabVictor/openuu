@@ -96,7 +96,7 @@ class DesktopWelcomePage extends StatelessWidget {
                                               ? translate('Favorite devices')
                                               : translate('All devices'),
                                       style: UiType.of(context).pageTitle)),
-                          Expanded(child: content ?? _welcomeContent(zh)),
+                          Expanded(child: content ?? _welcomeContent()),
                         ]))),
           ]);
         })),
@@ -104,7 +104,7 @@ class DesktopWelcomePage extends StatelessWidget {
     );
   }
 
-  Widget _welcomeContent(bool zh) => LayoutBuilder(builder: (context, bounds) {
+  Widget _welcomeContent() => LayoutBuilder(builder: (context, bounds) {
         final inset = UiSpace.pagePaddingX;
         final gap = (bounds.maxHeight * .035).clamp(10.0, 28.0);
         final contentWidth = math.max(0.0, bounds.maxWidth - inset * 2);
@@ -129,9 +129,8 @@ class DesktopWelcomePage extends StatelessWidget {
                     child: const CustomPaint(painter: _DevicesPainter())),
                 SizedBox(height: gap),
                 Text(
-                    zh
-                        ? '随时访问个人设备，可用于办公、游戏、文件传输。'
-                        : 'Access your devices for work, games and file transfers.',
+                    translate(
+                        'Access your devices for work, games and file transfers.'),
                     textAlign: TextAlign.center,
                     style: textStyle),
                 SizedBox(height: gap),
@@ -146,7 +145,7 @@ class DesktopWelcomePage extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                             borderRadius:
                                 BorderRadius.circular(UiSpace.buttonRadius))),
-                    child: Text(zh ? '立即登录' : 'Sign in',
+                    child: Text(translate('Sign in'),
                         style: textStyle.copyWith(
                             color: UiColor.of(context).onPrimary))),
                 SizedBox(height: gap),
