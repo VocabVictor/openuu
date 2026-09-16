@@ -29,6 +29,16 @@
 //! provisioning file -- sees the stored values. Environment variables reach a
 //! child process because it inherits them; `--option` does not, because the
 //! arguments are not passed on.
+//!
+//! # Why applying and reporting are two steps
+//!
+//! They have to be applied before anything reads a setting, and the logger is
+//! not up that early: `core_main` calls `init_log` well after this. Logging
+//! inside `apply` would have written every line into a logger that discards
+//! it, which is worse than not logging at all -- the promise in this file that
+//! "every override is logged" would have been false and nothing would have
+//! said so. So `apply_all` returns what it did and the caller reports it once
+//! the log exists.
 
 use super::{keys, provision};
 use hbb_common::{config, log};
@@ -136,30 +146,57 @@ pub fn from_environment() -> Vec<Override> {
     found
 }
 
+/// What `apply_all` did, to be logged once the logger exists.
+#[derive(Debug, Default)]
+pub struct Report {
+    pub applied: Vec<Override>,
+    pub refused: Vec<(Override, &'static str)>,
+}
+
+impl Report {
+    /// Called after `init_log`. The values are logged: these are the keys a
+    /// deployment file may carry, and knowing what a run was told is the whole
+    /// point of having said it here.
+    pub fn log(&self) {
+        for o in &self.applied {
+            log::info!(
+                "event=config_override key={} value={} source={}",
+                o.key,
+                o.value,
+                o.source.as_str()
+            );
+        }
+        for (o, why) in &self.refused {
+            log::warn!(
+                "event=config_override_refused key={} source={} reason={why}",
+                o.key,
+                o.source.as_str()
+            );
+        }
+    }
+}
+
 /// Command line first, environment second, so the environment wins where both
 /// name the same key: they are written into one table and the last write is the
 /// one that stays.
-pub fn apply_all(from_cli: Vec<Override>) -> usize {
-    let mut applied = 0;
+pub fn apply_all(from_cli: Vec<Override>) -> Report {
+    let mut report = Report::default();
     for o in from_cli.into_iter().chain(from_environment()) {
-        if apply_one(&o) {
-            applied += 1;
+        match apply_one(&o) {
+            None => report.applied.push(o),
+            Some(why) => report.refused.push((o, why)),
         }
     }
-    applied
+    report
 }
 
-fn apply_one(o: &Override) -> bool {
+/// `None` when it was applied, `Some(reason)` when it was not.
+fn apply_one(o: &Override) -> Option<&'static str> {
     // Secrets have their own stores and are never a table entry; an override
     // that set one would also be the easiest way to leave a password in a shell
     // history or a process listing.
     if provision::is_secret_key(&o.key) {
-        log::warn!(
-            "event=config_override_refused key={} source={} reason=secret",
-            o.key,
-            o.source.as_str()
-        );
-        return false;
+        return Some("secret");
     }
     let table = if provision::is_setting(&o.key) {
         &*config::OVERWRITE_SETTINGS
@@ -168,26 +205,13 @@ fn apply_one(o: &Override) -> bool {
     } else if provision::is_local_setting(&o.key) {
         &*config::OVERWRITE_LOCAL_SETTINGS
     } else {
-        log::warn!(
-            "event=config_override_unknown key={} source={}",
-            o.key,
-            o.source.as_str()
-        );
-        return false;
+        return Some("no such key");
     };
     table
         .write()
         .unwrap()
         .insert(o.key.clone(), o.value.clone());
-    // The value is logged: these are the keys a deployment file may carry, and
-    // knowing what a run was told is the whole point of having said it here.
-    log::info!(
-        "event=config_override key={} value={} source={}",
-        o.key,
-        o.value,
-        o.source.as_str()
-    );
-    true
+    None
 }
 
 #[cfg(test)]

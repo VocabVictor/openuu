@@ -24,7 +24,7 @@
 //! configurations only (`docs/config-precedence.md`).
 
 use hbb_common::{
-    config::{self, Config, LocalConfig, PeerConfig},
+    config::{self, LocalConfig, PeerConfig},
     log,
 };
 
@@ -35,6 +35,17 @@ const MIGRATED_FLAG: &str = "view-style-adaptive-migrated";
 const OLD_DEFAULT: &str = "original";
 const NEW_DEFAULT: &str = "adaptive";
 
+/// **Call this after `load_custom_client` and after `init_log`.** Both matter and
+/// neither is obvious:
+///
+/// * Before the custom client file is read the application name is still
+///   upstream's, so every config path points at `RustDesk`'s directory rather
+///   than this product's. A first attempt at this ran in `provision::at_startup`
+///   and wrote its flag into `%APPDATA%\RustDesk\config\RustDesk_local.toml`
+///   while reading an empty peer list, so it did nothing and recorded that it
+///   had. Anything here that touches a config *file* has this hazard; the
+///   built-in defaults beside it do not, because they only write memory.
+/// * Before `init_log` the log lines go nowhere.
 pub fn run_once() {
     if LocalConfig::get_option(MIGRATED_FLAG) == "Y" {
         return;
@@ -101,16 +112,4 @@ mod tests {
         assert!(!needs_rewrite("original", "original"));
         assert!(!needs_rewrite("adaptive", "original"));
     }
-}
-
-/// The config directory has to exist before peers can be read; `Config::init`
-/// does that, and this is here so a caller cannot forget the order.
-pub fn run_once_after_init() {
-    if Config::get_id().is_empty() {
-        // No identity yet means a fresh install: there are no old peers to bring
-        // forward, and the flag would only hide a later migration from a peer
-        // file restored from a backup.
-        return;
-    }
-    run_once();
 }

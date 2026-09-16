@@ -49,7 +49,10 @@ pub fn core_main() -> Option<Vec<String>> {
         base::config::overrides::take_from_command_line(std::env::args().collect());
     crate::common::provision::at_startup();
     crate::load_custom_client();
-    base::config::overrides::apply_all(cli_overrides);
+    // After load_custom_client, which is what settles the application name and
+    // with it every config path. Reported after init_log, below, because the
+    // logger does not exist yet.
+    let config_overrides = base::config::overrides::apply_all(cli_overrides);
     #[cfg(windows)]
     if !crate::platform::windows::bootstrap() {
         // return None to terminate the process
@@ -183,6 +186,10 @@ pub fn core_main() -> Option<Vec<String>> {
         }
     }
     hbb_common::init_log(false, &log_name);
+    config_overrides.log();
+    // Config paths and the log are both settled here, and both matter: see the
+    // note on run_once.
+    base::config::view_style_migration::run_once();
 
     // linux uni (url) go here.
     #[cfg(all(target_os = "linux", feature = "flutter"))]
