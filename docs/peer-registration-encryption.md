@@ -1,4 +1,19 @@
-# 被控端注册通道加密设计稿（未实现）
+# 被控端注册通道加密
+
+**状态（2026-09-16）：方案 a 已落地。** 下面"现状"一节写的是 09-13 的起点，保留是因为
+候选方案的权衡仍然按它来读；实际已经做完的是：
+
+* hbbs 侧：`rendezvous_server/tcp_register.rs` 在 TCP 上接受 `RegisterPk`/`RegisterPeer`，
+  peer 的 sink 存进 `tcp_peers`，`PunchHole`/`RequestRelay`/`FetchLocalAddr` 有 sink 走 sink、
+  否则回 UDP；`tcp_register_tests.rs` 覆盖等价性。
+* 客户端侧：`start_tcp` 循环已有 `REG_INTERVAL` 周期的 `register_peer` 心跳。
+* 默认值：`src/rendezvous_mediator/secure_register.rs`。`disable-udp` 现在是三态——
+  `Y` 恒走 TCP、`N` 恒走 UDP、未设置（绝大多数用户）走 TCP 并带一次回退。
+  一次 TCP 会话如果自始至终没收到任何注册应答，就把该 host 记下，本进程内之后都走 UDP；
+  这是为了让指向上游 hbbs 或旧版 OpenUU 服务端的被控端不至于永远离线（`start_all` 会无限重试）。
+
+**仍未做**：UDP 明文路径为旧客户端保留着；`event=peer_register transport=tcp|udp` 的占比
+统计、下面的真机回归清单、以及占比归零后评估方案 c)，都还没有。
 
 ## 现状
 
