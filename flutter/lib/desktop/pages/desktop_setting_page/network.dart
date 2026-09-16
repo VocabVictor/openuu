@@ -174,9 +174,11 @@ class _NetworkState extends State<_Network> with AutomaticKeepAliveClientMixin {
                               tooltipMessage:
                                   '${translate('disable-udp-tip')}\n\n${translate('server-oss-not-support-tip')}',
                               trailing: Switch(
-                                value: bind.mainGetOptionSync(
-                                        key: kOptionDisableUdp) ==
-                                    'Y',
+                                // Unset means on; see network_desktop.dart.
+                                value: option2bool(
+                                    kOptionDisableUdp,
+                                    bind.mainGetOptionSync(
+                                        key: kOptionDisableUdp)),
                                 onChanged:
                                     locked || isOptionFixed(kOptionDisableUdp)
                                         ? null

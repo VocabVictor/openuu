@@ -68,7 +68,10 @@ extension _NetworkDesktop on _NetworkState {
                 _switchRow(
                     context,
                     'Disable UDP',
-                    bind.mainGetOptionSync(key: kOptionDisableUdp) == 'Y',
+                    // Unset means on: the peer registers over the encrypted TCP
+                    // rendezvous by default (src/rendezvous_mediator/secure_register.rs).
+                    option2bool(kOptionDisableUdp,
+                        bind.mainGetOptionSync(key: kOptionDisableUdp)),
                     (value) async {
                       await bind.mainSetOption(
                           key: kOptionDisableUdp, value: value ? 'Y' : 'N');

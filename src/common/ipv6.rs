@@ -1,10 +1,5 @@
 use super::*;
 
-#[inline]
-pub fn is_udp_disabled() -> bool {
-    Config::get_option(keys::OPTION_DISABLE_UDP) == "Y"
-}
-
 /// Run KCP with its congestion window (nc=0) instead of the turbo profile it has always shipped.
 ///
 /// Opt-in: which profile wins depends on why packets are lost — nc=1 deepens real congestion,

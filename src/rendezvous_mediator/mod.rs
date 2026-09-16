@@ -44,6 +44,9 @@ mod webrtc;
 mod punch;
 mod register;
 mod direct;
+mod secure_register;
+#[cfg(test)]
+mod secure_register_tests;
 mod tcp_punch;
 #[cfg(test)]
 mod tests;
