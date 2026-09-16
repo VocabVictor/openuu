@@ -8,7 +8,7 @@ use crate::{
         QualityStatus, VideoFrameQueue, MILLI1, SEC30,
     },
     common::get_default_sound_input,
-    ui_session_interface::{InvokeUiSession, Session},
+    session::{InvokeUiSession, Session},
 };
 
 // Empirical no-data window before exposing the restart reconnect state to the UI.

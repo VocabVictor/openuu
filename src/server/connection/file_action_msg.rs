@@ -30,7 +30,7 @@ impl Connection {
                         }
                         Ok(files) => {
                             if let Err(msg) =
-                                crate::ui_cm_interface::check_file_count_limit(
+                                crate::cm::check_file_count_limit(
                                     files.len(),
                                 )
                             {

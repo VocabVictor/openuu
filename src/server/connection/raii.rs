@@ -202,7 +202,7 @@ impl Drop for AuthedConnID {
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             display_service::restore_resolutions();
             #[cfg(windows)]
-            let _ = virtual_display_manager::reset_all();
+            let _ = vdisplay::reset_all();
             #[cfg(target_os = "linux")]
             scrap::wayland::pipewire::try_close_session();
         }

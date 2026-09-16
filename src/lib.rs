@@ -1,7 +1,7 @@
 mod account;
-mod quick_launch;
+mod launch;
 #[cfg(any(test, not(target_os = "linux")))]
-mod audio_resampler;
+mod resample;
 mod keyboard;
 /// cbindgen:ignore
 pub mod platform;
@@ -18,9 +18,9 @@ pub use self::server::*;
 mod client;
 mod lan;
 #[cfg(not(any(target_os = "ios")))]
-mod rendezvous_mediator;
+mod rendezvous;
 #[cfg(not(any(target_os = "ios")))]
-pub use self::rendezvous_mediator::*;
+pub use self::rendezvous::*;
 /// cbindgen:ignore
 pub mod common;
 #[cfg(not(any(target_os = "ios")))]
@@ -54,11 +54,11 @@ mod whiteboard;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 mod updater;
 
-mod ui_cm_interface;
-mod ui_interface;
-mod ui_session_interface;
+mod cm;
+mod ui_api;
+mod session;
 
-mod hbbs_http;
+mod hbbs;
 
 #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
 pub mod clipboard_file;
@@ -66,8 +66,8 @@ pub mod clipboard_file;
 pub mod privacy_mode;
 
 #[cfg(windows)]
-pub mod virtual_display_manager;
+pub mod vdisplay;
 
-mod kcp_stream;
+mod kcp;
 
-mod stream_split;
+mod split;

@@ -28,7 +28,7 @@ use crate::privacy_mode::{get_privacy_mode_conn_id, INVALID_PRIVACY_MODE_CONN_ID
 use crate::{
     platform::windows::is_process_consent_running,
     privacy_mode::{is_current_privacy_mode_impl, PRIVACY_MODE_IMPL_WIN_MAG},
-    ui_interface::is_installed,
+    ui_api::is_installed,
 };
 use hbb_common::{anyhow::anyhow, config};
 #[cfg(feature = "hwcodec")]

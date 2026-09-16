@@ -20,7 +20,7 @@ impl Connection {
             raii::ControlPermissionsID::new(id, &control_permissions);
         let (mut conn, mut ch) =
             Self::build(stream, id, server, control_permissions, controlled_context);
-        let mut hbbs_rx = crate::hbbs_http::sync::signal_receiver();
+        let mut hbbs_rx = crate::hbbs::sync::signal_receiver();
         let addr = hbb_common::try_into_v4(addr);
         if !conn.on_open(addr).await {
             conn.closed = true;

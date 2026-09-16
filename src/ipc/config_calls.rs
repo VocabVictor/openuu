@@ -139,7 +139,7 @@ pub(super) async fn set_permanent_password_with_ack_async(v: String) -> ResultTy
 pub fn set_unlock_pin(v: String, translate: bool) -> ResultType<()> {
     let v = v.trim().to_owned();
     let min_len = 4;
-    let max_len = crate::ui_interface::max_encrypt_len();
+    let max_len = crate::ui_api::max_encrypt_len();
     let len = v.chars().count();
     if !v.is_empty() {
         if len < min_len {

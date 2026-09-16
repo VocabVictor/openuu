@@ -85,7 +85,7 @@ fn try_reset_resolution_on_first_plug_in(
         if let Ok(reg_connectivity_new) = reg_display_settings::read_reg_connectivity() {
             if reg_connectivity_new.len() != old_connectivity_len {
                 for name in
-                    windows::get_device_names(Some(crate::virtual_display_manager::AMYUNI_IDD_DEVICE_STRING)).iter()
+                    windows::get_device_names(Some(crate::vdisplay::AMYUNI_IDD_DEVICE_STRING)).iter()
                 {
                     crate::platform::change_resolution(&name, width, height).ok();
                 }
@@ -133,7 +133,7 @@ pub fn plug_in_monitor() -> ResultType<()> {
 // `force_one` is used to forcibly plug out one virtual display managed by other processes
 //             if there're no virtual displays managed by RustDesk.
 pub fn plug_out_monitor(index: i32, force_all: bool, force_one: bool) -> ResultType<()> {
-    let plug_out_all = index == crate::virtual_display_manager::IDD_PLUG_OUT_ALL_INDEX;
+    let plug_out_all = index == crate::vdisplay::IDD_PLUG_OUT_ALL_INDEX;
     // If `plug_out_all and force_all` is true, forcibly plug out all virtual displays.
     // Though the driver may be controlled by other processes,
     // we still forcibly plug out all virtual displays.
@@ -196,12 +196,12 @@ pub fn plug_out_monitor(index: i32, force_all: bool, force_one: bool) -> ResultT
 
 #[inline]
 pub fn get_monitor_count() -> usize {
-    windows::get_device_names(Some(crate::virtual_display_manager::AMYUNI_IDD_DEVICE_STRING)).len()
+    windows::get_device_names(Some(crate::vdisplay::AMYUNI_IDD_DEVICE_STRING)).len()
 }
 
 #[inline]
 pub fn is_my_display(name: &str) -> bool {
-    windows::get_device_names(Some(crate::virtual_display_manager::AMYUNI_IDD_DEVICE_STRING))
+    windows::get_device_names(Some(crate::vdisplay::AMYUNI_IDD_DEVICE_STRING))
         .iter()
         .any(|s| windows::is_device_name(s, name))
 }

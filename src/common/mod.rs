@@ -36,8 +36,8 @@ use hbb_common::{
 };
 
 use crate::{
-    hbbs_http::{create_http_client_async, get_url_for_tls},
-    ui_interface::{get_api_server as ui_get_api_server, get_option, set_option},
+    hbbs::{create_http_client_async, get_url_for_tls},
+    ui_api::{get_api_server as ui_get_api_server, get_option, set_option},
 };
 
 mod process;

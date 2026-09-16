@@ -135,10 +135,10 @@ impl TransferJob {
         }
         if self.file_num() != r.file_num {
             // This branch will always be hit if:
-            // 1. `confirm()` is called in `ui_cm_interface.rs`
+            // 1. `confirm()` is called in `cm`
             // 2. Not resuming
             //
-            // It is ok. Because `confirm()` in `ui_cm_interface.rs` is only used for resuming.
+            // It is ok. Because `confirm()` in `cm` is only used for resuming.
             log::info!("file num truncated, ignoring");
         } else {
             match r.union {

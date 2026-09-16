@@ -1,7 +1,7 @@
 use crate::{
     client::*,
     flutter_ffi::{EventToUI, SessionID},
-    ui_session_interface::{io_loop, InvokeUiSession, Session},
+    session::{io_loop, InvokeUiSession, Session},
 };
 use flutter_rust_bridge::StreamSink;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
@@ -125,7 +125,7 @@ impl Default for FlutterHandler {
             display_rgbas: Default::default(),
             peer_info: Default::default(),
             use_texture_render: Arc::new(
-                AtomicBool::new(crate::ui_interface::use_texture_render()),
+                AtomicBool::new(crate::ui_api::use_texture_render()),
             ),
         }
     }

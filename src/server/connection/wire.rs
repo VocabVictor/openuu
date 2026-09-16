@@ -16,7 +16,7 @@
 //! neither has the problem the split solves.
 
 use super::*;
-use crate::stream_split::ConnReader;
+use crate::split::ConnReader;
 use base::message_proto::Message;
 use hbb_common::{ResultType, Stream};
 
@@ -48,7 +48,7 @@ impl Wire {
                 return false;
             }
         };
-        match crate::stream_split::split(whole) {
+        match crate::split::split(whole) {
             Ok((reader, out)) => {
                 *self = Wire::Split {
                     reader,

@@ -1,5 +1,5 @@
 use super::*;
-use crate::audio_resampler::allocation_tests::assert_no_allocations;
+use crate::resample::allocation_tests::assert_no_allocations;
 use std::{sync::mpsc, time::Duration};
 
 const PACKET_SAMPLES: usize = 4;

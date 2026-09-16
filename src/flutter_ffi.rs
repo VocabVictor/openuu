@@ -9,7 +9,7 @@ use crate::{
         self, session_add, session_add_existed, session_start_, sessions, try_sync_peer_option,
     },
     input::*,
-    ui_interface::{self, *},
+    ui_api::{self, *},
 };
 use flutter_rust_bridge::{StreamSink, SyncReturn};
 use hbb_common::{
@@ -368,19 +368,19 @@ pub fn get_next_texture_key() -> SyncReturn<i32> {
 }
 
 pub fn get_local_flutter_option(k: String) -> SyncReturn<String> {
-    SyncReturn(ui_interface::get_local_flutter_option(k))
+    SyncReturn(ui_api::get_local_flutter_option(k))
 }
 
 pub fn set_local_flutter_option(k: String, v: String) {
-    ui_interface::set_local_flutter_option(k, v);
+    ui_api::set_local_flutter_option(k, v);
 }
 
 pub fn get_local_kb_layout_type() -> SyncReturn<String> {
-    SyncReturn(ui_interface::get_kb_layout_type())
+    SyncReturn(ui_api::get_kb_layout_type())
 }
 
 pub fn set_local_kb_layout_type(kb_layout_type: String) {
-    ui_interface::set_kb_layout_type(kb_layout_type)
+    ui_api::set_kb_layout_type(kb_layout_type)
 }
 
 pub fn session_get_view_style(session_id: SessionID) -> Option<String> {
@@ -1004,7 +1004,7 @@ pub fn main_set_option(key: String, value: String) {
         );
         if is_permission_option
             && !allow_perm_change_in_accept_window
-            && crate::ui_cm_interface::has_active_clients()
+            && crate::cm::has_active_clients()
         {
             log::info!(
                 "blocked main_set_option by policy, key={}, value={}",
@@ -1016,14 +1016,14 @@ pub fn main_set_option(key: String, value: String) {
     }
     #[cfg(target_os = "android")]
     if key.eq(keys::OPTION_ENABLE_KEYBOARD) {
-        crate::ui_cm_interface::switch_permission_all(
+        crate::cm::switch_permission_all(
             "keyboard".to_owned(),
             config::option2bool(&key, &value),
         );
     }
     #[cfg(target_os = "android")]
     if key.eq(keys::OPTION_ENABLE_CLIPBOARD) {
-        crate::ui_cm_interface::switch_permission_all(
+        crate::cm::switch_permission_all(
             "clipboard".to_owned(),
             config::option2bool(&key, &value),
         );
@@ -1044,7 +1044,7 @@ pub fn main_set_option(key: String, value: String) {
         }
         set_option(key, value.clone());
         #[cfg(target_os = "android")]
-        crate::rendezvous_mediator::RendezvousMediator::restart();
+        crate::rendezvous::RendezvousMediator::restart();
         #[cfg(any(target_os = "android", target_os = "ios"))]
         crate::common::test_rendezvous_server();
     } else {
@@ -1069,7 +1069,7 @@ pub fn main_set_options(json: String) {
             keys::OPTION_ENABLE_PERM_CHANGE_IN_ACCEPT_WINDOW,
             &crate::get_builtin_option(keys::OPTION_ENABLE_PERM_CHANGE_IN_ACCEPT_WINDOW),
         );
-        if !allow_perm_change_in_accept_window && crate::ui_cm_interface::has_active_clients() {
+        if !allow_perm_change_in_accept_window && crate::cm::has_active_clients() {
             for key in [
                 keys::OPTION_ENABLE_CLIPBOARD,
                 keys::OPTION_ENABLE_FILE_TRANSFER,
@@ -1185,16 +1185,16 @@ pub fn main_deploy_device(token: String, id: String) -> String {
         // DeployResult has no message(); the desktop path matches the variants
         // itself because it also maps them to exit codes. This side only needs
         // a sentence for the UI.
-        match ui_interface::deploy_device(token, new_id) {
-            ui_interface::DeployResult::Ok => "Device deployed.".to_owned(),
-            ui_interface::DeployResult::NotEnabled => {
+        match ui_api::deploy_device(token, new_id) {
+            ui_api::DeployResult::Ok => "Device deployed.".to_owned(),
+            ui_api::DeployResult::NotEnabled => {
                 "Server does not require deployment.".to_owned()
             }
-            ui_interface::DeployResult::InvalidInput => "Invalid input.".to_owned(),
-            ui_interface::DeployResult::IdTaken(id) => {
+            ui_api::DeployResult::InvalidInput => "Invalid input.".to_owned(),
+            ui_api::DeployResult::IdTaken(id) => {
                 format!("Id `{}` is already used by another machine on the server.", id)
             }
-            ui_interface::DeployResult::Error(err) => err,
+            ui_api::DeployResult::Error(err) => err,
         }
     }
     #[cfg(not(target_os = "android"))]
@@ -1754,11 +1754,11 @@ pub fn session_get_conn_token(session_id: SessionID) -> SyncReturn<Option<String
 }
 
 pub fn cm_handle_incoming_voice_call(id: i32, accept: bool) {
-    crate::ui_cm_interface::handle_incoming_voice_call(id, accept);
+    crate::cm::handle_incoming_voice_call(id, accept);
 }
 
 pub fn cm_close_voice_call(id: i32) {
-    crate::ui_cm_interface::close_voice_call(id);
+    crate::cm::close_voice_call(id);
 }
 
 pub fn set_voice_call_input_device(_is_cm: bool, _device: String) {
@@ -1801,11 +1801,11 @@ pub fn main_get_langs() -> String {
 }
 
 pub fn main_get_temporary_password() -> String {
-    ui_interface::temporary_password()
+    ui_api::temporary_password()
 }
 
 pub fn main_set_permanent_password_with_result(password: String) -> bool {
-    ui_interface::set_permanent_password_with_result(password)
+    ui_api::set_permanent_password_with_result(password)
 }
 
 pub fn main_get_fingerprint() -> String {
@@ -1813,19 +1813,19 @@ pub fn main_get_fingerprint() -> String {
 }
 
 pub fn cm_get_clients_state() -> String {
-    crate::ui_cm_interface::get_clients_state()
+    crate::cm::get_clients_state()
 }
 
 pub fn cm_check_clients_length(length: usize) -> Option<String> {
-    if length != crate::ui_cm_interface::get_clients_length() {
-        Some(crate::ui_cm_interface::get_clients_state())
+    if length != crate::cm::get_clients_length() {
+        Some(crate::cm::get_clients_state())
     } else {
         None
     }
 }
 
 pub fn cm_get_clients_length() -> usize {
-    crate::ui_cm_interface::get_clients_length()
+    crate::cm::get_clients_length()
 }
 
 pub fn main_init(app_dir: String, custom_client_config: String) {
@@ -2159,7 +2159,7 @@ pub fn main_stop_service() {
     #[cfg(target_os = "android")]
     {
         config::Config::set_option("stop-service".into(), "Y".into());
-        crate::rendezvous_mediator::RendezvousMediator::restart();
+        crate::rendezvous::RendezvousMediator::restart();
     }
 }
 
@@ -2167,8 +2167,8 @@ pub fn main_start_service() {
     #[cfg(target_os = "android")]
     {
         config::Config::set_option("stop-service".into(), "".into());
-        crate::rendezvous_mediator::reset_needs_deploy_notification();
-        crate::rendezvous_mediator::RendezvousMediator::restart();
+        crate::rendezvous::reset_needs_deploy_notification();
+        crate::rendezvous::RendezvousMediator::restart();
     }
 }
 
@@ -2216,66 +2216,66 @@ pub fn main_create_shortcut(_id: String) {
 
 pub fn cm_send_chat(conn_id: i32, msg: String) {
     #[cfg(not(any(target_os = "ios")))]
-    crate::ui_cm_interface::send_chat(conn_id, msg);
+    crate::cm::send_chat(conn_id, msg);
 }
 
 pub fn cm_login_res(conn_id: i32, res: bool) {
     #[cfg(not(any(target_os = "ios")))]
     if res {
-        crate::ui_cm_interface::authorize(conn_id);
+        crate::cm::authorize(conn_id);
     } else {
-        crate::ui_cm_interface::close(conn_id);
+        crate::cm::close(conn_id);
     }
 }
 
 pub fn cm_close_connection(conn_id: i32) {
     #[cfg(not(any(target_os = "ios")))]
-    crate::ui_cm_interface::close(conn_id);
+    crate::cm::close(conn_id);
 }
 
 /// The CM window closed. On Linux that is ambiguous - a logout closes it the same way a person
 /// does - so it ends the session without the no-retry reason; elsewhere it is a plain close.
 pub fn cm_close_connection_window(conn_id: i32) {
     #[cfg(target_os = "linux")]
-    crate::ui_cm_interface::close_window(conn_id);
+    crate::cm::close_window(conn_id);
     #[cfg(all(not(target_os = "linux"), not(target_os = "ios")))]
-    crate::ui_cm_interface::close(conn_id);
+    crate::cm::close(conn_id);
 }
 
 pub fn cm_remove_disconnected_connection(conn_id: i32) {
     #[cfg(not(any(target_os = "ios")))]
-    crate::ui_cm_interface::remove(conn_id);
+    crate::cm::remove(conn_id);
 }
 
 pub fn cm_check_click_time(conn_id: i32) {
     #[cfg(not(any(target_os = "ios")))]
-    crate::ui_cm_interface::check_click_time(conn_id)
+    crate::cm::check_click_time(conn_id)
 }
 
 pub fn cm_get_click_time() -> f64 {
     #[cfg(not(any(target_os = "ios")))]
-    return crate::ui_cm_interface::get_click_time() as _;
+    return crate::cm::get_click_time() as _;
     #[cfg(any(target_os = "ios"))]
     return 0 as _;
 }
 
 pub fn cm_switch_permission(conn_id: i32, name: String, enabled: bool) {
     #[cfg(not(any(target_os = "ios")))]
-    crate::ui_cm_interface::switch_permission(conn_id, name, enabled)
+    crate::cm::switch_permission(conn_id, name, enabled)
 }
 
 pub fn cm_can_elevate() -> SyncReturn<bool> {
-    SyncReturn(crate::ui_cm_interface::can_elevate())
+    SyncReturn(crate::cm::can_elevate())
 }
 
 pub fn cm_elevate_portable(conn_id: i32) {
     #[cfg(not(any(target_os = "ios")))]
-    crate::ui_cm_interface::elevate_portable(conn_id);
+    crate::cm::elevate_portable(conn_id);
 }
 
 pub fn cm_switch_back(conn_id: i32) {
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    crate::ui_cm_interface::switch_back(conn_id);
+    crate::cm::switch_back(conn_id);
 }
 
 pub fn cm_get_config(name: String) -> String {
@@ -2338,7 +2338,7 @@ pub fn version_to_number(v: String) -> SyncReturn<i64> {
 }
 
 pub fn option_synced() -> bool {
-    crate::ui_interface::option_synced()
+    crate::ui_api::option_synced()
 }
 
 pub fn main_is_installed() -> SyncReturn<bool> {
@@ -2714,13 +2714,13 @@ pub fn main_get_common(key: String) -> String {
         #[cfg(not(windows))]
         return String::new();
     } else if key == "permanent-password-set" {
-        return ui_interface::is_permanent_password_set().to_string();
+        return ui_api::is_permanent_password_set().to_string();
     } else if key == "local-permanent-password-set" {
-        return ui_interface::is_local_permanent_password_set().to_string();
+        return ui_api::is_local_permanent_password_set().to_string();
     } else {
         if key.starts_with("download-data-") {
             let id = key.replace("download-data-", "");
-            match crate::hbbs_http::downloader::get_download_data(&id) {
+            match crate::hbbs::downloader::get_download_data(&id) {
                 Ok(data) => serde_json::to_string(&data).unwrap_or_default(),
                 Err(e) => {
                     format!("error:{}", e)
@@ -2781,7 +2781,7 @@ pub fn main_set_common(_key: String, _value: String) {
             let event_key = "download-new-version".to_owned();
             let data = if let Some(download_file) = get_download_file_from_url(&download_url) {
                 std::fs::remove_file(&download_file).ok();
-                match crate::hbbs_http::downloader::download_file(
+                match crate::hbbs::downloader::download_file(
                     download_url,
                     Some(PathBuf::from(download_file)),
                     Some(Duration::from_secs(3)),
@@ -2840,9 +2840,9 @@ pub fn main_set_common(_key: String, _value: String) {
     }
 
     if _key == "remove-downloader" {
-        crate::hbbs_http::downloader::remove(&_value);
+        crate::hbbs::downloader::remove(&_value);
     } else if _key == "cancel-downloader" {
-        crate::hbbs_http::downloader::cancel(&_value);
+        crate::hbbs::downloader::cancel(&_value);
     }
 
     #[cfg(target_os = "linux")]
@@ -2945,8 +2945,8 @@ pub mod server_side {
     pub unsafe extern "system" fn Java_ffi_FFI_startService(_env: JNIEnv, _class: JClass) {
         log::debug!("startService from jvm");
         config::Config::set_option("stop-service".into(), "".into());
-        crate::rendezvous_mediator::reset_needs_deploy_notification();
-        crate::rendezvous_mediator::RendezvousMediator::restart();
+        crate::rendezvous::reset_needs_deploy_notification();
+        crate::rendezvous::RendezvousMediator::restart();
     }
 
     #[no_mangle]

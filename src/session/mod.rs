@@ -4,7 +4,7 @@ use crate::{
         MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_TYPE_DOWN, MOUSE_TYPE_MASK,
         MOUSE_TYPE_TRACKPAD, MOUSE_TYPE_UP, MOUSE_TYPE_WHEEL,
     },
-    ui_interface::use_texture_render,
+    ui_api::use_texture_render,
 };
 use async_trait::async_trait;
 use base::message_proto::*;

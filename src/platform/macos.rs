@@ -939,7 +939,7 @@ pub fn update_me() -> ResultType<()> {
     let option_stop_service = "stop-service";
     let is_service_stopped = hbb_common::config::option2bool(
         option_stop_service,
-        &crate::ui_interface::get_option(option_stop_service),
+        &crate::ui_api::get_option(option_stop_service),
     );
 
     let cmd = std::env::current_exe()?;

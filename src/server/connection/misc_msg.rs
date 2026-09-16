@@ -61,9 +61,9 @@ impl Connection {
                 );
             }
             Some(misc::Union::QuickLaunchRequest(request)) => {
-                let denied = crate::quick_launch::denied(&request);
+                let denied = crate::launch::denied(&request);
                 let response = if self.authorized && self.is_authed_remote_conn() && self.peer_keyboard_enabled() {
-                    match hbb_common::tokio::task::spawn_blocking(move || crate::quick_launch::handle(&request)).await {
+                    match hbb_common::tokio::task::spawn_blocking(move || crate::launch::handle(&request)).await {
                         Ok(response) => response,
                         Err(error) => { log::error!("Quick launch worker failed: {error}"); denied }
                     }

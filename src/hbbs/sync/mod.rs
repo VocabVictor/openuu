@@ -5,7 +5,7 @@ use std::{
 };
 
 #[cfg(not(any(target_os = "ios")))]
-use crate::{ui_interface::get_builtin_option, Connection};
+use crate::{ui_api::get_builtin_option, Connection};
 use hbb_common::{
     config::{self, Config, LocalConfig},
     log,

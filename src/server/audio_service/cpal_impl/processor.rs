@@ -10,7 +10,7 @@ pub(super) struct CaptureFrameProcessorConfig {
 
 pub(super) struct CaptureFrameProcessor {
     pub(super) config: CaptureFrameProcessorConfig,
-    pub(super) resampler: Option<crate::audio_resampler::FixedFrameAudioResampler>,
+    pub(super) resampler: Option<crate::resample::FixedFrameAudioResampler>,
     pub(super) sender: audio_capture_queue::CapturePcmSender,
     pub(super) rechannel_buffer: Vec<f32>,
 }
@@ -30,8 +30,8 @@ impl CaptureFrameProcessor {
             None
         } else {
             let output_frames = config.output_rate as usize / AUDIO_PACKETS_PER_SECOND;
-            Some(crate::audio_resampler::FixedFrameAudioResampler::new(
-                crate::audio_resampler::AudioResamplerConfig {
+            Some(crate::resample::FixedFrameAudioResampler::new(
+                crate::resample::AudioResamplerConfig {
                     input_rate: config.input_rate,
                     output_rate: config.output_rate,
                     channels: config.device_channel,

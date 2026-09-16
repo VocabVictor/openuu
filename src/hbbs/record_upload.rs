@@ -1,4 +1,4 @@
-use crate::hbbs_http::create_http_client_with_url;
+use crate::hbbs::create_http_client_with_url;
 use bytes::Bytes;
 use hbb_common::{bail, config::Config, lazy_static, log, ResultType};
 use reqwest::blocking::{Body, Client};

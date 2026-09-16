@@ -75,8 +75,8 @@ pub(super) fn send_query() -> ResultType<Vec<UdpSocket>> {
     // We may not be able to get the mac address on mobile platforms.
     // So we need to use the id to avoid discovering ourselves.
     #[cfg(any(target_os = "android", target_os = "ios"))]
-    let id = crate::ui_interface::get_id();
-    // `crate::ui_interface::get_id()` will cause error:
+    let id = crate::ui_api::get_id();
+    // `crate::ui_api::get_id()` will cause error:
     // `get_id()` uses async code with `current_thread`, which is not allowed in this context.
     //
     // No need to get id for desktop platforms.

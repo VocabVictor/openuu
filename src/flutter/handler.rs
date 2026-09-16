@@ -106,7 +106,7 @@ impl FlutterHandler {
 
     pub fn update_use_texture_render(&self) {
         self.use_texture_render
-            .store(crate::ui_interface::use_texture_render(), Ordering::Relaxed);
+            .store(crate::ui_api::use_texture_render(), Ordering::Relaxed);
         self.display_rgbas.write().unwrap().clear();
     }
 }

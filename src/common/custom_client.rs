@@ -93,7 +93,7 @@ fn read_custom_client_advanced_settings(
 pub fn get_dst_align_rgba() -> usize {
     // https://developer.apple.com/forums/thread/712709
     // Memory alignment should be multiple of 64.
-    if crate::ui_interface::use_texture_render() {
+    if crate::ui_api::use_texture_render() {
         64
     } else {
         1

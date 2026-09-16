@@ -131,7 +131,7 @@ fn write_while_buffer_is_locked(
     let (completed_tx, completed_rx) = mpsc::channel();
     let callback = std::thread::spawn(move || {
         let mut output = [0.0; CALLBACK_SAMPLES];
-        crate::audio_resampler::allocation_tests::assert_no_allocations(|| {
+        crate::resample::allocation_tests::assert_no_allocations(|| {
             writer.write_output(&mut output);
         });
         completed_tx.send((writer, output)).unwrap();
@@ -203,7 +203,7 @@ fn poisoned_playback_buffer_reports_once_without_panicking_in_the_callback() {
     .is_err());
     let mut output = [ACTIVE_FRAME[0]; CALLBACK_SAMPLES];
 
-    crate::audio_resampler::allocation_tests::assert_no_allocations(|| {
+    crate::resample::allocation_tests::assert_no_allocations(|| {
         writer.write_output(&mut output);
     });
 

@@ -1,5 +1,5 @@
 use super::{PrivacyMode, PrivacyModeState, INVALID_PRIVACY_MODE_CONN_ID, NO_PHYSICAL_DISPLAYS};
-use crate::{platform::windows::reg_display_settings, virtual_display_manager};
+use crate::{platform::windows::reg_display_settings, vdisplay};
 use hbb_common::{allow_err, bail, config::Config, log, ResultType};
 use std::{
     io::Error,
@@ -79,7 +79,7 @@ impl<'a> Drop for TurnOnGuard<'a> {
 
 impl PrivacyMode for PrivacyModeImpl {
     fn is_async_privacy_mode(&self) -> bool {
-        virtual_display_manager::is_amyuni_idd()
+        vdisplay::is_amyuni_idd()
     }
 
     fn init(&self) -> ResultType<()> {
@@ -91,7 +91,7 @@ impl PrivacyMode for PrivacyModeImpl {
     }
 
     fn turn_on_privacy(&mut self, conn_id: i32) -> ResultType<bool> {
-        if !virtual_display_manager::is_virtual_display_supported() {
+        if !vdisplay::is_virtual_display_supported() {
             bail!("idd_not_support_under_win10_2004_tip");
         }
 
@@ -207,7 +207,7 @@ pub fn restore_reg_connectivity(plug_out_monitors: bool, force: bool) {
         return;
     }
     if plug_out_monitors {
-        let _ = virtual_display_manager::plug_out_monitor(-1, true, false);
+        let _ = vdisplay::plug_out_monitor(-1, true, false);
     }
     if let Ok(reg_recovery) =
         serde_json::from_str::<reg_display_settings::RegRecovery>(&config_recovery_value)

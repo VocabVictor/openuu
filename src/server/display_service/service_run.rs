@@ -14,7 +14,7 @@ pub(super) fn displays_to_msg(displays: Vec<DisplayInfo>) -> Message {
 
     #[cfg(windows)]
     if crate::platform::is_installed() {
-        let m = crate::virtual_display_manager::get_platform_additions();
+        let m = crate::vdisplay::get_platform_additions();
         pi.platform_additions = serde_json::to_string(&m).unwrap_or_default();
     }
 

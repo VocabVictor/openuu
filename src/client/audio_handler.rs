@@ -9,7 +9,7 @@ pub struct AudioHandler {
     #[cfg(not(target_os = "linux"))]
     pub(super) audio_buffer: AudioBuffer,
     #[cfg(not(target_os = "linux"))]
-    pub(super) audio_resampler: Option<crate::audio_resampler::AudioResampler>,
+    pub(super) audio_resampler: Option<crate::resample::AudioResampler>,
     pub(super) sample_rate: (u32, u32),
     #[cfg(not(target_os = "linux"))]
     pub(super) audio_stream: Option<Box<dyn StreamTrait>>,

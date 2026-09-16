@@ -5,7 +5,7 @@ use super::{
     capture_packet_layout, convert_input_samples, CaptureFrameProcessor,
     CaptureFrameProcessorConfig,
 };
-use crate::audio_resampler::allocation_tests::assert_no_allocations;
+use crate::resample::allocation_tests::assert_no_allocations;
 use crate::server::EmptyExtraFieldService;
 use magnum_opus::Channels::{Mono, Stereo};
 

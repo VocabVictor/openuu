@@ -311,9 +311,9 @@ pub fn core_main() -> Option<Vec<String>> {
                 return None;
             } else if args[0] == "--install-idd" {
                 #[cfg(windows)]
-                if crate::virtual_display_manager::is_virtual_display_supported() {
+                if crate::vdisplay::is_virtual_display_supported() {
                     hbb_common::allow_err!(
-                        crate::virtual_display_manager::rustdesk_idd::install_update_driver()
+                        crate::vdisplay::rustdesk_idd::install_update_driver()
                     );
                 }
                 return None;
@@ -327,7 +327,7 @@ pub fn core_main() -> Option<Vec<String>> {
             } else if args[0] == "--uninstall-amyuni-idd" {
                 #[cfg(windows)]
                 hbb_common::allow_err!(
-                    crate::virtual_display_manager::amyuni_idd::uninstall_driver()
+                    crate::vdisplay::amyuni_idd::uninstall_driver()
                 );
                 return None;
             }
@@ -486,7 +486,7 @@ pub fn core_main() -> Option<Vec<String>> {
             if args.len() == 2 {
                 if crate::platform::is_installed() && is_root() {
                     let old_id = crate::ipc::get_id();
-                    let mut res = crate::ui_interface::change_id_shared(args[1].to_owned(), old_id);
+                    let mut res = crate::ui_api::change_id_shared(args[1].to_owned(), old_id);
                     if res.is_empty() {
                         res = "Done!".to_owned();
                     }
@@ -507,13 +507,13 @@ pub fn core_main() -> Option<Vec<String>> {
                     };
                     if let Ok(lic) = crate::custom_server::get_custom_server_from_string(&name) {
                         if !lic.host.is_empty() {
-                            crate::ui_interface::set_option("key".into(), lic.key);
-                            crate::ui_interface::set_option(
+                            crate::ui_api::set_option("key".into(), lic.key);
+                            crate::ui_api::set_option(
                                 "custom-rendezvous-server".into(),
                                 lic.host,
                             );
-                            crate::ui_interface::set_option("api-server".into(), lic.api);
-                            crate::ui_interface::set_option("relay-server".into(), lic.relay);
+                            crate::ui_api::set_option("api-server".into(), lic.api);
+                            crate::ui_api::set_option("relay-server".into(), lic.relay);
                         }
                     }
                 } else {
@@ -623,7 +623,7 @@ pub fn core_main() -> Option<Vec<String>> {
                         if let Some(name) = device_name {
                             body["device_name"] = serde_json::json!(name);
                         }
-                        let url = crate::ui_interface::get_api_server() + "/api/devices/cli";
+                        let url = crate::ui_api::get_api_server() + "/api/devices/cli";
                         match crate::post_request_sync(url, body.to_string(), &header) {
                             Err(err) => println!("{}", err),
                             Ok(text) => {
@@ -665,26 +665,26 @@ pub fn core_main() -> Option<Vec<String>> {
                 };
                 // An empty --id (e.g. an unset var) would deploy a blank id; the Android flow guards this too (#15146).
                 let new_id = get_value("--id").filter(|s| !s.is_empty());
-                match crate::ui_interface::deploy_device(token, new_id) {
-                    crate::ui_interface::DeployResult::Ok => {
+                match crate::ui_api::deploy_device(token, new_id) {
+                    crate::ui_api::DeployResult::Ok => {
                         println!("Device deployed.");
                     }
-                    crate::ui_interface::DeployResult::NotEnabled => {
+                    crate::ui_api::DeployResult::NotEnabled => {
                         println!("Server does not require deployment.");
                         std::process::exit(3);
                     }
-                    crate::ui_interface::DeployResult::InvalidInput => {
+                    crate::ui_api::DeployResult::InvalidInput => {
                         println!("Invalid input.");
                         std::process::exit(5);
                     }
-                    crate::ui_interface::DeployResult::IdTaken(id) => {
+                    crate::ui_api::DeployResult::IdTaken(id) => {
                         println!(
                             "Id `{}` is already used by another machine on the server.",
                             id
                         );
                         std::process::exit(6);
                     }
-                    crate::ui_interface::DeployResult::Error(err) => {
+                    crate::ui_api::DeployResult::Error(err) => {
                         println!("{}", err);
                         std::process::exit(1);
                     }
@@ -711,7 +711,7 @@ pub fn core_main() -> Option<Vec<String>> {
         } else if args[0] == "--cm" {
             // call connection manager to establish connections
             // meanwhile, return true to call flutter window to show control panel
-            crate::ui_interface::start_option_status_sync();
+            crate::ui_api::start_option_status_sync();
         } else if args[0] == "--whiteboard" {
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             {

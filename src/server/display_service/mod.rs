@@ -3,7 +3,7 @@ use crate::common::SimpleCallOnReturn;
 #[cfg(target_os = "linux")]
 use crate::platform::linux::is_x11;
 #[cfg(windows)]
-use crate::virtual_display_manager;
+use crate::vdisplay;
 #[cfg(windows)]
 use hbb_common::get_version_number;
 use hbb_common::protobuf::MessageField;

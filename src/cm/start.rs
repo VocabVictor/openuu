@@ -6,7 +6,7 @@ pub async fn start_ipc<T: InvokeUiCM>(cm: ConnectionManager<T>) {
     #[cfg(target_os = "windows")]
     {
         let enabled = crate::Connection::is_permission_enabled_locally(OPTION_ENABLE_FILE_TRANSFER);
-        let mut lock = crate::ui_interface::IS_FILE_TRANSFER_ENABLED
+        let mut lock = crate::ui_api::IS_FILE_TRANSFER_ENABLED
             .lock()
             .unwrap();
         ContextSend::enable(enabled);

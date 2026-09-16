@@ -18,14 +18,14 @@ impl PrivacyModeImpl {
     pub fn ensure_virtual_display(&mut self, is_async_mode: bool) -> ResultType<()> {
         if self.virtual_displays.is_empty() {
             let displays =
-                virtual_display_manager::plug_in_peer_request(vec![Self::default_display_modes()])?;
+                vdisplay::plug_in_peer_request(vec![Self::default_display_modes()])?;
             if is_async_mode {
                 thread::sleep(Duration::from_secs(1));
             }
             self.set_displays();
             // No physical displays, no need to use the privacy mode.
             if self.displays.is_empty() {
-                virtual_display_manager::plug_out_monitor_indices(&displays, false, false)?;
+                vdisplay::plug_out_monitor_indices(&displays, false, false)?;
                 bail!(NO_PHYSICAL_DISPLAYS);
             }
 
@@ -96,7 +96,7 @@ impl PrivacyModeImpl {
             // This function changes the user behavior of the virtual displays.
             // But it makes the privacy mode more stable.
             // No need to restore the virtual displays. It's easy to notice that the virtual displays are plugged out.
-            let _ = virtual_display_manager::plug_out_monitor(-1, true, false);
+            let _ = vdisplay::plug_out_monitor(-1, true, false);
 
             // We can't replug the virtual dislays here.
             // TODO: plug out + plug in the virtual displays (`IDD_IMPL_AMYUNI`) in a short time makes the server side crash.

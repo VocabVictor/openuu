@@ -71,7 +71,7 @@ pub async fn test_ipv6() -> Option<tokio::task::JoinHandle<()>> {
 /// public STUN servers whenever the deployment has configured none of its own,
 /// so the probe follows the same switch the controlling side checks before it
 /// offers a v6 candidate. The guard belongs here rather than at the call
-/// sites: the controlled side (`rendezvous_mediator::direct::start_ipv6`) and
+/// sites: the controlled side (`rendezvous::direct::start_ipv6`) and
 /// NAT typing both reached it without one, which meant a peer contacted third
 /// parties because the *other* end had the feature enabled.
 ///

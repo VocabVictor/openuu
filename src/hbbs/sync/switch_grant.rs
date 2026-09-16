@@ -7,7 +7,7 @@ use super::*;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub fn register_switch_grant(switch_uuid: String) {
     tokio::spawn(async move {
-        let api_server = crate::ui_interface::get_api_server();
+        let api_server = crate::ui_api::get_api_server();
         if api_server.is_empty() || crate::is_public(&api_server) {
             return;
         }

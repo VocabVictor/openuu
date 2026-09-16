@@ -41,7 +41,7 @@ async fn quick_launch_is_denied_without_keyboard_permission() {
     match &reply.union {
         Some(message::Union::Misc(m)) => match &m.union {
             Some(misc::Union::QuickLaunchResponse(res)) => {
-                assert_eq!(res, &crate::quick_launch::denied(&request));
+                assert_eq!(res, &crate::launch::denied(&request));
                 assert!(res.contains("Quick launch requires an authorized control session"));
             }
             other => panic!("expected QuickLaunchResponse, got {:?}", other),

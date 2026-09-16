@@ -6,7 +6,7 @@ use hbb_common::log;
 use scrap::android::call_main_service_set_by_name;
 use serde_json::json;
 
-use crate::ui_cm_interface::InvokeUiCM;
+use crate::cm::InvokeUiCM;
 
 use super::GLOBAL_EVENT_STREAM;
 
@@ -15,7 +15,7 @@ struct FlutterHandler {}
 
 impl InvokeUiCM for FlutterHandler {
     //TODO port_forward
-    fn add_connection(&self, client: &crate::ui_cm_interface::Client) {
+    fn add_connection(&self, client: &crate::cm::Client) {
         let client_json = serde_json::to_string(&client).unwrap_or("".into());
         // send to Android service, active notification no matter UI is shown or not.
         #[cfg(target_os = "android")]
@@ -54,7 +54,7 @@ impl InvokeUiCM for FlutterHandler {
         self.push_event("show_elevation", &[("show", &show.to_string())]);
     }
 
-    fn update_voice_call_state(&self, client: &crate::ui_cm_interface::Client) {
+    fn update_voice_call_state(&self, client: &crate::cm::Client) {
         let client_json = serde_json::to_string(&client).unwrap_or("".into());
         // send to Android service, active notification no matter UI is shown or not.
         #[cfg(target_os = "android")]
@@ -95,7 +95,7 @@ impl FlutterHandler {
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 fn start_listen_ipc() {
-    use crate::ui_cm_interface::{start_ipc, ConnectionManager};
+    use crate::cm::{start_ipc, ConnectionManager};
 
     #[cfg(target_os = "linux")]
     std::thread::spawn(crate::ipc::start_pa);
@@ -120,8 +120,8 @@ pub fn start_channel(
     rx: UnboundedReceiver<crate::ipc::Data>,
     tx: UnboundedSender<crate::ipc::Data>,
 ) {
-    use crate::ui_cm_interface::start_listen;
-    let cm = crate::ui_cm_interface::ConnectionManager {
+    use crate::cm::start_listen;
+    let cm = crate::cm::ConnectionManager {
         ui_handler: FlutterHandler {},
     };
     std::thread::spawn(move || start_listen(cm, rx, tx));

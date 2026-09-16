@@ -166,14 +166,14 @@ impl LoginConfigHandler {
             };
 
             // here we can check <id>/r@server
-            let real_id = crate::ui_interface::handle_relay_id(raw_id).to_string();
+            let real_id = crate::ui_api::handle_relay_id(raw_id).to_string();
             if real_id != raw_id {
                 force_relay = true;
             }
             self.other_server = Some((real_id.clone(), server.to_owned(), key));
             id = format!("{real_id}@{server}");
         } else {
-            let real_id = crate::ui_interface::handle_relay_id(&id);
+            let real_id = crate::ui_api::handle_relay_id(&id);
             if real_id != id {
                 force_relay = true;
                 id = real_id.to_owned();

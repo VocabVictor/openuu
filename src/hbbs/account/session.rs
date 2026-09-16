@@ -36,7 +36,7 @@ impl OidcSession {
             "op": op,
             "id": id,
             "uuid": uuid,
-            "deviceInfo": crate::ui_interface::get_login_device_info(),
+            "deviceInfo": crate::ui_api::get_login_device_info(),
             "apiDomain": api_server,
         })
         .to_string();

@@ -78,7 +78,7 @@ fn rechannel_frame<const CHANNELS: usize>(input: &[f32], output: &mut Vec<f32>) 
 #[cfg(test)]
 mod tests {
     use super::{rechannel, CaptureFrameBuffer};
-    use crate::audio_resampler::allocation_tests::assert_no_allocations;
+    use crate::resample::allocation_tests::assert_no_allocations;
 
     #[test]
     fn capture_channel_conversion_reuses_storage_and_preserves_mapping() {

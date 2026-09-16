@@ -41,8 +41,8 @@ use crate::{
     common::{is_server, CheckTestNatType},
     privacy_mode,
     privacy_mode::PrivacyModeState,
-    rendezvous_mediator::RendezvousMediator,
-    ui_interface::{get_local_option, set_local_option},
+    rendezvous::RendezvousMediator,
+    ui_api::{get_local_option, set_local_option},
 };
 use bytes::Bytes;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]

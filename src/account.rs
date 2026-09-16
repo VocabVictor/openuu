@@ -85,7 +85,7 @@ fn account_client(url: &str) -> reqwest::Client {
     } else {
         TlsType::Rustls
     };
-    crate::hbbs_http::create_http_client_async(tls, false)
+    crate::hbbs::create_http_client_async(tls, false)
 }
 
 fn unreachable_error(url: &str, err: impl std::fmt::Display) -> anyhow::Error {

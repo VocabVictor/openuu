@@ -1,6 +1,6 @@
 use super::super::{new_pcm_handoff, CAPTURE_PCM_QUEUE_PACKETS};
 use super::*;
-use crate::audio_resampler::allocation_tests::assert_no_allocations;
+use crate::resample::allocation_tests::assert_no_allocations;
 use magnum_opus::{Application::LowDelay, Decoder, Encoder};
 
 const SAMPLE_RATE: u32 = 48_000;

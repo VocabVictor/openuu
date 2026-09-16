@@ -71,7 +71,7 @@ use system_shutdown;
 use windows::Win32::Foundation::{CloseHandle, HANDLE};
 
 #[cfg(windows)]
-use crate::virtual_display_manager;
+use crate::vdisplay;
 pub type Sender = mpsc::UnboundedSender<(Instant, Arc<Message>)>;
 
 const FAILURE_IDX_ID_WHITELIST: usize = 2;

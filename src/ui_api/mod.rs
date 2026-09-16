@@ -27,7 +27,7 @@ use std::{
 
 use crate::common::SOFTWARE_UPDATE_URL;
 #[cfg(feature = "flutter")]
-use crate::hbbs_http::account;
+use crate::hbbs::account;
 #[cfg(not(any(target_os = "ios")))]
 use crate::ipc;
 

@@ -53,7 +53,7 @@ pub fn try_get_displays_(add_amyuni_headless: bool) -> ResultType<Vec<Display>> 
     let mut displays = Display::all()?;
 
     // Do not add virtual display if the platform is not installed or the virtual display is not supported.
-    if !crate::platform::is_installed() || !virtual_display_manager::is_virtual_display_supported()
+    if !crate::platform::is_installed() || !vdisplay::is_virtual_display_supported()
     {
         return Ok(displays);
     }
@@ -61,7 +61,7 @@ pub fn try_get_displays_(add_amyuni_headless: bool) -> ResultType<Vec<Display>> 
     // Enable headless virtual display when
     // 1. `amyuni` idd is not used.
     // 2. `amyuni` idd is used and `add_amyuni_headless` is true.
-    if virtual_display_manager::is_amyuni_idd() && !add_amyuni_headless {
+    if vdisplay::is_amyuni_idd() && !add_amyuni_headless {
         return Ok(displays);
     }
 
@@ -86,7 +86,7 @@ pub fn try_get_displays_(add_amyuni_headless: bool) -> ResultType<Vec<Display>> 
     let no_displays_v = no_displays(&displays);
     if no_displays_v {
         log::debug!("no displays, create virtual display");
-        if let Err(e) = virtual_display_manager::plug_in_headless() {
+        if let Err(e) = vdisplay::plug_in_headless() {
             log::error!("plug in headless failed {}", e);
         } else {
             displays = Display::all()?;

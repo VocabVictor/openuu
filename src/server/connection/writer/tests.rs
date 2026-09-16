@@ -9,7 +9,7 @@ const MS: std::time::Duration = std::time::Duration::from_millis(1);
 fn blocked_pair() -> (Writer, FramedStream) {
     let (ours, theirs) = hbb_common::tokio::io::duplex(1);
     let addr = "127.0.0.1:0".parse().unwrap();
-    let (_reader, out) = crate::stream_split::split(Stream::Tcp(FramedStream::from(ours, addr)))
+    let (_reader, out) = crate::split::split(Stream::Tcp(FramedStream::from(ours, addr)))
         .unwrap_or_else(|_| panic!("a TCP stream must be splittable"));
     (Writer::start(out), FramedStream::from(theirs, addr))
 }

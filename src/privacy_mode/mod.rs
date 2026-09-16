@@ -1,4 +1,4 @@
-use crate::ui_interface::get_option;
+use crate::ui_api::get_option;
 #[cfg(windows)]
 use crate::{
     display_service,

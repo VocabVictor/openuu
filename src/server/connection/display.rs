@@ -201,11 +201,11 @@ impl Connection {
         };
 
         if t.on {
-            if !virtual_display_manager::is_virtual_display_supported() {
+            if !vdisplay::is_virtual_display_supported() {
                 self.send(make_msg("idd_not_support_under_win10_2004_tip".to_string()))
                     .await;
             } else {
-                if let Err(e) = virtual_display_manager::plug_in_monitor(t.display as _, Vec::new())
+                if let Err(e) = vdisplay::plug_in_monitor(t.display as _, Vec::new())
                 {
                     log::error!("Failed to plug in virtual display: {}", e);
                     self.send(make_msg(format!(
@@ -216,7 +216,7 @@ impl Connection {
                 }
             }
         } else {
-            if let Err(e) = virtual_display_manager::plug_out_monitor(t.display, false, true) {
+            if let Err(e) = vdisplay::plug_out_monitor(t.display, false, true) {
                 log::error!("Failed to plug out virtual display {}: {}", t.display, e);
                 self.send(make_msg(format!(
                     "Failed to plug out virtual displays: {}",
@@ -244,7 +244,7 @@ impl Connection {
                     let name = display.name();
                     #[cfg(windows)]
                     if let Some(_ok) =
-                        virtual_display_manager::rustdesk_idd::change_resolution_if_is_virtual_display(
+                        vdisplay::rustdesk_idd::change_resolution_if_is_virtual_display(
                             &name,
                             r.width as _,
                             r.height as _,
@@ -255,7 +255,7 @@ impl Connection {
                     #[allow(unused_mut)]
                     let mut record_changed = true;
                     #[cfg(windows)]
-                    if virtual_display_manager::amyuni_idd::is_my_display(&name) {
+                    if vdisplay::amyuni_idd::is_my_display(&name) {
                         record_changed = false;
                     }
                     #[cfg(not(target_os = "macos"))]

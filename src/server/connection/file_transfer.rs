@@ -232,7 +232,7 @@ impl Connection {
     /// - Generic file transfers on non-Windows platforms
     ///
     /// On Windows, generic file reads are delegated to CM via `start_read_job()` in
-    /// `src/ui_cm_interface.rs` for elevated access.
+    /// `src/cm` for elevated access.
     ///
     /// Both Connection-side and CM-side implementations use `TransferJob::new_read()`
     /// with similar parameters. When modifying job creation logic, ensure both paths
@@ -264,7 +264,7 @@ impl Connection {
             Ok(job) => {
                 if check_file_limit {
                     if let Err(msg) =
-                        crate::ui_cm_interface::check_file_count_limit(job.files().len())
+                        crate::cm::check_file_count_limit(job.files().len())
                     {
                         self.send(fs::new_error(id, msg, -1)).await;
                         return;

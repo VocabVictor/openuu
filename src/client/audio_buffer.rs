@@ -14,12 +14,12 @@ pub(super) fn create_audio_resampler(
     input_rate: u32,
     output_rate: u32,
     channels: u16,
-) -> ResultType<Option<crate::audio_resampler::AudioResampler>> {
+) -> ResultType<Option<crate::resample::AudioResampler>> {
     if input_rate == output_rate {
         return Ok(None);
     }
-    Ok(Some(crate::audio_resampler::AudioResampler::new(
-        crate::audio_resampler::AudioResamplerConfig {
+    Ok(Some(crate::resample::AudioResampler::new(
+        crate::resample::AudioResamplerConfig {
             input_rate,
             output_rate,
             channels,
@@ -30,9 +30,9 @@ pub(super) fn create_audio_resampler(
 #[cfg(not(target_os = "linux"))]
 pub(super) fn prepare_decoded_audio(
     input: &[f32],
-    resampler: Option<&mut crate::audio_resampler::AudioResampler>,
+    resampler: Option<&mut crate::resample::AudioResampler>,
     config: DecodedAudioConfig,
-) -> Result<Vec<f32>, crate::audio_resampler::AudioResamplerError> {
+) -> Result<Vec<f32>, crate::resample::AudioResamplerError> {
     let mut output = match resampler {
         Some(resampler) => resampler.process(input)?,
         None => input.to_owned(),

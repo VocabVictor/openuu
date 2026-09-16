@@ -30,10 +30,10 @@ use crate::{
     check_port,
     common::input::{MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_TYPE_DOWN, MOUSE_TYPE_UP},
     create_symmetric_key_msg, decode_id_pk, decode_id_pk_dtls, get_rs_pk, is_keyboard_mode_supported,
-    kcp_stream::KcpStream,
+    kcp::KcpStream,
     secure_tcp,
-    ui_interface::{get_builtin_option, resolve_avatar_url, use_texture_render},
-    ui_session_interface::{InvokeUiSession, Session},
+    ui_api::{get_builtin_option, resolve_avatar_url, use_texture_render},
+    session::{InvokeUiSession, Session},
 };
 #[cfg(feature = "unix-file-copy-paste")]
 use crate::{clipboard::check_clipboard_files, clipboard_file::unix_file_clip};

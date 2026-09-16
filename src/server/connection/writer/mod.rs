@@ -28,7 +28,7 @@
 //! the controller would simply go blind on thin links again.
 
 use super::*;
-use crate::stream_split::ConnWriter;
+use crate::split::ConnWriter;
 use base::message_proto::Message;
 use hbb_common::tokio::{self, sync::Notify};
 use std::{

@@ -113,10 +113,10 @@ pub fn deploy_device(token: String, new_id: Option<String>) -> DeployResult {
             }
             #[cfg(target_os = "android")]
             {
-                crate::rendezvous_mediator::NEEDS_DEPLOY
+                crate::rendezvous::NEEDS_DEPLOY
                     .store(false, std::sync::atomic::Ordering::SeqCst);
-                crate::rendezvous_mediator::reset_needs_deploy_notification();
-                crate::rendezvous_mediator::RendezvousMediator::restart();
+                crate::rendezvous::reset_needs_deploy_notification();
+                crate::rendezvous::RendezvousMediator::restart();
             }
             DeployResult::Ok
         }

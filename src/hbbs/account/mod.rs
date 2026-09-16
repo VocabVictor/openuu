@@ -1,5 +1,5 @@
 use super::HbbHttpResponse;
-use crate::hbbs_http::create_http_client_with_url;
+use crate::hbbs::create_http_client_with_url;
 use hbb_common::{config::LocalConfig, log, ResultType};
 use serde_derive::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};

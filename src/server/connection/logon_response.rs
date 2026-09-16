@@ -123,7 +123,7 @@ impl Connection {
                 json!(crate::platform::is_installed()),
             );
             if crate::platform::is_installed() {
-                platform_additions.extend(virtual_display_manager::get_platform_additions());
+                platform_additions.extend(vdisplay::get_platform_additions());
             }
             platform_additions.insert(
                 "supported_privacy_mode_impl".into(),

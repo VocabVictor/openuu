@@ -109,7 +109,7 @@ pub(super) async fn udp_nat_listen(
     let func = async {
         socket.connect(peer_addr).await?;
         let init_packet = crate::punch_udp(socket.clone(), true).await?;
-        let stream = crate::kcp_stream::KcpStream::accept(
+        let stream = crate::kcp::KcpStream::accept(
             socket,
             Duration::from_millis(CONNECT_TIMEOUT as _),
             init_packet,

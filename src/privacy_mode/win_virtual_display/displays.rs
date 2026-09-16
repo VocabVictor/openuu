@@ -54,7 +54,7 @@ impl PrivacyModeImpl {
                 primary,
             };
 
-            let ds = virtual_display_manager::get_cur_device_string();
+            let ds = vdisplay::get_cur_device_string();
             if let Ok(s) = String::from_utf16(&dd.DeviceString) {
                 if s.len() >= ds.len() && &s[..ds.len()] == ds {
                     self.virtual_displays.push(display);
@@ -66,7 +66,7 @@ impl PrivacyModeImpl {
     }
 
     pub(super) fn restore_plug_out_monitor(&mut self) {
-        let _ = virtual_display_manager::plug_out_monitor_indices(
+        let _ = vdisplay::plug_out_monitor_indices(
             &self.virtual_displays_added,
             true,
             false,
@@ -204,7 +204,7 @@ impl PrivacyModeImpl {
     }
 
     // NOTE: We can't detect if the other virtual displays are physical displays or not.
-    // We can only use `DeviceString` == `virtual_display_manager::get_cur_device_string()` to detect if the display is a virtual display.
+    // We can only use `DeviceString` == `vdisplay::get_cur_device_string()` to detect if the display is a virtual display.
     // The other virtual displays can't be restored after exiting the privacy mode on Windows 24H2.
     pub(super) fn disable_physical_displays(&self) -> ResultType<()> {
         for display in &self.displays {

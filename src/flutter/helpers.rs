@@ -35,7 +35,7 @@ pub fn get_adapter_luid() -> Option<i64> {
 
 #[cfg(feature = "vram")]
 pub fn get_adapter_luid() -> Option<i64> {
-    if !crate::ui_interface::use_texture_render() {
+    if !crate::ui_api::use_texture_render() {
         return None;
     }
     let get_adapter_luid_func = match &*TEXTURE_GPU_RENDERER_PLUGIN {

@@ -2,7 +2,7 @@
 use hbb_common::log;
 use hbb_common::SessionID;
 
-use crate::ui_interface::{get_local_option, set_local_option};
+use crate::ui_api::{get_local_option, set_local_option};
 
 pub const CONFIG_OPTION_INPUT_SOURCE: &str = "input-source";
 // rdev grab mode
