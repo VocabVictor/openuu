@@ -946,6 +946,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Add to favourites", ""),
         ("Remove from favourites", ""),
         ("The \"{}\" preset decides the permissions below; switch to \"Custom\" to adjust them one by one.", ""),
+        ("Wait for a control session; close any view-only session first.", ""),
     ].iter().cloned().collect();
 }
 

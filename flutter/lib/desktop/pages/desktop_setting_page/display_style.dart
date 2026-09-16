@@ -7,7 +7,7 @@ extension _DisplayStyle on _DisplayState {
     // The rows sit in the "defaults for new connections" group, so the
     // "Default" prefix of the legacy keys is dropped from the label (V7).
     final label = translate(title)
-        .replaceFirst(RegExp(r'^(Default |默认)'), '');
+        .replaceFirst(RegExp(r'^(Default |默认|預設)'), '');
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       _settingRow(
           context,

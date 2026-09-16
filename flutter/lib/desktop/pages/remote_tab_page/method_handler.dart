@@ -15,8 +15,9 @@ extension _ConnectionTabMethodHandler on _ConnectionTabPageState {
         await windowOnTop(windowId());
         tabController.jumpToByKey(peerId);
         if (page.ffi.viewOnlySession || page.ffi.ffiModel.viewOnly || !page.ffi.ffiModel.pi.isSet.isTrue) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('请等待控制连接就绪；观看连接需先关闭。 / Wait for a control session; close any view-only session first.')));
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(translate(
+                'Wait for a control session; close any view-only session first.'))));
         } else if (mounted) {
           showQuickLaunch(context, page.ffi, call.arguments['app'] ?? '');
         }

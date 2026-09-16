@@ -948,5 +948,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Add to favourites", "收藏"),
         ("Remove from favourites", "取消收藏"),
         ("The \"{}\" preset decides the permissions below; switch to \"Custom\" to adjust them one by one.", "目前使用「{}」預設，下列權限由預設決定；改為「自訂」後可個別調整。"),
+        ("Wait for a control session; close any view-only session first.", "請等待控制連線就緒；檢視連線需先關閉。"),
     ].iter().cloned().collect();
 }
